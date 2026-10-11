@@ -2,75 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batalha Card Game</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        #campo-batalha {
-            height: 20rem;
-            margin-top: 160px;
-            margin-bottom: 0.2rem;
-            padding: 0;
-        }
-        @media (max-width: 609px) {
-            #campo-batalha {
-            height: 32rem;
-            margin-top: 5rem;
-            margin-bottom: 0rem;
-            }
-        }
-        @media (max-width: 390px) {
-            #campo-batalha {
-            height: 32rem;
-            margin-top: 5rem;
-            margin-bottom: 0rem;
-            }
-        }
-    </style>
+    <title>Batalha - Card Game</title>
+    <!-- A batalha agora fica em index.html#/batalha; esta página só redireciona (mantendo ?level=N). -->
+    <script>
+        const level = new URLSearchParams(location.search).get('level');
+        location.replace('index.html#/batalha' + (level ? '/' + encodeURIComponent(level) : ''));
+    </script>
+    <meta http-equiv="refresh" content="0; url=index.html#/batalha">
 </head>
-<body>
-    <header>
-        <h1>BATALHA</h1>
-        <nav>
-            <a href="./index.html" class="nav-button">Coleção</a>
-        </nav>
-        <div id="coin-counter">🪙Moedas: <span id="coin-amount">100</span></div>
-    </header>
-
-    <main>
-        <div id="campo-batalha">
-            <!-- Os botões serão gerados aqui -->
-            <div id="oponente-botoes-container"></div>
-        
-            <!-- Área onde as cartas do oponente aparecerão -->
-            <div id="oponente-cartas-container">
-                <div class="oponente-slot-container">
-                    <!-- As cartas do oponente serão exibidas aqui -->
-                </div>
-            </div>
-        
-            <!-- Área para resultados da batalha -->
-            <div id="battle-result"></div>
-        </div>
-    </main>
-
-    <!-- Deck do jogador -->
-    <div id="deck-container2">
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-        <div class="deck-slot"></div>
-    </div>
-
-    <footer>
-        <p>Desenvolvido por Bruno Peres</p>
-    </footer>
-
-    <script src="batalha.js"></script>
-    
-    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92871c9c9fbdb0ed',t:'MTc0MzMzMjUxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-</body>
+<body></body>
 </html>
