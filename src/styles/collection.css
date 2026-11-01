@@ -351,7 +351,9 @@
     grid-template-columns: 1fr auto;
     align-items: center;
     gap: 6px 10px;
-    width: 230px;
+    /* As wide as its buttons need (at least 230px): a fixed width let the slots cover the Battle button. */
+    width: auto;
+    min-width: 230px;
     flex-shrink: 0;
 }
 .dock-toggle { display: flex; align-items: baseline; gap: 8px; text-align: left; cursor: default; }
@@ -372,7 +374,8 @@
     font-variant-numeric: tabular-nums;
 }
 .dock-power small { font-size: 11px; color: var(--gold); }
-.dock-hint { grid-column: 1 / -1; color: var(--dim); font-size: 12px; line-height: 1.35; min-height: 2.7em; }
+/* The hint wraps inside the column instead of widening it. */
+.dock-hint { grid-column: 1 / -1; contain: inline-size; color: var(--dim); font-size: 12px; line-height: 1.35; min-height: 2.7em; }
 .dock.dragging .dock-hint { color: var(--gold-hi); }
 .dock-actions { grid-column: 1 / -1; display: flex; gap: 6px; }
 .dock-actions .btn-sm { padding: 0 11px; }
@@ -380,6 +383,7 @@
 
 .dock-slots {
     flex: 1;
+    min-width: 0;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 92px));
     justify-content: end;
