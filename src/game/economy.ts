@@ -11,8 +11,8 @@ export const DECK_SIZE = 6;
 
 /** Level the starter Pokémon begins at. */
 export const STARTER_LEVEL = 5;
-/** Kanto and Johto starters (grass, fire, water). */
-export const STARTERS = [1, 4, 7, 152, 155, 158];
+/** Starters by region, in region order (Kanto, Johto, Hoenn, Sinnoh), each as grass, fire, water. */
+export const STARTERS = [1, 4, 7, 152, 155, 158, 252, 255, 258, 387, 390, 393];
 
 /** A duplicate of a card already at its level cap becomes Rare Candy instead. */
 export const OVERFLOW_CANDY = 1;
@@ -39,5 +39,5 @@ export function dailyGift(streak: number): { coins: number; candy: number; ball:
 
 /** Badges needed to unlock each capture banner and the League. */
 export const UNLOCK_BADGES = { great: 1, ultra: 3, league: 8 } as const;
-/** Johto: its gyms open with all 8 Kanto badges, its League with all 8 Johto badges (counted per region). */
+/** Johto and later regions: gyms open with all 8 badges of the region before, the League with the region's own 8. */
 export const JOHTO_UNLOCK_BADGES = { gyms: 8, league: 8 } as const;

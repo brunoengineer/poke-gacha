@@ -1,0 +1,3286 @@
+{
+ "generation": 4,
+ "region": "sinnoh",
+ "species": [
+  {
+   "id": 387,
+   "slug": "turtwig",
+   "name": "Turtwig",
+   "genus": "Tiny Leaf Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 55,
+    "atk": 68,
+    "def": 64,
+    "spa": 45,
+    "spd": 55,
+    "spe": 31
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 203,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 388,
+     "kind": "level",
+     "level": 18
+    }
+   ],
+   "height": 4,
+   "weight": 102,
+   "habitat": null,
+   "flavor": "Photosynthesis occurs across its body under the sun. The shell on its back is actually hardened soil."
+  },
+  {
+   "id": 388,
+   "slug": "grotle",
+   "name": "Grotle",
+   "genus": "Grove Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 89,
+    "def": 85,
+    "spa": 55,
+    "spd": 65,
+    "spe": 36
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 203,
+   "evolvesFrom": 387,
+   "evolutions": [
+    {
+     "to": 389,
+     "kind": "level",
+     "level": 32
+    }
+   ],
+   "height": 11,
+   "weight": 970,
+   "habitat": null,
+   "flavor": "It lives along water in forests. In the daytime, it leaves the forest to sunbathe its treed shell."
+  },
+  {
+   "id": 389,
+   "slug": "torterra",
+   "name": "Torterra",
+   "genus": "Continent Pokémon",
+   "types": [
+    "grass",
+    "ground"
+   ],
+   "stats": {
+    "hp": 95,
+    "atk": 109,
+    "def": 105,
+    "spa": 75,
+    "spd": 85,
+    "spe": 56
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 203,
+   "evolvesFrom": 388,
+   "evolutions": [],
+   "height": 22,
+   "weight": 3100,
+   "habitat": null,
+   "flavor": "Ancient people imagined that beneath the ground, a gigantic Torterra dwelled."
+  },
+  {
+   "id": 390,
+   "slug": "chimchar",
+   "name": "Chimchar",
+   "genus": "Chimp Pokémon",
+   "types": [
+    "fire"
+   ],
+   "stats": {
+    "hp": 44,
+    "atk": 58,
+    "def": 44,
+    "spa": 58,
+    "spd": 44,
+    "spe": 61
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 204,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 391,
+     "kind": "level",
+     "level": 14
+    }
+   ],
+   "height": 5,
+   "weight": 62,
+   "habitat": null,
+   "flavor": "Its fiery rear end is fueled by gas made in its belly. Even rain can’t extinguish the fire."
+  },
+  {
+   "id": 391,
+   "slug": "monferno",
+   "name": "Monferno",
+   "genus": "Playful Pokémon",
+   "types": [
+    "fire",
+    "fighting"
+   ],
+   "stats": {
+    "hp": 64,
+    "atk": 78,
+    "def": 52,
+    "spa": 78,
+    "spd": 52,
+    "spe": 81
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 204,
+   "evolvesFrom": 390,
+   "evolutions": [
+    {
+     "to": 392,
+     "kind": "level",
+     "level": 36
+    }
+   ],
+   "height": 9,
+   "weight": 220,
+   "habitat": null,
+   "flavor": "It skillfully controls the intensity of the fire on its tail to keep its foes at an ideal distance."
+  },
+  {
+   "id": 392,
+   "slug": "infernape",
+   "name": "Infernape",
+   "genus": "Flame Pokémon",
+   "types": [
+    "fire",
+    "fighting"
+   ],
+   "stats": {
+    "hp": 76,
+    "atk": 104,
+    "def": 71,
+    "spa": 104,
+    "spd": 71,
+    "spe": 108
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 204,
+   "evolvesFrom": 391,
+   "evolutions": [],
+   "height": 12,
+   "weight": 550,
+   "habitat": null,
+   "flavor": "Its crown of fire is indicative of its fiery nature. It is beaten by none in terms of quickness."
+  },
+  {
+   "id": 393,
+   "slug": "piplup",
+   "name": "Piplup",
+   "genus": "Penguin Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 53,
+    "atk": 51,
+    "def": 53,
+    "spa": 61,
+    "spd": 56,
+    "spe": 40
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 205,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 394,
+     "kind": "level",
+     "level": 16
+    }
+   ],
+   "height": 4,
+   "weight": 52,
+   "habitat": null,
+   "flavor": "It doesn’t like to be taken care of. It’s difficult to bond with since it won’t listen to its Trainer."
+  },
+  {
+   "id": 394,
+   "slug": "prinplup",
+   "name": "Prinplup",
+   "genus": "Penguin Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 64,
+    "atk": 66,
+    "def": 68,
+    "spa": 81,
+    "spd": 76,
+    "spe": 50
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 205,
+   "evolvesFrom": 393,
+   "evolutions": [
+    {
+     "to": 395,
+     "kind": "level",
+     "level": 36
+    }
+   ],
+   "height": 8,
+   "weight": 230,
+   "habitat": null,
+   "flavor": "It lives alone, away from others. Apparently, every one of them believes it is the most important."
+  },
+  {
+   "id": 395,
+   "slug": "empoleon",
+   "name": "Empoleon",
+   "genus": "Emperor Pokémon",
+   "types": [
+    "water",
+    "steel"
+   ],
+   "stats": {
+    "hp": 84,
+    "atk": 86,
+    "def": 88,
+    "spa": 111,
+    "spd": 101,
+    "spe": 60
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 205,
+   "evolvesFrom": 394,
+   "evolutions": [],
+   "height": 17,
+   "weight": 845,
+   "habitat": null,
+   "flavor": "It swims as fast as a jet boat. The edges of its wings are sharp and can slice apart drifting ice."
+  },
+  {
+   "id": 396,
+   "slug": "starly",
+   "name": "Starly",
+   "genus": "Starling Pokémon",
+   "types": [
+    "normal",
+    "flying"
+   ],
+   "stats": {
+    "hp": 40,
+    "atk": 55,
+    "def": 30,
+    "spa": 30,
+    "spd": 30,
+    "spe": 60
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 206,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 397,
+     "kind": "level",
+     "level": 14
+    }
+   ],
+   "height": 3,
+   "weight": 20,
+   "habitat": null,
+   "flavor": "They flock in great numbers. Though small, they flap their wings with great power."
+  },
+  {
+   "id": 397,
+   "slug": "staravia",
+   "name": "Staravia",
+   "genus": "Starling Pokémon",
+   "types": [
+    "normal",
+    "flying"
+   ],
+   "stats": {
+    "hp": 55,
+    "atk": 75,
+    "def": 50,
+    "spa": 40,
+    "spd": 40,
+    "spe": 80
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 206,
+   "evolvesFrom": 396,
+   "evolutions": [
+    {
+     "to": 398,
+     "kind": "level",
+     "level": 34
+    }
+   ],
+   "height": 6,
+   "weight": 155,
+   "habitat": null,
+   "flavor": "They maintain huge flocks, although fierce scuffles break out between various flocks."
+  },
+  {
+   "id": 398,
+   "slug": "staraptor",
+   "name": "Staraptor",
+   "genus": "Predator Pokémon",
+   "types": [
+    "normal",
+    "flying"
+   ],
+   "stats": {
+    "hp": 85,
+    "atk": 120,
+    "def": 70,
+    "spa": 50,
+    "spd": 60,
+    "spe": 100
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 206,
+   "evolvesFrom": 397,
+   "evolutions": [],
+   "height": 12,
+   "weight": 249,
+   "habitat": null,
+   "flavor": "The muscles in its wings and legs are strong. It can easily fly while gripping a small Pokémon."
+  },
+  {
+   "id": 399,
+   "slug": "bidoof",
+   "name": "Bidoof",
+   "genus": "Plump Mouse Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 59,
+    "atk": 45,
+    "def": 40,
+    "spa": 35,
+    "spd": 40,
+    "spe": 31
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 207,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 400,
+     "kind": "level",
+     "level": 15
+    }
+   ],
+   "height": 5,
+   "weight": 200,
+   "habitat": null,
+   "flavor": "With nerves of steel, nothing can perturb it. It is more agile and active than it appears."
+  },
+  {
+   "id": 400,
+   "slug": "bibarel",
+   "name": "Bibarel",
+   "genus": "Beaver Pokémon",
+   "types": [
+    "normal",
+    "water"
+   ],
+   "stats": {
+    "hp": 79,
+    "atk": 85,
+    "def": 60,
+    "spa": 55,
+    "spd": 60,
+    "spe": 71
+   },
+   "captureRate": 127,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 207,
+   "evolvesFrom": 399,
+   "evolutions": [],
+   "height": 10,
+   "weight": 315,
+   "habitat": null,
+   "flavor": "It busily makes its nest with stacks of branches and roots it has cut up with its sharp incisors."
+  },
+  {
+   "id": 401,
+   "slug": "kricketot",
+   "name": "Kricketot",
+   "genus": "Cricket Pokémon",
+   "types": [
+    "bug"
+   ],
+   "stats": {
+    "hp": 37,
+    "atk": 25,
+    "def": 41,
+    "spa": 25,
+    "spd": 41,
+    "spe": 25
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 208,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 402,
+     "kind": "level",
+     "level": 10
+    }
+   ],
+   "height": 3,
+   "weight": 22,
+   "habitat": null,
+   "flavor": "It chats with others using the sounds of its colliding antennae. These sounds are fall hallmarks."
+  },
+  {
+   "id": 402,
+   "slug": "kricketune",
+   "name": "Kricketune",
+   "genus": "Cricket Pokémon",
+   "types": [
+    "bug"
+   ],
+   "stats": {
+    "hp": 77,
+    "atk": 85,
+    "def": 51,
+    "spa": 55,
+    "spd": 51,
+    "spe": 65
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 208,
+   "evolvesFrom": 401,
+   "evolutions": [],
+   "height": 10,
+   "weight": 255,
+   "habitat": null,
+   "flavor": "It crosses its knifelike arms in front of its chest when it cries. It can compose melodies ad lib."
+  },
+  {
+   "id": 403,
+   "slug": "shinx",
+   "name": "Shinx",
+   "genus": "Flash Pokémon",
+   "types": [
+    "electric"
+   ],
+   "stats": {
+    "hp": 45,
+    "atk": 65,
+    "def": 34,
+    "spa": 40,
+    "spd": 34,
+    "spe": 45
+   },
+   "captureRate": 235,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 209,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 404,
+     "kind": "level",
+     "level": 15
+    }
+   ],
+   "height": 5,
+   "weight": 95,
+   "habitat": null,
+   "flavor": "The extension and contraction of its muscles generates electricity. It glows when in trouble."
+  },
+  {
+   "id": 404,
+   "slug": "luxio",
+   "name": "Luxio",
+   "genus": "Spark Pokémon",
+   "types": [
+    "electric"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 85,
+    "def": 49,
+    "spa": 60,
+    "spd": 49,
+    "spe": 60
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 209,
+   "evolvesFrom": 403,
+   "evolutions": [
+    {
+     "to": 405,
+     "kind": "level",
+     "level": 30
+    }
+   ],
+   "height": 9,
+   "weight": 305,
+   "habitat": null,
+   "flavor": "Its claws loose electricity with enough amperage to cause fainting. They live in small groups."
+  },
+  {
+   "id": 405,
+   "slug": "luxray",
+   "name": "Luxray",
+   "genus": "Gleam Eyes Pokémon",
+   "types": [
+    "electric"
+   ],
+   "stats": {
+    "hp": 80,
+    "atk": 120,
+    "def": 79,
+    "spa": 95,
+    "spd": 79,
+    "spe": 70
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 209,
+   "evolvesFrom": 404,
+   "evolutions": [],
+   "height": 14,
+   "weight": 420,
+   "habitat": null,
+   "flavor": "When its eyes gleam gold, it can spot hiding prey--even those taking shelter behind a wall."
+  },
+  {
+   "id": 406,
+   "slug": "budew",
+   "name": "Budew",
+   "genus": "Bud Pokémon",
+   "types": [
+    "grass",
+    "poison"
+   ],
+   "stats": {
+    "hp": 40,
+    "atk": 30,
+    "def": 35,
+    "spa": 50,
+    "spd": 70,
+    "spe": 55
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 158,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 315,
+     "kind": "friendship"
+    }
+   ],
+   "height": 2,
+   "weight": 12,
+   "habitat": null,
+   "flavor": "When it feels the sun’s warm touch, it opens its bud to release pollen. It lives alongside clear pools."
+  },
+  {
+   "id": 407,
+   "slug": "roserade",
+   "name": "Roserade",
+   "genus": "Bouquet Pokémon",
+   "types": [
+    "grass",
+    "poison"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 70,
+    "def": 65,
+    "spa": 125,
+    "spd": 105,
+    "spe": 90
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 158,
+   "evolvesFrom": 315,
+   "evolutions": [],
+   "height": 9,
+   "weight": 145,
+   "habitat": null,
+   "flavor": "Luring prey with a sweet scent, it uses poison whips on its arms to poison, bind, and finish off the prey."
+  },
+  {
+   "id": 408,
+   "slug": "cranidos",
+   "name": "Cranidos",
+   "genus": "Head Butt Pokémon",
+   "types": [
+    "rock"
+   ],
+   "stats": {
+    "hp": 67,
+    "atk": 125,
+    "def": 40,
+    "spa": 30,
+    "spd": 30,
+    "spe": 58
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 211,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 409,
+     "kind": "level",
+     "level": 30
+    }
+   ],
+   "height": 9,
+   "weight": 315,
+   "habitat": null,
+   "flavor": "It was resurrected from an iron ball-like fossil. It downs prey with its headbutts."
+  },
+  {
+   "id": 409,
+   "slug": "rampardos",
+   "name": "Rampardos",
+   "genus": "Head Butt Pokémon",
+   "types": [
+    "rock"
+   ],
+   "stats": {
+    "hp": 97,
+    "atk": 165,
+    "def": 60,
+    "spa": 65,
+    "spd": 50,
+    "spe": 58
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 211,
+   "evolvesFrom": 408,
+   "evolutions": [],
+   "height": 16,
+   "weight": 1025,
+   "habitat": null,
+   "flavor": "Its skull withstands impacts of any magnitude. As a result, its brain never gets the chance to grow."
+  },
+  {
+   "id": 410,
+   "slug": "shieldon",
+   "name": "Shieldon",
+   "genus": "Shield Pokémon",
+   "types": [
+    "rock",
+    "steel"
+   ],
+   "stats": {
+    "hp": 30,
+    "atk": 42,
+    "def": 118,
+    "spa": 42,
+    "spd": 88,
+    "spe": 30
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 212,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 411,
+     "kind": "level",
+     "level": 30
+    }
+   ],
+   "height": 5,
+   "weight": 570,
+   "habitat": null,
+   "flavor": "It habitually polishes its face by rubbing it against tree trunks. It is weak to attacks from behind."
+  },
+  {
+   "id": 411,
+   "slug": "bastiodon",
+   "name": "Bastiodon",
+   "genus": "Shield Pokémon",
+   "types": [
+    "rock",
+    "steel"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 52,
+    "def": 168,
+    "spa": 47,
+    "spd": 138,
+    "spe": 30
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 212,
+   "evolvesFrom": 410,
+   "evolutions": [],
+   "height": 13,
+   "weight": 1495,
+   "habitat": null,
+   "flavor": "When they lined up side by side, no foe could break through. They shielded their young in that way."
+  },
+  {
+   "id": 412,
+   "slug": "burmy",
+   "name": "Burmy",
+   "genus": "Bagworm Pokémon",
+   "types": [
+    "bug"
+   ],
+   "stats": {
+    "hp": 40,
+    "atk": 29,
+    "def": 45,
+    "spa": 29,
+    "spd": 45,
+    "spe": 36
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 213,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 413,
+     "kind": "level",
+     "level": 20
+    },
+    {
+     "to": 414,
+     "kind": "level",
+     "level": 20
+    }
+   ],
+   "height": 2,
+   "weight": 34,
+   "habitat": null,
+   "flavor": "To shelter itself from cold, wintry winds, it covers itself with a cloak made of twigs and leaves."
+  },
+  {
+   "id": 413,
+   "slug": "wormadam",
+   "name": "Wormadam",
+   "genus": "Bagworm Pokémon",
+   "types": [
+    "bug",
+    "grass"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 59,
+    "def": 85,
+    "spa": 79,
+    "spd": 105,
+    "spe": 36
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 213,
+   "evolvesFrom": 412,
+   "evolutions": [],
+   "height": 5,
+   "weight": 65,
+   "habitat": null,
+   "flavor": "Its appearance changes depending on where it evolved. The materials on hand become a part of its body."
+  },
+  {
+   "id": 414,
+   "slug": "mothim",
+   "name": "Mothim",
+   "genus": "Moth Pokémon",
+   "types": [
+    "bug",
+    "flying"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 94,
+    "def": 50,
+    "spa": 94,
+    "spd": 50,
+    "spe": 66
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 213,
+   "evolvesFrom": 412,
+   "evolutions": [],
+   "height": 9,
+   "weight": 233,
+   "habitat": null,
+   "flavor": "It loves the honey of flowers and steals honey collected by Combee."
+  },
+  {
+   "id": 415,
+   "slug": "combee",
+   "name": "Combee",
+   "genus": "Tiny Bee Pokémon",
+   "types": [
+    "bug",
+    "flying"
+   ],
+   "stats": {
+    "hp": 30,
+    "atk": 30,
+    "def": 42,
+    "spa": 30,
+    "spd": 42,
+    "spe": 70
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 214,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 416,
+     "kind": "level",
+     "level": 21
+    }
+   ],
+   "height": 3,
+   "weight": 55,
+   "habitat": null,
+   "flavor": "The trio is together from birth. It constantly gathers honey from flowers to please Vespiquen."
+  },
+  {
+   "id": 416,
+   "slug": "vespiquen",
+   "name": "Vespiquen",
+   "genus": "Beehive Pokémon",
+   "types": [
+    "bug",
+    "flying"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 80,
+    "def": 102,
+    "spa": 80,
+    "spd": 102,
+    "spe": 40
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 214,
+   "evolvesFrom": 415,
+   "evolutions": [],
+   "height": 12,
+   "weight": 385,
+   "habitat": null,
+   "flavor": "It houses its colony in cells in its body and releases various pheromones to make those grubs do its bidding."
+  },
+  {
+   "id": 417,
+   "slug": "pachirisu",
+   "name": "Pachirisu",
+   "genus": "EleSquirrel Pokémon",
+   "types": [
+    "electric"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 45,
+    "def": 70,
+    "spa": 45,
+    "spd": 90,
+    "spe": 95
+   },
+   "captureRate": 200,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 215,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 4,
+   "weight": 39,
+   "habitat": null,
+   "flavor": "It makes fur balls that crackle with static electricity. It stores them with berries in tree holes."
+  },
+  {
+   "id": 418,
+   "slug": "buizel",
+   "name": "Buizel",
+   "genus": "Sea Weasel Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 55,
+    "atk": 65,
+    "def": 35,
+    "spa": 60,
+    "spd": 30,
+    "spe": 85
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 216,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 419,
+     "kind": "level",
+     "level": 26
+    }
+   ],
+   "height": 7,
+   "weight": 295,
+   "habitat": null,
+   "flavor": "It swims by rotating its two tails like a screw. When it dives, its flotation sac collapses."
+  },
+  {
+   "id": 419,
+   "slug": "floatzel",
+   "name": "Floatzel",
+   "genus": "Sea Weasel Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 85,
+    "atk": 105,
+    "def": 55,
+    "spa": 85,
+    "spd": 50,
+    "spe": 115
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 216,
+   "evolvesFrom": 418,
+   "evolutions": [],
+   "height": 11,
+   "weight": 335,
+   "habitat": null,
+   "flavor": "It floats using its well-developed flotation sac. It assists in the rescues of drowning people."
+  },
+  {
+   "id": 420,
+   "slug": "cherubi",
+   "name": "Cherubi",
+   "genus": "Cherry Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 45,
+    "atk": 35,
+    "def": 45,
+    "spa": 62,
+    "spd": 53,
+    "spe": 35
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 217,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 421,
+     "kind": "level",
+     "level": 25
+    }
+   ],
+   "height": 4,
+   "weight": 33,
+   "habitat": null,
+   "flavor": "Sunlight colors it red. When the small ball is drained of nutrients, it shrivels to herald evolution."
+  },
+  {
+   "id": 421,
+   "slug": "cherrim",
+   "name": "Cherrim",
+   "genus": "Blossom Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 60,
+    "def": 70,
+    "spa": 87,
+    "spd": 78,
+    "spe": 85
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 217,
+   "evolvesFrom": 420,
+   "evolutions": [],
+   "height": 5,
+   "weight": 93,
+   "habitat": null,
+   "flavor": "During times of strong sunlight, its bud blooms, its petals open fully, and it becomes very active."
+  },
+  {
+   "id": 422,
+   "slug": "shellos",
+   "name": "Shellos",
+   "genus": "Sea Slug Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 76,
+    "atk": 48,
+    "def": 48,
+    "spa": 57,
+    "spd": 62,
+    "spe": 34
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 218,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 423,
+     "kind": "level",
+     "level": 30
+    }
+   ],
+   "height": 3,
+   "weight": 63,
+   "habitat": null,
+   "flavor": "Beware of pushing strongly on its squishy body, as it makes a mysterious purple fluid ooze out."
+  },
+  {
+   "id": 423,
+   "slug": "gastrodon",
+   "name": "Gastrodon",
+   "genus": "Sea Slug Pokémon",
+   "types": [
+    "water",
+    "ground"
+   ],
+   "stats": {
+    "hp": 111,
+    "atk": 83,
+    "def": 68,
+    "spa": 92,
+    "spd": 82,
+    "spe": 39
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 218,
+   "evolvesFrom": 422,
+   "evolutions": [],
+   "height": 9,
+   "weight": 299,
+   "habitat": null,
+   "flavor": "When its natural enemy attacks, it oozes purple fluid and escapes."
+  },
+  {
+   "id": 424,
+   "slug": "ambipom",
+   "name": "Ambipom",
+   "genus": "Long Tail Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 100,
+    "def": 66,
+    "spa": 60,
+    "spd": 66,
+    "spe": 115
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 93,
+   "evolvesFrom": 190,
+   "evolutions": [],
+   "height": 12,
+   "weight": 203,
+   "habitat": null,
+   "flavor": "They work in large colonies and make rings by linking their tails, apparently in friendship."
+  },
+  {
+   "id": 425,
+   "slug": "drifloon",
+   "name": "Drifloon",
+   "genus": "Balloon Pokémon",
+   "types": [
+    "ghost",
+    "flying"
+   ],
+   "stats": {
+    "hp": 90,
+    "atk": 50,
+    "def": 34,
+    "spa": 60,
+    "spd": 44,
+    "spe": 70
+   },
+   "captureRate": 125,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 219,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 426,
+     "kind": "level",
+     "level": 28
+    }
+   ],
+   "height": 4,
+   "weight": 12,
+   "habitat": null,
+   "flavor": "A Pokémon formed by the spirits of people and Pokémon. It loves damp, humid seasons."
+  },
+  {
+   "id": 426,
+   "slug": "drifblim",
+   "name": "Drifblim",
+   "genus": "Blimp Pokémon",
+   "types": [
+    "ghost",
+    "flying"
+   ],
+   "stats": {
+    "hp": 150,
+    "atk": 80,
+    "def": 44,
+    "spa": 90,
+    "spd": 54,
+    "spe": 80
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 219,
+   "evolvesFrom": 425,
+   "evolutions": [],
+   "height": 12,
+   "weight": 150,
+   "habitat": null,
+   "flavor": "It carries people and Pokémon when it flies. But since it only drifts, it can end up anywhere."
+  },
+  {
+   "id": 427,
+   "slug": "buneary",
+   "name": "Buneary",
+   "genus": "Rabbit Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 55,
+    "atk": 66,
+    "def": 44,
+    "spa": 44,
+    "spd": 56,
+    "spe": 85
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 220,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 428,
+     "kind": "friendship"
+    }
+   ],
+   "height": 4,
+   "weight": 55,
+   "habitat": null,
+   "flavor": "Its ears are always rolled up. They can be forcefully extended to shatter even a large boulder."
+  },
+  {
+   "id": 428,
+   "slug": "lopunny",
+   "name": "Lopunny",
+   "genus": "Rabbit Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 65,
+    "atk": 76,
+    "def": 84,
+    "spa": 54,
+    "spd": 96,
+    "spe": 105
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 220,
+   "evolvesFrom": 427,
+   "evolutions": [],
+   "height": 12,
+   "weight": 333,
+   "habitat": null,
+   "flavor": "Extremely cautious, it quickly bounds off when it senses danger."
+  },
+  {
+   "id": 429,
+   "slug": "mismagius",
+   "name": "Mismagius",
+   "genus": "Magical Pokémon",
+   "types": [
+    "ghost"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 60,
+    "def": 60,
+    "spa": 105,
+    "spd": 105,
+    "spe": 105
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 98,
+   "evolvesFrom": 200,
+   "evolutions": [],
+   "height": 9,
+   "weight": 44,
+   "habitat": null,
+   "flavor": "It chants incantations. While they usually torment targets, some chants bring happiness."
+  },
+  {
+   "id": 430,
+   "slug": "honchkrow",
+   "name": "Honchkrow",
+   "genus": "Big Boss Pokémon",
+   "types": [
+    "dark",
+    "flying"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 125,
+    "def": 52,
+    "spa": 105,
+    "spd": 52,
+    "spe": 71
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 97,
+   "evolvesFrom": 198,
+   "evolutions": [],
+   "height": 9,
+   "weight": 273,
+   "habitat": null,
+   "flavor": "If one utters a deep cry, many Murkrow gather quickly. For this, it is called “Summoner of Night.”"
+  },
+  {
+   "id": 431,
+   "slug": "glameow",
+   "name": "Glameow",
+   "genus": "Catty Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 49,
+    "atk": 55,
+    "def": 42,
+    "spa": 42,
+    "spd": 37,
+    "spe": 85
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 221,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 432,
+     "kind": "level",
+     "level": 38
+    }
+   ],
+   "height": 5,
+   "weight": 39,
+   "habitat": null,
+   "flavor": "It claws if displeased and purrs when affectionate. Its fickleness is very popular among some."
+  },
+  {
+   "id": 432,
+   "slug": "purugly",
+   "name": "Purugly",
+   "genus": "Tiger Cat Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 71,
+    "atk": 82,
+    "def": 64,
+    "spa": 64,
+    "spd": 59,
+    "spe": 112
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 221,
+   "evolvesFrom": 431,
+   "evolutions": [],
+   "height": 10,
+   "weight": 438,
+   "habitat": null,
+   "flavor": "It would claim another Pokémon’s nest as its own if it finds a nest sufficiently comfortable."
+  },
+  {
+   "id": 433,
+   "slug": "chingling",
+   "name": "Chingling",
+   "genus": "Bell Pokémon",
+   "types": [
+    "psychic"
+   ],
+   "stats": {
+    "hp": 45,
+    "atk": 30,
+    "def": 50,
+    "spa": 65,
+    "spd": 50,
+    "spe": 45
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 184,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 358,
+     "kind": "friendship"
+    }
+   ],
+   "height": 2,
+   "weight": 6,
+   "habitat": null,
+   "flavor": "Each time it hops, it makes a ringing sound. It deafens foes by emitting high-frequency cries."
+  },
+  {
+   "id": 434,
+   "slug": "stunky",
+   "name": "Stunky",
+   "genus": "Skunk Pokémon",
+   "types": [
+    "poison",
+    "dark"
+   ],
+   "stats": {
+    "hp": 63,
+    "atk": 63,
+    "def": 47,
+    "spa": 41,
+    "spd": 41,
+    "spe": 74
+   },
+   "captureRate": 225,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 223,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 435,
+     "kind": "level",
+     "level": 34
+    }
+   ],
+   "height": 4,
+   "weight": 192,
+   "habitat": null,
+   "flavor": "It sprays a foul fluid from its rear. Its stench spreads over a mile radius, driving Pokémon away."
+  },
+  {
+   "id": 435,
+   "slug": "skuntank",
+   "name": "Skuntank",
+   "genus": "Skunk Pokémon",
+   "types": [
+    "poison",
+    "dark"
+   ],
+   "stats": {
+    "hp": 103,
+    "atk": 93,
+    "def": 67,
+    "spa": 71,
+    "spd": 61,
+    "spe": 84
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 223,
+   "evolvesFrom": 434,
+   "evolutions": [],
+   "height": 10,
+   "weight": 380,
+   "habitat": null,
+   "flavor": "It sprays a vile-smelling fluid from the tip of its tail to attack. Its range is over 160 feet."
+  },
+  {
+   "id": 436,
+   "slug": "bronzor",
+   "name": "Bronzor",
+   "genus": "Bronze Pokémon",
+   "types": [
+    "steel",
+    "psychic"
+   ],
+   "stats": {
+    "hp": 57,
+    "atk": 24,
+    "def": 86,
+    "spa": 24,
+    "spd": 86,
+    "spe": 23
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 224,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 437,
+     "kind": "level",
+     "level": 33
+    }
+   ],
+   "height": 5,
+   "weight": 605,
+   "habitat": null,
+   "flavor": "Ancient people believed that the pattern on Bronzor’s back contained a mysterious power."
+  },
+  {
+   "id": 437,
+   "slug": "bronzong",
+   "name": "Bronzong",
+   "genus": "Bronze Bell Pokémon",
+   "types": [
+    "steel",
+    "psychic"
+   ],
+   "stats": {
+    "hp": 67,
+    "atk": 89,
+    "def": 116,
+    "spa": 79,
+    "spd": 116,
+    "spe": 33
+   },
+   "captureRate": 90,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 224,
+   "evolvesFrom": 436,
+   "evolutions": [],
+   "height": 13,
+   "weight": 1870,
+   "habitat": null,
+   "flavor": "In ages past, this Pokémon was revered as a bringer of rain. It was found buried in the ground."
+  },
+  {
+   "id": 438,
+   "slug": "bonsly",
+   "name": "Bonsly",
+   "genus": "Bonsai Pokémon",
+   "types": [
+    "rock"
+   ],
+   "stats": {
+    "hp": 50,
+    "atk": 80,
+    "def": 95,
+    "spa": 10,
+    "spd": 45,
+    "spe": 10
+   },
+   "captureRate": 255,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 91,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 185,
+     "kind": "other"
+    }
+   ],
+   "height": 5,
+   "weight": 150,
+   "habitat": null,
+   "flavor": "It prefers arid environments. It leaks water from its eyes to adjust its body’s fluid levels."
+  },
+  {
+   "id": 439,
+   "slug": "mime-jr",
+   "name": "Mime Jr.",
+   "genus": "Mime Pokémon",
+   "types": [
+    "psychic",
+    "fairy"
+   ],
+   "stats": {
+    "hp": 20,
+    "atk": 25,
+    "def": 45,
+    "spa": 70,
+    "spd": 90,
+    "spe": 60
+   },
+   "captureRate": 145,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 57,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 122,
+     "kind": "other"
+    }
+   ],
+   "height": 6,
+   "weight": 130,
+   "habitat": null,
+   "flavor": "In an attempt to confuse its enemy, it mimics the enemy’s movements. Then it wastes no time in making itself scarce!"
+  },
+  {
+   "id": 440,
+   "slug": "happiny",
+   "name": "Happiny",
+   "genus": "Playhouse Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 5,
+    "def": 5,
+    "spa": 15,
+    "spd": 65,
+    "spe": 30
+   },
+   "captureRate": 130,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 51,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 113,
+     "kind": "item",
+     "item": "oval-stone"
+    }
+   ],
+   "height": 6,
+   "weight": 244,
+   "habitat": null,
+   "flavor": "It carries a round, egg-shaped rock in its belly pouch and gives the rock to its friends."
+  },
+  {
+   "id": 441,
+   "slug": "chatot",
+   "name": "Chatot",
+   "genus": "Music Note Pokémon",
+   "types": [
+    "normal",
+    "flying"
+   ],
+   "stats": {
+    "hp": 76,
+    "atk": 65,
+    "def": 45,
+    "spa": 92,
+    "spd": 42,
+    "spe": 91
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 228,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 5,
+   "weight": 19,
+   "habitat": null,
+   "flavor": "It mimics the cries of other Pokémon to trick them into thinking it’s one of them. This way they won’t attack it."
+  },
+  {
+   "id": 442,
+   "slug": "spiritomb",
+   "name": "Spiritomb",
+   "genus": "Forbidden Pokémon",
+   "types": [
+    "ghost",
+    "dark"
+   ],
+   "stats": {
+    "hp": 50,
+    "atk": 92,
+    "def": 108,
+    "spa": 92,
+    "spd": 108,
+    "spe": 35
+   },
+   "captureRate": 100,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 229,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 10,
+   "weight": 1080,
+   "habitat": null,
+   "flavor": "A Pokémon that was formed by 108 spirits. It is bound to a fissure in an odd keystone."
+  },
+  {
+   "id": 443,
+   "slug": "gible",
+   "name": "Gible",
+   "genus": "Land Shark Pokémon",
+   "types": [
+    "dragon",
+    "ground"
+   ],
+   "stats": {
+    "hp": 58,
+    "atk": 70,
+    "def": 45,
+    "spa": 40,
+    "spd": 45,
+    "spe": 42
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 230,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 444,
+     "kind": "level",
+     "level": 24
+    }
+   ],
+   "height": 7,
+   "weight": 205,
+   "habitat": null,
+   "flavor": "It nests in horizontal holes warmed by geothermal heat. Foes who get too close can expect to be pounced on and bitten."
+  },
+  {
+   "id": 444,
+   "slug": "gabite",
+   "name": "Gabite",
+   "genus": "Cave Pokémon",
+   "types": [
+    "dragon",
+    "ground"
+   ],
+   "stats": {
+    "hp": 68,
+    "atk": 90,
+    "def": 65,
+    "spa": 50,
+    "spd": 55,
+    "spe": 82
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 230,
+   "evolvesFrom": 443,
+   "evolutions": [
+    {
+     "to": 445,
+     "kind": "level",
+     "level": 48
+    }
+   ],
+   "height": 14,
+   "weight": 560,
+   "habitat": null,
+   "flavor": "It loves sparkly things. It seeks treasures in caves and hoards the loot in its nest."
+  },
+  {
+   "id": 445,
+   "slug": "garchomp",
+   "name": "Garchomp",
+   "genus": "Mach Pokémon",
+   "types": [
+    "dragon",
+    "ground"
+   ],
+   "stats": {
+    "hp": 108,
+    "atk": 130,
+    "def": 95,
+    "spa": 80,
+    "spd": 85,
+    "spe": 102
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 230,
+   "evolvesFrom": 444,
+   "evolutions": [],
+   "height": 19,
+   "weight": 950,
+   "habitat": null,
+   "flavor": "When it folds up its body and extends its wings, it looks like a jet plane. It flies at sonic speed."
+  },
+  {
+   "id": 446,
+   "slug": "munchlax",
+   "name": "Munchlax",
+   "genus": "Big Eater Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 135,
+    "atk": 85,
+    "def": 40,
+    "spa": 40,
+    "spd": 85,
+    "spe": 5
+   },
+   "captureRate": 50,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 72,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 143,
+     "kind": "friendship"
+    }
+   ],
+   "height": 6,
+   "weight": 1050,
+   "habitat": null,
+   "flavor": "It hides food under its long body hair. However, it forgets it has hidden the food."
+  },
+  {
+   "id": 447,
+   "slug": "riolu",
+   "name": "Riolu",
+   "genus": "Emanation Pokémon",
+   "types": [
+    "fighting"
+   ],
+   "stats": {
+    "hp": 40,
+    "atk": 70,
+    "def": 40,
+    "spa": 35,
+    "spd": 40,
+    "spe": 60
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 232,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 448,
+     "kind": "friendship"
+    }
+   ],
+   "height": 7,
+   "weight": 202,
+   "habitat": null,
+   "flavor": "It uses the shapes of auras, which change according to emotion, to communicate with others."
+  },
+  {
+   "id": 448,
+   "slug": "lucario",
+   "name": "Lucario",
+   "genus": "Aura Pokémon",
+   "types": [
+    "fighting",
+    "steel"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 110,
+    "def": 70,
+    "spa": 115,
+    "spd": 70,
+    "spe": 90
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 232,
+   "evolvesFrom": 447,
+   "evolutions": [],
+   "height": 12,
+   "weight": 540,
+   "habitat": null,
+   "flavor": "By catching the aura emanating from others, it can read their thoughts and movements."
+  },
+  {
+   "id": 449,
+   "slug": "hippopotas",
+   "name": "Hippopotas",
+   "genus": "Hippo Pokémon",
+   "types": [
+    "ground"
+   ],
+   "stats": {
+    "hp": 68,
+    "atk": 72,
+    "def": 78,
+    "spa": 38,
+    "spd": 42,
+    "spe": 32
+   },
+   "captureRate": 140,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 233,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 450,
+     "kind": "level",
+     "level": 34
+    }
+   ],
+   "height": 8,
+   "weight": 495,
+   "habitat": null,
+   "flavor": "It lives in arid places. Instead of perspiration, it expels grainy sand from its body."
+  },
+  {
+   "id": 450,
+   "slug": "hippowdon",
+   "name": "Hippowdon",
+   "genus": "Heavyweight Pokémon",
+   "types": [
+    "ground"
+   ],
+   "stats": {
+    "hp": 108,
+    "atk": 112,
+    "def": 118,
+    "spa": 68,
+    "spd": 72,
+    "spe": 47
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 233,
+   "evolvesFrom": 449,
+   "evolutions": [],
+   "height": 20,
+   "weight": 3000,
+   "habitat": null,
+   "flavor": "It brandishes its gaping mouth in a display of fearsome strength. It raises vast quantities of sand while attacking."
+  },
+  {
+   "id": 451,
+   "slug": "skorupi",
+   "name": "Skorupi",
+   "genus": "Scorpion Pokémon",
+   "types": [
+    "poison",
+    "bug"
+   ],
+   "stats": {
+    "hp": 40,
+    "atk": 50,
+    "def": 90,
+    "spa": 30,
+    "spd": 55,
+    "spe": 65
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 234,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 452,
+     "kind": "level",
+     "level": 40
+    }
+   ],
+   "height": 8,
+   "weight": 120,
+   "habitat": null,
+   "flavor": "It grips prey with its tail claws and injects poison. It tenaciously hangs on until the poison takes."
+  },
+  {
+   "id": 452,
+   "slug": "drapion",
+   "name": "Drapion",
+   "genus": "Ogre Scorpion Pokémon",
+   "types": [
+    "poison",
+    "dark"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 90,
+    "def": 110,
+    "spa": 60,
+    "spd": 75,
+    "spe": 95
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 234,
+   "evolvesFrom": 451,
+   "evolutions": [],
+   "height": 13,
+   "weight": 615,
+   "habitat": null,
+   "flavor": "It takes pride in its strength. Even though it can tear foes apart, it finishes them off with powerful poison."
+  },
+  {
+   "id": 453,
+   "slug": "croagunk",
+   "name": "Croagunk",
+   "genus": "Toxic Mouth Pokémon",
+   "types": [
+    "poison",
+    "fighting"
+   ],
+   "stats": {
+    "hp": 48,
+    "atk": 61,
+    "def": 40,
+    "spa": 61,
+    "spd": 40,
+    "spe": 50
+   },
+   "captureRate": 140,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 235,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 454,
+     "kind": "level",
+     "level": 37
+    }
+   ],
+   "height": 7,
+   "weight": 230,
+   "habitat": null,
+   "flavor": "Its cheeks hold poison sacs. It tries to catch foes off guard to jab them with toxic fingers."
+  },
+  {
+   "id": 454,
+   "slug": "toxicroak",
+   "name": "Toxicroak",
+   "genus": "Toxic Mouth Pokémon",
+   "types": [
+    "poison",
+    "fighting"
+   ],
+   "stats": {
+    "hp": 83,
+    "atk": 106,
+    "def": 65,
+    "spa": 86,
+    "spd": 65,
+    "spe": 85
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 235,
+   "evolvesFrom": 453,
+   "evolutions": [],
+   "height": 13,
+   "weight": 444,
+   "habitat": null,
+   "flavor": "It has a poison sac at its throat. When it croaks, the stored poison is churned for greater potency."
+  },
+  {
+   "id": 455,
+   "slug": "carnivine",
+   "name": "Carnivine",
+   "genus": "Bug Catcher Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 74,
+    "atk": 100,
+    "def": 72,
+    "spa": 90,
+    "spd": 72,
+    "spe": 46
+   },
+   "captureRate": 200,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 236,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 14,
+   "weight": 270,
+   "habitat": null,
+   "flavor": "It attracts prey with its sweet-smelling saliva, then chomps down. It takes a whole day to eat prey."
+  },
+  {
+   "id": 456,
+   "slug": "finneon",
+   "name": "Finneon",
+   "genus": "Wing Fish Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 49,
+    "atk": 49,
+    "def": 56,
+    "spa": 49,
+    "spd": 61,
+    "spe": 66
+   },
+   "captureRate": 190,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 237,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 457,
+     "kind": "level",
+     "level": 31
+    }
+   ],
+   "height": 4,
+   "weight": 70,
+   "habitat": null,
+   "flavor": "The line running down its side can store sunlight. It shines vividly at night."
+  },
+  {
+   "id": 457,
+   "slug": "lumineon",
+   "name": "Lumineon",
+   "genus": "Neon Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 69,
+    "atk": 69,
+    "def": 76,
+    "spa": 69,
+    "spd": 86,
+    "spe": 91
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 237,
+   "evolvesFrom": 456,
+   "evolutions": [],
+   "height": 12,
+   "weight": 240,
+   "habitat": null,
+   "flavor": "It lives on the deep-sea floor. It attracts prey by flashing the patterns on its four tail fins."
+  },
+  {
+   "id": 458,
+   "slug": "mantyke",
+   "name": "Mantyke",
+   "genus": "Kite Pokémon",
+   "types": [
+    "water",
+    "flying"
+   ],
+   "stats": {
+    "hp": 45,
+    "atk": 20,
+    "def": 50,
+    "spa": 60,
+    "spd": 120,
+    "spe": 50
+   },
+   "captureRate": 25,
+   "legendary": false,
+   "mythical": false,
+   "baby": true,
+   "family": 116,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 226,
+     "kind": "other"
+    }
+   ],
+   "height": 10,
+   "weight": 650,
+   "habitat": null,
+   "flavor": "The pattern on its back varies by region. It often swims in a school of Remoraid."
+  },
+  {
+   "id": 459,
+   "slug": "snover",
+   "name": "Snover",
+   "genus": "Frost Tree Pokémon",
+   "types": [
+    "grass",
+    "ice"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 62,
+    "def": 50,
+    "spa": 62,
+    "spd": 60,
+    "spe": 40
+   },
+   "captureRate": 120,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 239,
+   "evolvesFrom": null,
+   "evolutions": [
+    {
+     "to": 460,
+     "kind": "level",
+     "level": 40
+    }
+   ],
+   "height": 10,
+   "weight": 505,
+   "habitat": null,
+   "flavor": "During cold seasons, it migrates to the mountain’s lower reaches. It returns to the snow-covered summit in the spring."
+  },
+  {
+   "id": 460,
+   "slug": "abomasnow",
+   "name": "Abomasnow",
+   "genus": "Frost Tree Pokémon",
+   "types": [
+    "grass",
+    "ice"
+   ],
+   "stats": {
+    "hp": 90,
+    "atk": 92,
+    "def": 75,
+    "spa": 92,
+    "spd": 85,
+    "spe": 60
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 239,
+   "evolvesFrom": 459,
+   "evolutions": [],
+   "height": 22,
+   "weight": 1355,
+   "habitat": null,
+   "flavor": "It blankets wide areas in snow by whipping up blizzards. It is also known as “The Ice Monster.”"
+  },
+  {
+   "id": 461,
+   "slug": "weavile",
+   "name": "Weavile",
+   "genus": "Sharp Claw Pokémon",
+   "types": [
+    "dark",
+    "ice"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 120,
+    "def": 65,
+    "spa": 45,
+    "spd": 85,
+    "spe": 125
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 109,
+   "evolvesFrom": 215,
+   "evolutions": [],
+   "height": 11,
+   "weight": 340,
+   "habitat": null,
+   "flavor": "It lives in snowy regions. It carves patterns in trees with its claws as a signal to others."
+  },
+  {
+   "id": 462,
+   "slug": "magnezone",
+   "name": "Magnezone",
+   "genus": "Magnet Area Pokémon",
+   "types": [
+    "electric",
+    "steel"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 70,
+    "def": 115,
+    "spa": 130,
+    "spd": 90,
+    "spe": 60
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 34,
+   "evolvesFrom": 82,
+   "evolutions": [],
+   "height": 12,
+   "weight": 1800,
+   "habitat": null,
+   "flavor": "Sometimes the magnetism emitted by Magnezone is too strong, making them attract each other so they cannot move."
+  },
+  {
+   "id": 463,
+   "slug": "lickilicky",
+   "name": "Lickilicky",
+   "genus": "Licking Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 110,
+    "atk": 85,
+    "def": 95,
+    "spa": 80,
+    "spd": 95,
+    "spe": 50
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 48,
+   "evolvesFrom": 108,
+   "evolutions": [],
+   "height": 17,
+   "weight": 1400,
+   "habitat": null,
+   "flavor": "It wraps things with its extensible tongue. Getting too close to it will leave you soaked with drool."
+  },
+  {
+   "id": 464,
+   "slug": "rhyperior",
+   "name": "Rhyperior",
+   "genus": "Drill Pokémon",
+   "types": [
+    "ground",
+    "rock"
+   ],
+   "stats": {
+    "hp": 115,
+    "atk": 140,
+    "def": 130,
+    "spa": 55,
+    "spd": 55,
+    "spe": 40
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 50,
+   "evolvesFrom": 112,
+   "evolutions": [],
+   "height": 24,
+   "weight": 2828,
+   "habitat": null,
+   "flavor": "From holes in its palms, it fires out Geodude. Its carapace can withstand volcanic eruptions."
+  },
+  {
+   "id": 465,
+   "slug": "tangrowth",
+   "name": "Tangrowth",
+   "genus": "Vine Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 100,
+    "def": 125,
+    "spa": 110,
+    "spd": 50,
+    "spe": 50
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 52,
+   "evolvesFrom": 114,
+   "evolutions": [],
+   "height": 20,
+   "weight": 1286,
+   "habitat": null,
+   "flavor": "It ensnares prey by extending arms made of vines. Losing arms to predators does not trouble it."
+  },
+  {
+   "id": 466,
+   "slug": "electivire",
+   "name": "Electivire",
+   "genus": "Thunderbolt Pokémon",
+   "types": [
+    "electric"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 123,
+    "def": 67,
+    "spa": 95,
+    "spd": 85,
+    "spe": 95
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 60,
+   "evolvesFrom": 125,
+   "evolutions": [],
+   "height": 18,
+   "weight": 1386,
+   "habitat": null,
+   "flavor": "As its electric charge amplifies, blue sparks begin to crackle between its horns."
+  },
+  {
+   "id": 467,
+   "slug": "magmortar",
+   "name": "Magmortar",
+   "genus": "Blast Pokémon",
+   "types": [
+    "fire"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 95,
+    "def": 67,
+    "spa": 125,
+    "spd": 95,
+    "spe": 83
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 61,
+   "evolvesFrom": 126,
+   "evolutions": [],
+   "height": 16,
+   "weight": 680,
+   "habitat": null,
+   "flavor": "It blasts fireballs of over 3,600 degrees Fahrenheit from the ends of its arms. It lives in volcanic craters."
+  },
+  {
+   "id": 468,
+   "slug": "togekiss",
+   "name": "Togekiss",
+   "genus": "Jubilee Pokémon",
+   "types": [
+    "fairy",
+    "flying"
+   ],
+   "stats": {
+    "hp": 85,
+    "atk": 50,
+    "def": 95,
+    "spa": 120,
+    "spd": 115,
+    "spe": 80
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 87,
+   "evolvesFrom": 176,
+   "evolutions": [],
+   "height": 15,
+   "weight": 380,
+   "habitat": null,
+   "flavor": "As everyone knows, it visits peaceful regions, bringing them gifts of kindness and sweet blessings."
+  },
+  {
+   "id": 469,
+   "slug": "yanmega",
+   "name": "Yanmega",
+   "genus": "Ogre Darner Pokémon",
+   "types": [
+    "bug",
+    "flying"
+   ],
+   "stats": {
+    "hp": 86,
+    "atk": 76,
+    "def": 86,
+    "spa": 116,
+    "spd": 56,
+    "spe": 95
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 95,
+   "evolvesFrom": 193,
+   "evolutions": [],
+   "height": 19,
+   "weight": 515,
+   "habitat": null,
+   "flavor": "It prefers to battle by biting apart foes’ heads instantly while flying by at high speed."
+  },
+  {
+   "id": 470,
+   "slug": "leafeon",
+   "name": "Leafeon",
+   "genus": "Verdant Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 65,
+    "atk": 110,
+    "def": 130,
+    "spa": 60,
+    "spd": 65,
+    "spe": 95
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 67,
+   "evolvesFrom": 133,
+   "evolutions": [],
+   "height": 10,
+   "weight": 255,
+   "habitat": null,
+   "flavor": "When you see Leafeon asleep in a patch of sunshine, you’ll know it is using photosynthesis to produce clean air."
+  },
+  {
+   "id": 471,
+   "slug": "glaceon",
+   "name": "Glaceon",
+   "genus": "Fresh Snow Pokémon",
+   "types": [
+    "ice"
+   ],
+   "stats": {
+    "hp": 65,
+    "atk": 60,
+    "def": 110,
+    "spa": 130,
+    "spd": 95,
+    "spe": 65
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 67,
+   "evolvesFrom": 133,
+   "evolutions": [],
+   "height": 8,
+   "weight": 259,
+   "habitat": null,
+   "flavor": "By controlling its body heat, it can freeze the atmosphere around it to make a diamond-dust flurry."
+  },
+  {
+   "id": 472,
+   "slug": "gliscor",
+   "name": "Gliscor",
+   "genus": "Fang Scorpion Pokémon",
+   "types": [
+    "ground",
+    "flying"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 95,
+    "def": 125,
+    "spa": 45,
+    "spd": 75,
+    "spe": 95
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 104,
+   "evolvesFrom": 207,
+   "evolutions": [],
+   "height": 20,
+   "weight": 425,
+   "habitat": null,
+   "flavor": "It observes prey while hanging inverted from branches. When the chance presents itself, it swoops!"
+  },
+  {
+   "id": 473,
+   "slug": "mamoswine",
+   "name": "Mamoswine",
+   "genus": "Twin Tusk Pokémon",
+   "types": [
+    "ice",
+    "ground"
+   ],
+   "stats": {
+    "hp": 110,
+    "atk": 130,
+    "def": 80,
+    "spa": 70,
+    "spd": 60,
+    "spe": 80
+   },
+   "captureRate": 50,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 112,
+   "evolvesFrom": 221,
+   "evolutions": [],
+   "height": 25,
+   "weight": 2910,
+   "habitat": null,
+   "flavor": "A frozen Mamoswine was dug from ice dating back 10,000 years. This Pokémon has been around a long, long, long time."
+  },
+  {
+   "id": 474,
+   "slug": "porygon-z",
+   "name": "Porygon-Z",
+   "genus": "Virtual Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 85,
+    "atk": 80,
+    "def": 70,
+    "spa": 135,
+    "spd": 75,
+    "spe": 90
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 68,
+   "evolvesFrom": 233,
+   "evolutions": [],
+   "height": 9,
+   "weight": 340,
+   "habitat": null,
+   "flavor": "Additional software was installed to make it a better Pokémon. It began acting oddly, however."
+  },
+  {
+   "id": 475,
+   "slug": "gallade",
+   "name": "Gallade",
+   "genus": "Blade Pokémon",
+   "types": [
+    "psychic",
+    "fighting"
+   ],
+   "stats": {
+    "hp": 68,
+    "atk": 125,
+    "def": 65,
+    "spa": 65,
+    "spd": 115,
+    "spe": 80
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 140,
+   "evolvesFrom": 281,
+   "evolutions": [],
+   "height": 16,
+   "weight": 520,
+   "habitat": null,
+   "flavor": "Because it can sense what its foe is thinking, its attacks burst out first, fast, and fierce."
+  },
+  {
+   "id": 476,
+   "slug": "probopass",
+   "name": "Probopass",
+   "genus": "Compass Pokémon",
+   "types": [
+    "rock",
+    "steel"
+   ],
+   "stats": {
+    "hp": 60,
+    "atk": 55,
+    "def": 145,
+    "spa": 75,
+    "spd": 150,
+    "spe": 40
+   },
+   "captureRate": 60,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 147,
+   "evolvesFrom": 299,
+   "evolutions": [],
+   "height": 14,
+   "weight": 3400,
+   "habitat": null,
+   "flavor": "It exudes strong magnetism from all over. It controls three small units called Mini-Noses."
+  },
+  {
+   "id": 477,
+   "slug": "dusknoir",
+   "name": "Dusknoir",
+   "genus": "Gripper Pokémon",
+   "types": [
+    "ghost"
+   ],
+   "stats": {
+    "hp": 45,
+    "atk": 100,
+    "def": 135,
+    "spa": 65,
+    "spd": 135,
+    "spe": 45
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 182,
+   "evolvesFrom": 356,
+   "evolutions": [],
+   "height": 22,
+   "weight": 1066,
+   "habitat": null,
+   "flavor": "It is said to take lost spirits into its pliant body and guide them home."
+  },
+  {
+   "id": 478,
+   "slug": "froslass",
+   "name": "Froslass",
+   "genus": "Snow Land Pokémon",
+   "types": [
+    "ice",
+    "ghost"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 80,
+    "def": 70,
+    "spa": 80,
+    "spd": 70,
+    "spe": 110
+   },
+   "captureRate": 75,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 186,
+   "evolvesFrom": 361,
+   "evolutions": [],
+   "height": 13,
+   "weight": 266,
+   "habitat": null,
+   "flavor": "It freezes foes with an icy breath nearly -60 degrees Fahrenheit. What seems to be its body is actually hollow."
+  },
+  {
+   "id": 479,
+   "slug": "rotom",
+   "name": "Rotom",
+   "genus": "Plasma Pokémon",
+   "types": [
+    "electric",
+    "ghost"
+   ],
+   "stats": {
+    "hp": 50,
+    "atk": 50,
+    "def": 77,
+    "spa": 95,
+    "spd": 77,
+    "spe": 91
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": false,
+   "baby": false,
+   "family": 240,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 3,
+   "weight": 3,
+   "habitat": null,
+   "flavor": "Research continues on this Pokémon, which could be the power source of a unique motor."
+  },
+  {
+   "id": 480,
+   "slug": "uxie",
+   "name": "Uxie",
+   "genus": "Knowledge Pokémon",
+   "types": [
+    "psychic"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 75,
+    "def": 130,
+    "spa": 75,
+    "spd": 130,
+    "spe": 95
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 241,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 3,
+   "weight": 3,
+   "habitat": null,
+   "flavor": "Known as “The Being of Knowledge.” It is said that it can wipe out the memory of those who see its eyes."
+  },
+  {
+   "id": 481,
+   "slug": "mesprit",
+   "name": "Mesprit",
+   "genus": "Emotion Pokémon",
+   "types": [
+    "psychic"
+   ],
+   "stats": {
+    "hp": 80,
+    "atk": 105,
+    "def": 105,
+    "spa": 105,
+    "spd": 105,
+    "spe": 80
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 242,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 3,
+   "weight": 3,
+   "habitat": null,
+   "flavor": "Known as “The Being of Emotion.” It taught humans the nobility of sorrow, pain, and joy."
+  },
+  {
+   "id": 482,
+   "slug": "azelf",
+   "name": "Azelf",
+   "genus": "Willpower Pokémon",
+   "types": [
+    "psychic"
+   ],
+   "stats": {
+    "hp": 75,
+    "atk": 125,
+    "def": 70,
+    "spa": 125,
+    "spd": 70,
+    "spe": 115
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 243,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 3,
+   "weight": 3,
+   "habitat": null,
+   "flavor": "Known as “The Being of Willpower.” It sleeps at the bottom of a lake to keep the world in balance."
+  },
+  {
+   "id": 483,
+   "slug": "dialga",
+   "name": "Dialga",
+   "genus": "Temporal Pokémon",
+   "types": [
+    "steel",
+    "dragon"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 120,
+    "def": 120,
+    "spa": 150,
+    "spd": 100,
+    "spe": 90
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 244,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 54,
+   "weight": 6830,
+   "habitat": null,
+   "flavor": "A Pokémon spoken of in legend. It is said that time began moving when Dialga was born."
+  },
+  {
+   "id": 484,
+   "slug": "palkia",
+   "name": "Palkia",
+   "genus": "Spatial Pokémon",
+   "types": [
+    "water",
+    "dragon"
+   ],
+   "stats": {
+    "hp": 90,
+    "atk": 120,
+    "def": 100,
+    "spa": 150,
+    "spd": 120,
+    "spe": 100
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 245,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 42,
+   "weight": 3360,
+   "habitat": null,
+   "flavor": "It is said to live in a gap in the spatial dimension parallel to ours. It appears in mythology."
+  },
+  {
+   "id": 485,
+   "slug": "heatran",
+   "name": "Heatran",
+   "genus": "Lava Dome Pokémon",
+   "types": [
+    "fire",
+    "steel"
+   ],
+   "stats": {
+    "hp": 91,
+    "atk": 90,
+    "def": 106,
+    "spa": 130,
+    "spd": 106,
+    "spe": 77
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 246,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 17,
+   "weight": 4300,
+   "habitat": null,
+   "flavor": "It dwells in volcanic caves. It digs in with its cross-shaped feet to crawl on ceilings and walls."
+  },
+  {
+   "id": 486,
+   "slug": "regigigas",
+   "name": "Regigigas",
+   "genus": "Colossal Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 110,
+    "atk": 160,
+    "def": 110,
+    "spa": 80,
+    "spd": 110,
+    "spe": 100
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 247,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 37,
+   "weight": 4200,
+   "habitat": null,
+   "flavor": "It is said to have made Pokémon that look like itself from a special ice mountain, rocks, and magma."
+  },
+  {
+   "id": 487,
+   "slug": "giratina",
+   "name": "Giratina",
+   "genus": "Renegade Pokémon",
+   "types": [
+    "ghost",
+    "dragon"
+   ],
+   "stats": {
+    "hp": 150,
+    "atk": 100,
+    "def": 120,
+    "spa": 100,
+    "spd": 120,
+    "spe": 90
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 248,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 45,
+   "weight": 7500,
+   "habitat": null,
+   "flavor": "This Pokémon is said to live in a world on the reverse side of ours, where common knowledge is distorted and strange."
+  },
+  {
+   "id": 488,
+   "slug": "cresselia",
+   "name": "Cresselia",
+   "genus": "Lunar Pokémon",
+   "types": [
+    "psychic"
+   ],
+   "stats": {
+    "hp": 120,
+    "atk": 70,
+    "def": 110,
+    "spa": 75,
+    "spd": 120,
+    "spe": 85
+   },
+   "captureRate": 3,
+   "legendary": true,
+   "mythical": false,
+   "baby": false,
+   "family": 249,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 15,
+   "weight": 856,
+   "habitat": null,
+   "flavor": "Shiny particles are released from its wings like a veil. It is said to represent the crescent moon."
+  },
+  {
+   "id": 489,
+   "slug": "phione",
+   "name": "Phione",
+   "genus": "Sea Drifter Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 80,
+    "atk": 80,
+    "def": 80,
+    "spa": 80,
+    "spd": 80,
+    "spe": 80
+   },
+   "captureRate": 30,
+   "legendary": false,
+   "mythical": true,
+   "baby": false,
+   "family": 250,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 4,
+   "weight": 31,
+   "habitat": null,
+   "flavor": "When the water warms, they inflate the flotation sac on their heads and drift languidly on the sea in packs."
+  },
+  {
+   "id": 490,
+   "slug": "manaphy",
+   "name": "Manaphy",
+   "genus": "Seafaring Pokémon",
+   "types": [
+    "water"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 100,
+    "def": 100,
+    "spa": 100,
+    "spd": 100,
+    "spe": 100
+   },
+   "captureRate": 3,
+   "legendary": false,
+   "mythical": true,
+   "baby": false,
+   "family": 10490,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 3,
+   "weight": 14,
+   "habitat": null,
+   "flavor": "It is born with a wondrous power that lets it bond with any kind of Pokémon."
+  },
+  {
+   "id": 491,
+   "slug": "darkrai",
+   "name": "Darkrai",
+   "genus": "Pitch-Black Pokémon",
+   "types": [
+    "dark"
+   ],
+   "stats": {
+    "hp": 70,
+    "atk": 90,
+    "def": 90,
+    "spa": 135,
+    "spd": 90,
+    "spe": 125
+   },
+   "captureRate": 3,
+   "legendary": false,
+   "mythical": true,
+   "baby": false,
+   "family": 252,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 15,
+   "weight": 505,
+   "habitat": null,
+   "flavor": "It chases people and Pokémon from its territory by causing them to experience deep, nightmarish slumbers."
+  },
+  {
+   "id": 492,
+   "slug": "shaymin",
+   "name": "Shaymin",
+   "genus": "Gratitude Pokémon",
+   "types": [
+    "grass"
+   ],
+   "stats": {
+    "hp": 100,
+    "atk": 100,
+    "def": 100,
+    "spa": 100,
+    "spd": 100,
+    "spe": 100
+   },
+   "captureRate": 45,
+   "legendary": false,
+   "mythical": true,
+   "baby": false,
+   "family": 253,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 2,
+   "weight": 21,
+   "habitat": null,
+   "flavor": "It can dissolve toxins in the air to instantly transform ruined land into a lush field of flowers."
+  },
+  {
+   "id": 493,
+   "slug": "arceus",
+   "name": "Arceus",
+   "genus": "Alpha Pokémon",
+   "types": [
+    "normal"
+   ],
+   "stats": {
+    "hp": 120,
+    "atk": 120,
+    "def": 120,
+    "spa": 120,
+    "spd": 120,
+    "spe": 120
+   },
+   "captureRate": 3,
+   "legendary": false,
+   "mythical": true,
+   "baby": false,
+   "family": 254,
+   "evolvesFrom": null,
+   "evolutions": [],
+   "height": 32,
+   "weight": 3200,
+   "habitat": null,
+   "flavor": "According to the legends of Sinnoh, this Pokémon emerged from an egg and shaped all there is in this world."
+  }
+ ]
+}

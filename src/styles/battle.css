@@ -173,6 +173,20 @@
     border-color: rgba(170, 196, 240, 0.4);
 }
 .badge-case-johto .label { color: #b9cdf5; }
+.badge-case-hoenn {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 40%),
+        linear-gradient(160deg, #1f3a3a, #12201f);
+    border-color: rgba(120, 220, 190, 0.4);
+}
+.badge-case-hoenn .label { color: #a8ecd6; }
+.badge-case-sinnoh {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 40%),
+        linear-gradient(160deg, #2f2648, #18142a);
+    border-color: rgba(190, 170, 255, 0.4);
+}
+.badge-case-sinnoh .label { color: #d2c6ff; }
 
 /* --- Region switch (Gyms, League) and the locked-region banner -------------------------- */
 
@@ -198,6 +212,8 @@
     transition: background-color .2s, color .2s, box-shadow .2s;
 }
 .region-johto { --rc: #e8c25a; }
+.region-hoenn { --rc: #5fd6b0; }
+.region-sinnoh { --rc: #a993ff; }
 .region-tab .i { grid-row: 1 / 3; width: 20px; height: 20px; color: var(--rc); }
 .region-tab b { font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.15; }
 .region-tab small { font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; opacity: .85; white-space: nowrap; }
@@ -1617,8 +1633,8 @@ html.arena-open { overflow: hidden; }
     .mode-body { padding: 14px 12px 14px 0; }
     .diff-seg { width: 100%; }
     .diff-opt { flex: 1; min-width: 0; padding: 6px 4px; }
-    .region-switch { width: 100%; }
-    .region-tab { flex: 1; min-width: 0; padding: 6px 10px; }
+    .region-switch { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .region-tab { min-width: 0; padding: 6px 10px; }
 
     .friend-grid { grid-template-columns: 1fr; }
 

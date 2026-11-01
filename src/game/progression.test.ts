@@ -147,8 +147,8 @@ describe('evolution', () => {
     const save = defaultSave();
     save.cards[cardKey(133)] = { level: 1, copies: 1, obtainedAt: 0 }; // Eevee
     const options = evolutionOptions(save, cardKey(133));
-    // Vaporeon/Jolteon/Flareon need stones; Espeon/Umbreon (Johto) need friendship, i.e. a level here.
-    expect(options.map(o => o.to).sort()).toEqual([134, 135, 136, 196, 197]);
+    // Vaporeon/Jolteon/Flareon need stones; Espeon/Umbreon (Johto), Leafeon/Glaceon (Sinnoh) need a level here.
+    expect(options.map(o => o.to).sort()).toEqual([134, 135, 136, 196, 197, 470, 471]); // + Leafeon, Glaceon (Sinnoh)
     expect(options.filter(o => o.to <= 151).every(o => o.missing.item)).toBe(true);
     expect(options.filter(o => o.to > 151).every(o => o.missing.level && !o.item)).toBe(true);
     save.items['fire-stone'] = 1;

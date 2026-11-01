@@ -38,6 +38,8 @@ describe('released saves', () => {
         expect(save.league).toMatchObject(original.league);
         expect(save.stats).toMatchObject(original.stats);
         expect(save.starter).toBe(original.starter);
+        expect(save.tower).toMatchObject(original.tower ?? {});
+        expect(save.hunt).toMatchObject(original.hunt ?? {});
       });
 
       it('upgrades to the current version and stays stable when loaded again', () => {
@@ -63,11 +65,11 @@ describe('saves from a newer version of the app', () => {
       ...normalizeSave({}),
       v: SAVE_VERSION + 1,
       contests: { ribbons: ['cool'] },
-      league: { runs: 1, best: 0, titles: 0, hoenn: { titles: 2 } },
+      league: { runs: 1, best: 0, titles: 0, kalos: { titles: 2 } },
     };
     const loaded = normalizeSave(structuredClone(future)) as SaveData & { contests?: unknown };
     expect(loaded.contests).toEqual({ ribbons: ['cool'] });
-    expect((loaded.league as unknown as { hoenn: unknown }).hoenn).toEqual({ titles: 2 });
+    expect((loaded.league as unknown as { kalos: unknown }).kalos).toEqual({ titles: 2 });
     expect(loaded.v).toBe(SAVE_VERSION + 1);
   });
 

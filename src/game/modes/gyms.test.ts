@@ -108,7 +108,7 @@ describe('johto gyms', () => {
     expect(regionBadges(gyms, 'kanto')).toBe(8);
     expect(regionBadges(gyms, 'johto')).toBe(1);
     gyms.badges.push(...JOHTO_BADGES.slice(1));
-    expect(nextGym(gyms)).toBeNull();
+    expect(nextGym(gyms)?.id).toBe('roxanne'); // then Hoenn
   });
 
   it('gives the documented first-win rewards, then rematch rewards', () => {

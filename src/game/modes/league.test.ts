@@ -4,7 +4,7 @@ import ptModes from '../../i18n/pt/modes';
 import { defaultSave, normalizeSave } from '../../state/save';
 import { JOHTO_BADGES } from './gyms';
 import {
-  type DuelResult, abandonRun, buildBracket, canEnter, championBoss, counterpartStarter, duelInfo, JOHTO_CHAMPION, JOHTO_ELITE_FOUR,
+  type DuelResult, abandonRun, buildBracket, canEnter, championBoss, duelInfo, firstTitleStarter, JOHTO_CHAMPION, JOHTO_ELITE_FOUR,
   JOHTO_LEAGUE_FEE, LEAGUE_FEE, leagueRecord, MAX_BONUS, placementRewards, recordDuel, startRun, titleBonus,
 } from './league';
 
@@ -163,8 +163,13 @@ describe('johto league', () => {
   });
 
   it('gives the shiny counterpart starter on the first Johto title only', () => {
-    expect([1, 4, 7, 152, 155, 158].map(counterpartStarter)).toEqual([152, 155, 158, 1, 4, 7]);
-    expect(counterpartStarter(null)).toBeNull();
+    const johto = (id: number) => firstTitleStarter(id, 'johto');
+    expect([1, 4, 7, 152, 155, 158].map(johto)).toEqual([152, 155, 158, 1, 4, 7]);
+    expect(firstTitleStarter(null, 'johto')).toBeNull();
+    expect(firstTitleStarter(4, 'kanto')).toBe(4);
+    // Hoenn and Sinnoh: their starter of your type; your own (a Hoenn starter in Hoenn) becomes Kanto's.
+    expect([1, 4, 7, 255].map(id => firstTitleStarter(id, 'hoenn'))).toEqual([252, 255, 258, 4]);
+    expect([152, 255, 390].map(id => firstTitleStarter(id, 'sinnoh'))).toEqual([387, 390, 4]);
     for (const [starter, prize] of [[1, 152], [4, 155], [7, 158], [152, 1], [155, 4], [158, 7]]) {
       const save = johtoSave(starter);
       const team = [{ id: 249, level: 90 }];

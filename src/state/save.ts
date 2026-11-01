@@ -9,13 +9,15 @@
 //   - Every release adds its save to src/state/fixtures/; the tests load all of them.
 //   - Unknown fields (written by a newer version of the app) are kept as they are, never dropped.
 
-/** Current save format version (2 = the Johto release). */
-export const SAVE_VERSION = 2;
+/** Current save format version (2 = the Johto release, 3 = Hoenn and Sinnoh). */
+export const SAVE_VERSION = 3;
 
 /** Upgrades a raw save from version `n` to `n + 1`, keyed by `n`. Steps run in order. */
 const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
   // 1 -> 2: Johto. `evolved` is new and defaults to {} (see normalizeSave); nothing to rewrite.
   1: raw => raw,
+  // 2 -> 3: Hoenn and Sinnoh. Their league progress (league.hoenn / league.sinnoh) is optional; nothing to rewrite.
+  2: raw => raw,
 };
 
 import type { CardKey } from '../game/cards';

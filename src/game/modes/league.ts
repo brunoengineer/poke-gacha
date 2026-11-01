@@ -4,18 +4,22 @@
 // The player's path is fixed by design: an elite trainer, two Elite Four members (in Elite Four order), then
 // the Champion in the final. The other matches are decided by strength, so the people you meet next really
 // did win their way to you. The run lives in the save, so leaving and coming back continues it.
-// Two leagues share the format: Kanto (Blue) and Johto (Lance, stronger and pricier). Functions take the
-// region last and default to Kanto; Johto's progress lives in `league.johto`.
+// Every region has a league in the same format: Kanto (Blue), Johto (Lance), Hoenn (Steven), Sinnoh (Cynthia), each
+// stronger and pricier than the last. Functions take the region last and default to Kanto; the other regions' progress
+// lives in `league.johto`, `league.hoenn`, `league.sinnoh`.
 
 import type { PokemonType } from '../../data/types';
 import type { SaveData } from '../../state/save';
 import type { TeamMember } from '../battle';
-import { JOHTO_UNLOCK_BADGES, STARTERS, UNLOCK_BADGES } from '../economy';
+import { STARTERS, UNLOCK_BADGES } from '../economy';
+import { REGION_IDS, type RegionId } from '../regions';
 import type { Reward } from '../rewards';
 import { generateTeam } from '../teams';
 import { hashString, randInt, seeded, shuffle } from '../rng';
 import { generateLadder, trainerTeam, ELITE_RANKS } from './competition';
 import { regionBadges } from './gyms';
+import { HOENN_CHAMPION, HOENN_ELITE_FOUR } from './hoenn';
+import { SINNOH_CHAMPION, SINNOH_ELITE_FOUR } from './sinnoh';
 
 export interface LeagueRun {
   seed: number;
@@ -31,8 +35,8 @@ export interface HallEntry {
   team: TeamMember[];
 }
 
-export type LeagueRegion = 'kanto' | 'johto';
-export const LEAGUE_REGIONS: LeagueRegion[] = ['kanto', 'johto'];
+export type LeagueRegion = RegionId;
+export const LEAGUE_REGIONS: LeagueRegion[] = REGION_IDS;
 
 /** One league's progress. */
 export interface LeagueRecord {
@@ -48,25 +52,28 @@ export interface LeagueRecord {
   duelsWon?: number;
 }
 
-/** The Kanto League's progress, plus Johto's (optional: absent until the first Johto run). */
+/** The Kanto League's progress, plus the other regions' (optional: absent until their first run). */
 export interface LeagueSave extends LeagueRecord {
   johto?: LeagueRecord;
+  hoenn?: LeagueRecord;
+  sinnoh?: LeagueRecord;
 }
 
 export const defaultLeagueSave = (): LeagueSave => ({ runs: 0, best: -1, titles: 0 });
 
-/** A league's progress, read-only (Johto's may not exist yet). */
+/** A league's progress, read-only (the later regions' may not exist yet). */
 export function leagueRecord(save: Pick<SaveData, 'league'>, region: LeagueRegion = 'kanto'): LeagueRecord {
-  return region === 'kanto' ? save.league : save.league.johto ?? defaultLeagueSave();
+  return region === 'kanto' ? save.league : save.league[region] ?? defaultLeagueSave();
 }
 
-/** A league's progress for writing (creates Johto's on first use). */
+/** A league's progress for writing (creates a later region's on first use). */
 const writable = (save: SaveData, region: LeagueRegion): LeagueRecord =>
-  (region === 'kanto' ? save.league : (save.league.johto ??= defaultLeagueSave()));
+  (region === 'kanto' ? save.league : (save.league[region] ??= defaultLeagueSave()));
 
-export const LEAGUE_FEE = 1000;
-export const JOHTO_LEAGUE_FEE = 2500;
-export const leagueFee = (region: LeagueRegion = 'kanto') => (region === 'johto' ? JOHTO_LEAGUE_FEE : LEAGUE_FEE);
+const FEES: Record<LeagueRegion, number> = { kanto: 1000, johto: 2500, hoenn: 4000, sinnoh: 6000 };
+export const LEAGUE_FEE = FEES.kanto;
+export const JOHTO_LEAGUE_FEE = FEES.johto;
+export const leagueFee = (region: LeagueRegion = 'kanto') => FEES[region];
 export const LEAGUE_DUELS = 4;
 export const TITLE_BONUS = 5;
 export const MAX_BONUS = 40;
@@ -80,6 +87,8 @@ export const CHAMPION = 4;
 const DUEL_LEVELS: Record<LeagueRegion, [number, number][]> = {
   kanto: [[60, 63], [62, 66], [64, 68], [66, 70]],
   johto: [[88, 91], [90, 94], [92, 96], [94, 98]],
+  hoenn: [[94, 96], [95, 97], [96, 98], [97, 100]],
+  sinnoh: [[96, 98], [97, 99], [98, 100], [100, 100]],
 };
 
 export const titleBonus = (titles: number) => Math.min(MAX_BONUS, titles * TITLE_BONUS);
@@ -88,18 +97,26 @@ export const duelLevels = (duel: number, bonus: number, region: LeagueRegion = '
   return [min + bonus, max + bonus];
 };
 
-/** Kanto needs its 8 badges; Johto needs its own 8 (which in turn need Kanto's). */
+/** Each league needs its region's 8 badges (which in turn need the region before). */
 export const leagueUnlocked = (save: Pick<SaveData, 'gyms'>, region: LeagueRegion = 'kanto') =>
-  (region === 'kanto' ? regionBadges(save.gyms, 'kanto') >= UNLOCK_BADGES.league
-    : regionBadges(save.gyms, 'johto') >= JOHTO_UNLOCK_BADGES.league);
+  regionBadges(save.gyms, region) >= UNLOCK_BADGES.league;
 
 const item = (id: string, amount: number): Reward => ({ kind: 'item', item: id, amount });
 
-/** Johto pays double the Kanto table, with its own Champion prize. */
+/** Prizes scale with the region: Johto pays double the Kanto table, Hoenn triple, Sinnoh quadruple. */
+const PRIZE_SCALE: Record<LeagueRegion, number> = { kanto: 1, johto: 2, hoenn: 3, sinnoh: 4 };
+/** The later regions' Champion prizes (Kanto's is in the table below). */
+const CHAMPION_PRIZES: Partial<Record<LeagueRegion, Reward[]>> = {
+  johto: [{ kind: 'coins', amount: 10000 }, item('master-ball', 1), item('rare-candy', 80)],
+  hoenn: [{ kind: 'coins', amount: 15000 }, item('master-ball', 1), item('rare-candy', 100)],
+  sinnoh: [{ kind: 'coins', amount: 20000 }, item('master-ball', 2), item('rare-candy', 120)],
+};
+
 export function placementRewards(placement: number, region: LeagueRegion = 'kanto'): Reward[] {
-  if (region === 'johto') {
-    if (placement >= CHAMPION) return [{ kind: 'coins', amount: 10000 }, item('master-ball', 1), item('rare-candy', 80)];
-    return placementRewards(placement).map(r => (r.kind === 'coins' || r.kind === 'item' ? { ...r, amount: r.amount * 2 } : r));
+  if (region !== 'kanto') {
+    if (placement >= CHAMPION) return CHAMPION_PRIZES[region]!;
+    const scale = PRIZE_SCALE[region];
+    return placementRewards(placement).map(r => (r.kind === 'coins' || r.kind === 'item' ? { ...r, amount: r.amount * scale } : r));
   }
   switch (placement) {
     case 0: return [{ kind: 'coins', amount: 250 }, item('rare-candy', 5)];
@@ -141,14 +158,17 @@ export const JOHTO_CHAMPION: LeagueBoss = {
   id: 'lance-johto', name: 'Lance', sprite: 'lance', types: ['dragon', 'flying'], roster: [130, 142, 6, 230, 149, 149],
 };
 
-export const eliteFour = (region: LeagueRegion = 'kanto') => (region === 'johto' ? JOHTO_ELITE_FOUR : ELITE_FOUR);
+const ELITE_FOURS: Record<LeagueRegion, LeagueBoss[]> = { kanto: ELITE_FOUR, johto: JOHTO_ELITE_FOUR, hoenn: HOENN_ELITE_FOUR, sinnoh: SINNOH_ELITE_FOUR };
+const CHAMPIONS: Partial<Record<LeagueRegion, LeagueBoss>> = { johto: JOHTO_CHAMPION, hoenn: HOENN_CHAMPION, sinnoh: SINNOH_CHAMPION };
+
+export const eliteFour = (region: LeagueRegion = 'kanto') => ELITE_FOURS[region];
 
 /**
  * Kanto's Champion is the rival, whose team answers the player's starter type (grass -> Charizard,
- * fire -> Blastoise, water -> Venusaur); Johto's is Lance.
+ * fire -> Blastoise, water -> Venusaur); the other regions have fixed Champions (Lance, Steven, Cynthia).
  */
 export function championBoss(starter: number | null, region: LeagueRegion = 'kanto'): LeagueBoss {
-  if (region === 'johto') return JOHTO_CHAMPION;
+  if (region !== 'kanto') return CHAMPIONS[region]!;
   const counter: Record<number, { ace: number; extra: [number, number] }> = {
     1: { ace: 6, extra: [103, 130] },
     4: { ace: 9, extra: [103, 59] },
@@ -159,10 +179,17 @@ export function championBoss(starter: number | null, region: LeagueRegion = 'kan
   return { id: 'blue', name: 'Blue', sprite: 'blue', types: ['normal', 'psychic', 'ground'], roster: [18, 65, 112, ...pickTeam.extra, pickTeam.ace] };
 }
 
-/** The same-type starter of the other region (Bulbasaur <-> Chikorita, Charmander <-> Cyndaquil, Squirtle <-> Totodile). */
-export function counterpartStarter(starter: number | null): number | null {
+/**
+ * The shiny starter a league's first title gives: your own starter in Kanto; elsewhere, that region's starter of your
+ * starter's type (Charmander -> Cyndaquil in Johto, Torchic in Hoenn, Chimchar in Sinnoh). When that is your own
+ * starter (which the Kanto title already gave), it's Kanto's of the same type instead.
+ */
+export function firstTitleStarter(starter: number | null, region: LeagueRegion = 'kanto'): number | null {
   const i = STARTERS.indexOf(starter ?? -1);
-  return i < 0 ? null : STARTERS[(i + 3) % STARTERS.length];
+  if (i < 0) return null;
+  if (region === 'kanto') return starter;
+  const prize = STARTERS[REGION_IDS.indexOf(region) * 3 + (i % 3)];
+  return prize === starter ? STARTERS[i % 3] : prize;
 }
 
 // --- Bracket ---------------------------------------------------------------------------
@@ -297,7 +324,7 @@ export type DuelResult =
 /**
  * Applies the result of the current duel (mutates the save). A loss (or draw, or forfeit) ends the run with
  * the placement of that round; winning the final crowns the player and records the team in the Hall of Fame.
- * The first title adds a shiny starter: your own in Kanto, its other-region counterpart in Johto.
+ * The first title adds a shiny starter (see firstTitleStarter).
  */
 export function recordDuel(save: SaveData, won: boolean, team: TeamMember[] = [], now = Date.now(), region: LeagueRegion = 'kanto'): DuelResult | null {
   const league = leagueRecord(save, region);
@@ -313,7 +340,7 @@ export function recordDuel(save: SaveData, won: boolean, team: TeamMember[] = []
   league.hall = [{ at: now, team: team.map(({ id, level, shiny }) => ({ id, level, shiny: !!shiny })) }, ...(league.hall ?? [])].slice(0, HALL_SIZE);
   const result = endRun(save, CHAMPION, region);
   const rewards = [...result.rewards];
-  const prize = region === 'johto' ? counterpartStarter(save.starter) : save.starter;
+  const prize = firstTitleStarter(save.starter, region);
   if (firstTitle && prize != null) rewards.push({ kind: 'card', id: prize, shiny: true });
   return { kind: 'champion', placement: CHAMPION, rewards, firstTitle };
 }

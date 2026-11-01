@@ -4,11 +4,14 @@
 
 import { LINK_CABLE, RARE_CANDY } from '../../data/items';
 import type { PokemonType } from '../../data/types';
+import { REGION_IDS, type RegionId } from '../regions';
 import type { TeamMember } from '../battle';
 import type { Reward } from '../rewards';
 import { dayKey, defaultRng, pick, shuffle, type Rng } from '../rng';
 import { generateTeam } from '../teams';
 import { DECK_SIZE, STARTERS } from '../economy';
+import { HOENN_FRIENDS } from './hoenn';
+import { SINNOH_FRIENDS } from './sinnoh';
 
 export interface TrainingRecord {
   wins: number;
@@ -55,7 +58,7 @@ export const GIFTS = [
   'kings-rock', 'metal-coat', 'dragon-scale', 'up-grade',
 ];
 
-export type FriendRegion = 'kanto' | 'johto';
+export type FriendRegion = RegionId;
 
 export interface Friend {
   id: string;
@@ -78,12 +81,12 @@ export interface Friend {
 
 /**
  * The rival's starter: the one of their region whose type beats the player's starter type (fire beats grass,
- * water beats fire, grass beats water). STARTERS lists grass, fire, water for each region.
+ * water beats fire, grass beats water). STARTERS lists grass, fire, water for each region, in region order.
  */
 export function rivalStarter(playerStarter: number | null, region: FriendRegion = 'kanto'): number {
   const i = STARTERS.indexOf(playerStarter ?? -1);
   const counter = i < 0 ? 1 : (i + 1) % 3;
-  return STARTERS[(region === 'johto' ? 3 : 0) + counter];
+  return STARTERS[REGION_IDS.indexOf(region) * 3 + counter];
 }
 
 const K = 'kanto';
@@ -112,6 +115,9 @@ export const FRIENDS: Friend[] = [
   { id: 'lyra', name: 'Lyra', sprite: 'lyra', types: ['water', 'grass'], pool: [161, 179, 187, 175, 194], signature: [183, 152], color: '#ef6f8e', region: J },
   { id: 'ethan', name: 'Ethan', sprite: 'ethan', types: ['fire', 'normal'], pool: [163, 216, 228, 179, 95, 190], signature: [155], color: '#f2a03d', region: J },
   { id: 'silver', name: 'Silver', sprite: 'silver', types: ['dark', 'poison'], pool: [215, 41, 92, 81, 63, 198], color: '#d04a4a', region: J, rival: true },
+  // Hoenn and Sinnoh (hoenn.ts, sinnoh.ts)
+  ...HOENN_FRIENDS,
+  ...SINNOH_FRIENDS,
 ];
 
 export const getFriend = (id: string) => FRIENDS.find(f => f.id === id);

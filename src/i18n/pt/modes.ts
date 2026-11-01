@@ -1,4 +1,6 @@
 // Textos em português do namespace "modes" (Competição, Liga Pokémon). Funções recebem parâmetros (contagens, nomes).
+import regions from './regions';
+
 const n = (value: number) => value.toLocaleString('pt-BR');
 
 const modes = {
@@ -149,6 +151,8 @@ const modes = {
       firstTitle: 'Primeiro título em Johto! Um inicial shiny da outra região chegou para o seu time.',
       championTitle: 'Campeão da Liga de Johto!',
     },
+    hoenn: regions.leagues.hoenn,
+    sinnoh: regions.leagues.sinnoh,
     lines: {
       lorelei: {
         intro: 'Bem-vindo à Liga. Meus Pokémon de gelo vão congelar a sua ambição.',
@@ -201,6 +205,7 @@ const modes = {
         lose: 'Incrível! Hoje, um novo Campeão nasceu em Johto. Parabéns, de coração.',
       },
 
+      ...regions.lines,
     } as Record<string, { intro: string; win: string; lose: string }>,
   },
 };

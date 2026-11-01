@@ -1,13 +1,14 @@
-// Kanto / Johto switch shared by the Gyms and League screens: a small tablist; each mode handles the clicks
+// Region switch (Kanto, Johto, Hoenn, Sinnoh) shared by the Gyms and League screens: a small tablist; each mode handles the clicks
 // (`[data-region]`) and remembers the region it shows.
 
 import { regionName } from '../../data/generations';
+import { REGION_IDS, regionGeneration, type RegionId } from '../../game/regions';
 import { esc, icon } from '../../ui/dom';
 
-export type Region = 'kanto' | 'johto';
-export const REGIONS: Region[] = ['kanto', 'johto'];
+export type Region = RegionId;
+export const REGIONS: Region[] = REGION_IDS;
 
-export const regionLabel = (region: Region) => regionName(region === 'kanto' ? 1 : 2);
+export const regionLabel = (region: Region) => regionName(regionGeneration(region));
 
 export interface RegionTab {
   region: Region;

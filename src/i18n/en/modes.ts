@@ -1,6 +1,8 @@
 // English strings for the "modes" namespace (Competition, Pokémon League). Must have exactly the same keys as ../pt/modes.ts.
 import type pt from '../pt/modes';
 
+import regions from './regions';
+
 const n = (value: number) => value.toLocaleString('en-US');
 
 const modes: typeof pt = {
@@ -149,6 +151,8 @@ const modes: typeof pt = {
       firstTitle: 'First Johto title! A shiny starter from the other region has joined your collection.',
       championTitle: 'Johto League Champion!',
     },
+    hoenn: regions.leagues.hoenn,
+    sinnoh: regions.leagues.sinnoh,
     lines: {
       lorelei: {
         intro: 'Welcome to the League. My ice Pokémon will freeze your ambition.',
@@ -201,6 +205,7 @@ const modes: typeof pt = {
         lose: 'Incredible! Today, a new Champion was born in Johto. Congratulations, from the heart.',
       },
 
+      ...regions.lines,
     },
   },
 };

@@ -1,6 +1,8 @@
 // Textos em português do namespace "battle" (arena, central de batalhas, Treino e Ginásios).
 // Funções recebem parâmetros (contagens, nomes).
 
+import regions from './regions';
+
 const n = (value: number) => value.toLocaleString('pt-BR');
 
 const battle = {
@@ -23,10 +25,10 @@ const battle = {
     modes: {
       training: { name: 'Treino', desc: 'Batalhas amistosas com amigos que acompanham o seu nível.' },
       competition: { name: 'Competição', desc: 'Desafie 100 treinadores e suba no ranking.' },
-      gyms: { name: 'Ginásios', desc: 'Enfrente os Líderes de Ginásio de Kanto e de Johto, em ordem.' },
+      gyms: { name: 'Ginásios', desc: 'Enfrente os Líderes de Ginásio de Kanto, Johto, Hoenn e Sinnoh, em ordem.' },
       hunt: { name: 'Caça Shiny', desc: 'Escolha um Pokémon e enfrente hordas dele. Cada vitória seguida aumenta a chance do shiny.' },
       tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem 2 níveis mais forte. Até onde você chega?' },
-      league: { name: 'Liga Pokémon', desc: 'Quatro duelos eliminatórios até o título de Campeão, em Kanto e em Johto.' },
+      league: { name: 'Liga Pokémon', desc: 'Quatro duelos eliminatórios até o título de Campeão, em Kanto, Johto, Hoenn e Sinnoh.' },
     },
     friendsCount: (count: number) => `${count} amigos`,
     rank: (rank: number) => `Rank nº ${n(rank)}`,
@@ -35,7 +37,7 @@ const battle = {
     regionBadges: (region: string, count: number) => `${region} ${count}/8`,
     regionStatus: (region: string, label: string) => `${region}: ${label}`,
     leagueLocked: 'Requer as 8 insígnias',
-    johtoLocked: 'requer 8 insígnias',
+    leagueRegionLocked: 'requer 8 insígnias',
     leagueNever: 'Ainda não disputada',
     huntStatus: (name: string, chain: number) => `${name} · sequência ${n(chain)}`,
     huntNone: 'Nenhum alvo',
@@ -348,18 +350,20 @@ const battle = {
       win: 'Hmph. Fraco. Exatamente como eu esperava.',
       lose: '…Tsc. Isso não vai se repetir. Meus Pokémon e eu vamos ficar mais fortes.',
     },
+    ...regions.friends,
   } as Record<string, { title: string; intro: string; win: string; lose: string }>,
 
   gyms: {
     title: 'Ginásios',
-    sub: 'Os Líderes de Ginásio de Kanto e de Johto, em ordem. Cada insígnia libera o próximo desafio.',
+    sub: 'Os Líderes de Ginásio de Kanto, Johto, Hoenn e Sinnoh, em ordem. Cada insígnia libera o próximo desafio.',
     region: 'Região',
     badgeCase: 'Estojo de insígnias',
     badgeCaseOf: (region: string) => `Estojo de insígnias · ${region}`,
-    johtoLockedTitle: 'Os Ginásios de Johto ainda estão fechados',
-    johtoLocked: (count: number) => `Conquiste as 8 insígnias de Kanto para desafiar os líderes de Johto. Você tem ${count} de 8.`,
-    lockedKanto: 'Conquiste as 8 insígnias de Kanto',
-    goKanto: 'Ver os Ginásios de Kanto',
+    regionLockedTitle: (region: string) => `Os Ginásios de ${region} ainda estão fechados`,
+    regionLocked: (region: string, before: string, count: number) =>
+      `Conquiste as 8 insígnias de ${before} para desafiar os líderes de ${region}. Você tem ${count} de 8.`,
+    lockedRegion: (before: string) => `Conquiste as 8 insígnias de ${before}`,
+    goRegion: (region: string) => `Ver os Ginásios de ${region}`,
     badges: (count: number) => `${count}/8 insígnias`,
     gymNumber: (num: number) => `Ginásio ${num}`,
     leaderOf: (city: string) => `Líder do Ginásio de ${city}`,
@@ -373,8 +377,9 @@ const battle = {
     record: (wins: number, losses: number) => `${wins}V · ${losses}D`,
     levels: (lo: number, hi: number) => `Nv. ${lo}–${hi}`,
     next: 'Próximo desafio',
-    allDone: 'Você tem todas as insígnias de Kanto! A Liga Pokémon e os Ginásios de Johto esperam por você.',
-    allDoneJohto: 'Você tem todas as insígnias de Johto! A Liga de Johto espera por você.',
+    allDone: (region: string, next: string | null) => next
+      ? `Você tem todas as insígnias de ${region}! A Liga de ${region} e os Ginásios de ${next} esperam por você.`
+      : `Você tem todas as insígnias de ${region}! A Liga de ${region} espera por você.`,
     earned: (name: string) => `Você conquistou a ${name}!`,
     earnedSub: (leader: string) => `${leader} reconhece a sua força.`,
     winTitle: 'Vitória no ginásio!',
@@ -384,8 +389,7 @@ const battle = {
     unlocks: {
       great: 'Libera a Great Ball',
       ultra: 'Libera a Ultra Ball',
-      league: 'Libera a Liga Pokémon e os Ginásios de Johto',
-      johtoLeague: 'Libera a Liga Pokémon de Johto',
+      league: (region: string, next: string | null) => (next ? `Libera a Liga de ${region} e os Ginásios de ${next}` : `Libera a Liga de ${region}`),
     },
   },
 
@@ -486,6 +490,7 @@ const battle = {
       win: 'Como eu esperava. Dragões não se curvam a qualquer um.',
       lose: 'Eu… perdi? Tá. Leve a Insígnia da Ascensão. Mas eu ainda não acabei com você.',
     },
+    ...regions.leaders,
   } as Record<string, { city: string; intro: string; win: string; lose: string }>,
 
   /** Nome da insígnia como completa o texto "Insígnia ___" (core.rewards.badge). */
@@ -494,12 +499,14 @@ const battle = {
     soul: 'da Alma', marsh: 'do Pântano', volcano: 'do Vulcão', earth: 'da Terra',
     zephyr: 'do Zéfiro', hive: 'da Colmeia', plain: 'da Planície', fog: 'da Névoa',
     storm: 'da Tempestade', mineral: 'Mineral', glacier: 'da Geleira', rising: 'da Ascensão',
+    ...regions.badgeName,
   } as Record<string, string>,
   badgeFull: {
     boulder: 'Insígnia da Rocha', cascade: 'Insígnia da Cascata', thunder: 'Insígnia do Trovão', rainbow: 'Insígnia do Arco-Íris',
     soul: 'Insígnia da Alma', marsh: 'Insígnia do Pântano', volcano: 'Insígnia do Vulcão', earth: 'Insígnia da Terra',
     zephyr: 'Insígnia do Zéfiro', hive: 'Insígnia da Colmeia', plain: 'Insígnia da Planície', fog: 'Insígnia da Névoa',
     storm: 'Insígnia da Tempestade', mineral: 'Insígnia Mineral', glacier: 'Insígnia da Geleira', rising: 'Insígnia da Ascensão',
+    ...regions.badgeFull,
   } as Record<string, string>,
 
 };

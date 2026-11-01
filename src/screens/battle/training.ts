@@ -6,9 +6,10 @@ import { spriteUrl, trainerSpriteUrl } from '../../data/sprites';
 import { RARE_CANDY, itemSprite } from '../../data/items';
 import {
   averageLevel, DIFFICULTIES, DIFFICULTY, firstWinToday, FRIENDS, getFriend, levelRange, recordTraining, rivalStarter, trainingRewards,
-  trainingTeam, winCoins, type Difficulty, type Friend, type FriendRegion,
+  trainingTeam, winCoins, type Difficulty, type Friend,
 } from '../../game/modes/training';
 import { playerLevels } from '../../game/teams';
+import { REGION_IDS } from '../../game/regions';
 import { itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
 import { on, store, update } from '../../state/store';
@@ -69,7 +70,7 @@ function render() {
         <span><img src="${esc(itemSprite(RARE_CANDY))}" alt="" width="24" height="24"> ${esc(t.firstWin)}</span>
       </div>
     </div>
-    ${(['kanto', 'johto'] as FriendRegion[]).map(region => {
+    ${REGION_IDS.map(region => {
       const friends = FRIENDS.filter(f => f.region === region);
       return `
         <section class="friend-group" aria-label="${esc(t.group(regionLabel(region)))}">

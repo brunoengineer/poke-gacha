@@ -4,8 +4,8 @@
 
 import { sfx } from '../../audio';
 import { playerRank } from '../../game/modes/competition';
-import { johtoGymsOpen, REGION_GYMS, regionBadges } from '../../game/modes/gyms';
-import { leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
+import { currentGymRegion, GYM_REGIONS, REGION_GYMS, regionBadges, regionGymsOpen } from '../../game/modes/gyms';
+import { LEAGUE_REGIONS, leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
 import { FRIENDS } from '../../game/modes/training';
 import { getSpecies } from '../../data/species';
 import { trainerSpriteUrl } from '../../data/sprites';
@@ -123,12 +123,13 @@ function modeCardHTML(id: ModeId): string {
     status = `<span class="mode-pill">${icon('trophy')} ${esc(rank == null ? t.unranked : t.rank(rank))}</span>`;
   }
   if (id === 'gyms') {
-    // Badge row of the region in progress: Kanto until its gyms are done, then Johto.
-    const johtoOpen = johtoGymsOpen(s.gyms);
-    const shown = REGION_GYMS[johtoOpen ? 'johto' : 'kanto'];
-    status = `
-      <span class="mode-pill">${icon('medal')} ${esc(t.regionBadges(regionLabel('kanto'), regionBadges(s.gyms, 'kanto')))}</span>
-      <span class="mode-pill${johtoOpen ? '' : ' locked'}">${icon(johtoOpen ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel('johto'), regionBadges(s.gyms, 'johto')))}</span>
+    // One pill per region (open ones, plus the next locked one) and the badge row of the region in progress.
+    const shown = REGION_GYMS[currentGymRegion(s.gyms)];
+    const regions = GYM_REGIONS.filter((_, i) => i === 0 || regionGymsOpen(s.gyms, GYM_REGIONS[i - 1]));
+    status = regions.map(r => {
+      const open = regionGymsOpen(s.gyms, r);
+      return `<span class="mode-pill${open ? '' : ' locked'}">${icon(open ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel(r), regionBadges(s.gyms, r)))}</span>`;
+    }).join('') + `
       <span class="mode-badges">${shown.map(g => badgeSVG(g.badge, { earned: s.gyms.badges.includes(g.badge), label: false })).join('')}</span>`;
   }
   if (id === 'hunt') {
@@ -145,11 +146,12 @@ function modeCardHTML(id: ModeId): string {
       const league = leagueRecord(s, region);
       return league.best >= 0 ? t.placements[league.best] ?? '' : t.leagueNever;
     };
-    const johto = leagueUnlocked(s, 'johto')
-      ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel('johto'), best('johto')))}</span>`
-      : `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel('johto'), t.johtoLocked))}</span>`;
+    // Unlocked leagues, then the next locked one.
+    const open = LEAGUE_REGIONS.filter(r => leagueUnlocked(s, r));
+    const nextLocked = LEAGUE_REGIONS.find(r => !leagueUnlocked(s, r));
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.leagueLocked)}</span>`
-      : `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel('kanto'), best('kanto')))}</span>${johto}`;
+      : open.map(r => `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel(r), best(r)))}</span>`).join('')
+        + (nextLocked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel(nextLocked), t.leagueRegionLocked))}</span>` : '');
   }
 
   return `

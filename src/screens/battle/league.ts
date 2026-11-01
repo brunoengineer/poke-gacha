@@ -1,17 +1,17 @@
 // Pokémon League (#/battle/league): locked panel until 8 badges, then the lobby (entry, prizes, Hall of Fame)
 // or the run in progress (next duel card, your path and the 16-slot bracket). It applies each duel's result,
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
-// A Kanto / Johto switch picks the league; each keeps its own run, titles and Hall of Fame.
+// A region switch (Kanto, Johto, Hoenn, Sinnoh) picks the league; each keeps its own run, titles and Hall of Fame.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
 import { trainerSpriteUrl } from '../../data/sprites';
-import { JOHTO_UNLOCK_BADGES, UNLOCK_BADGES } from '../../game/economy';
+import { UNLOCK_BADGES } from '../../game/economy';
 import { regionBadges } from '../../game/modes/gyms';
 import {
   abandonRun, buildBracket, canEnter, CHAMPION, championBoss, duelInfo, eliteFour, LEAGUE_DUELS, leagueFee, leagueRecord,
-  leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, duelLevels, type Bracket, type Entrant,
-  type LeagueRegion,
+  LEAGUE_REGIONS, leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, duelLevels, type Bracket,
+  type Entrant, type LeagueRegion,
 } from '../../game/modes/league';
 import type { Reward } from '../../game/rewards';
 import { hashString } from '../../game/rng';
@@ -40,18 +40,18 @@ const t = () => L().modes.league;
 function shownRegion(): LeagueRegion {
   if (region) return region;
   const save = store.save;
-  if (leagueRecord(save, 'johto').run) return 'johto';
-  if (save.league.run) return 'kanto';
-  return leagueUnlocked(save, 'johto') ? 'johto' : 'kanto';
+  const newestFirst = [...LEAGUE_REGIONS].reverse();
+  return newestFirst.find(r => leagueRecord(save, r).run) ?? newestFirst.find(r => leagueUnlocked(save, r)) ?? 'kanto';
 }
 
 /** The shown league's progress. */
 const rec = () => leagueRecord(store.save, shownRegion());
 
 type RegionText = keyof ReturnType<typeof t>['johto'];
-/** Text that differs per league: Johto has its own copy, Kanto uses the base keys. */
+/** Text that differs per league: each later region has its own copy, Kanto uses the base keys. */
 function rt<K extends RegionText>(key: K): ReturnType<typeof t>['johto'][K] {
-  return shownRegion() === 'johto' ? t().johto[key] : (t()[key] as ReturnType<typeof t>['johto'][K]);
+  const shown = shownRegion();
+  return shown === 'kanto' ? (t()[key] as ReturnType<typeof t>['johto'][K]) : t()[shown][key];
 }
 
 /** Display name of a placement index (0 = Top 16 … 4 = Champion). */
@@ -85,14 +85,13 @@ function regionTabs() {
     if (league.run) return t().duelOf(league.run.duel + 1, LEAGUE_DUELS);
     return league.best >= 0 ? placementName(league.best) : t().never;
   };
-  const johtoOpen = leagueUnlocked(store.save, 'johto');
-  return regionSwitchHTML(shownRegion(), [
-    { region: 'kanto', note: note('kanto'), done: store.save.league.titles > 0 },
-    {
-      region: 'johto', locked: !johtoOpen, done: leagueRecord(store.save, 'johto').titles > 0,
-      note: johtoOpen ? note('johto') : `${regionBadges(store.save.gyms, 'johto')}/${JOHTO_UNLOCK_BADGES.league}`,
-    },
-  ], t().region);
+  return regionSwitchHTML(shownRegion(), LEAGUE_REGIONS.map(r => {
+    const open = leagueUnlocked(store.save, r);
+    return {
+      region: r, locked: !open, done: leagueRecord(store.save, r).titles > 0,
+      note: open ? note(r) : `${regionBadges(store.save.gyms, r)}/${UNLOCK_BADGES.league}`,
+    };
+  }), t().region);
 }
 
 // --- Rendering ---------------------------------------------------------------------
@@ -117,9 +116,8 @@ function render() {
 }
 
 function lockedHTML() {
-  const johto = shownRegion() === 'johto';
   const badges = regionBadges(store.save.gyms, shownRegion());
-  const needed = johto ? JOHTO_UNLOCK_BADGES.league : UNLOCK_BADGES.league;
+  const needed = UNLOCK_BADGES.league;
   return `
     <section class="league-locked">
       <div class="league-emblem is-locked">${TROPHY_SVG}<span class="league-lock">${icon('lock')}</span></div>

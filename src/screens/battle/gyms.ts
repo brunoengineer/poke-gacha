@@ -1,4 +1,4 @@
-// Gyms lobby: a Kanto / Johto switch, the region's badge case and its eight leaders in order. A first win plays
+// Gyms lobby: a region switch (Kanto, Johto, Hoenn, Sinnoh), the region's badge case and its eight leaders in order. A first win plays
 // the badge celebration; rematches are harder and pay Rare Candy. Rules and rosters live in src/game/modes/gyms.ts.
 
 import { sfx } from '../../audio';
@@ -7,11 +7,12 @@ import { spriteUrl, trainerSpriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { UNLOCK_BADGES } from '../../game/economy';
 import {
-  getGym, gymLevels, gymRegion, gymRewards, gymStatus, gymTeam, johtoGymsOpen, recordGym, REGION_GYMS, regionBadges,
-  rematchBonus, type Gym, type GymRegion,
+  currentGymRegion, getGym, GYM_REGIONS, gymLevels, gymRegion, gymRewards, gymStatus, gymTeam, recordGym, REGION_GYMS, regionBadges,
+  regionGymsOpen, rematchBonus, type Gym, type GymRegion,
 } from '../../game/modes/gyms';
 import type { Reward } from '../../game/rewards';
 import { seeded } from '../../game/rng';
+import { previousRegion, REGION_IDS } from '../../game/regions';
 import { evolveForLevel } from '../../game/teams';
 import { fmt, itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
@@ -28,10 +29,13 @@ import { ensureTeam, teamSummaryHTML } from './team';
 
 let host: HTMLElement | null = null;
 let unsubscribe: (() => void)[] = [];
-/** Region on screen: Johto once its gyms are open, unless the player picked one. */
+/** Region on screen: the one in progress, unless the player picked one. */
 let region: GymRegion | null = null;
 
-const shownRegion = (): GymRegion => region ?? (johtoGymsOpen(store.save.gyms) ? 'johto' : 'kanto');
+const shownRegion = (): GymRegion => region ?? currentGymRegion(store.save.gyms);
+
+/** The region after this one, if any (for "what's next" texts). */
+const nextRegion = (r: GymRegion): GymRegion | null => REGION_IDS[REGION_IDS.indexOf(r) + 1] ?? null;
 
 export const gymsMode: ModeModule = {
   render(container) {
@@ -57,29 +61,29 @@ function render() {
   const list = REGION_GYMS[shown];
   const badges = gyms.badges;
   const count = regionBadges(gyms, shown);
-  const johtoOpen = johtoGymsOpen(gyms);
-  const kantoCount = regionBadges(gyms, 'kanto');
+  const open = regionGymsOpen(gyms, shown);
+  const before = previousRegion(shown);
   const done = count >= list.length;
+  const next = nextRegion(shown);
   host.innerHTML = `
     <div class="view-head gyms-head">
       <div>
         <h1 class="view-title">${esc(t.title)}</h1>
         <p class="view-sub">${esc(t.sub)}</p>
       </div>
-      ${regionSwitchHTML(shown, [
-        { region: 'kanto', note: t.badges(kantoCount), done: kantoCount >= REGION_GYMS.kanto.length },
-        { region: 'johto', note: t.badges(regionBadges(gyms, 'johto')), locked: !johtoOpen, done: regionBadges(gyms, 'johto') >= REGION_GYMS.johto.length },
-      ], t.region)}
+      ${regionSwitchHTML(shown, GYM_REGIONS.map(r => ({
+        region: r, note: t.badges(regionBadges(gyms, r)), locked: !regionGymsOpen(gyms, r), done: regionBadges(gyms, r) >= REGION_GYMS[r].length,
+      })), t.region)}
     </div>
     ${teamSummaryHTML(true)}
-    ${shown === 'johto' && !johtoOpen ? `
+    ${!open && before ? `
       <section class="region-locked">
         <span class="region-locked-icon">${icon('lock')}</span>
         <div>
-          <h2>${esc(t.johtoLockedTitle)}</h2>
-          <p>${esc(t.johtoLocked(kantoCount))}</p>
+          <h2>${esc(t.regionLockedTitle(regionLabel(shown)))}</h2>
+          <p>${esc(t.regionLocked(regionLabel(shown), regionLabel(before), regionBadges(gyms, before)))}</p>
         </div>
-        <button class="btn btn-secondary btn-sm" type="button" data-region="kanto">${icon('medal')} ${esc(t.goKanto)}</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-region="${before}">${icon('medal')} ${esc(t.goRegion(regionLabel(before)))}</button>
       </section>` : ''}
     <section class="badge-case badge-case-${shown}" aria-label="${esc(t.badgeCaseOf(regionLabel(shown)))}">
       <header class="badge-case-head">
@@ -93,7 +97,7 @@ function render() {
             <span>${esc(L().battle.badgeFull[g.badge])}</span>
           </li>`).join('')}
       </ol>
-      ${done ? `<p class="badge-case-done">${icon('crown')} ${esc(shown === 'johto' ? t.allDoneJohto : t.allDone)}</p>` : ''}
+      ${done ? `<p class="badge-case-done">${icon('crown')} ${esc(t.allDone(regionLabel(shown), next && regionLabel(next)))}</p>` : ''}
     </section>
     <ol class="gym-list">${list.map((g, i) => gymHTML(g, i, shown)).join('')}</ol>`;
 }
@@ -119,7 +123,8 @@ function gymHTML(gym: Gym, index: number, shown: GymRegion): string {
   const rng = seeded(index + 1);
   const roster = gym.exact ? gym.roster : gym.roster.map(id => evolveForLevel(id, lo, rng));
   const locked = status === 'locked';
-  const lockNote = index > 0 ? t.locked(list[index - 1].leader) : t.lockedKanto;
+  const before = previousRegion(shown);
+  const lockNote = index > 0 ? t.locked(list[index - 1].leader) : before ? t.lockedRegion(regionLabel(before)) : '';
   return `
     <li class="gym-card gym-${status}" style="--gc:${TYPE_COLOR[gym.type]}">
       <div class="gym-portrait">
@@ -207,15 +212,17 @@ async function challenge(gym: Gym) {
   render();
 }
 
-/** What a new badge unlocks: banners count every badge; the leagues (and Johto's gyms) count their region's. */
+/** What a new badge unlocks: banners count every badge; a league (and the next region's gyms) its region's 8. */
 function unlockText(gym: Gym): string {
   const t = L().battle.gyms.unlocks;
   const total = store.save.gyms.badges.length;
   const inRegion = regionBadges(store.save.gyms, gymRegion(gym));
-  if (gymRegion(gym) === 'johto') return inRegion === REGION_GYMS.johto.length ? t.johtoLeague : '';
+  const r = gymRegion(gym);
+  const next = nextRegion(r);
+  if (inRegion === UNLOCK_BADGES.league) return t.league(regionLabel(r), next && regionLabel(next));
   if (total === UNLOCK_BADGES.great) return t.great;
   if (total === UNLOCK_BADGES.ultra) return t.ultra;
-  return inRegion === UNLOCK_BADGES.league ? t.league : '';
+  return '';
 }
 
 /** Full-screen badge reveal after a first win. */

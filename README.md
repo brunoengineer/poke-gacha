@@ -1,7 +1,8 @@
 # Poké Gacha
 
-A Pokémon gacha card game in the browser: catch all 251 Pokémon of Kanto and Johto as pixel-art cards, level them up
-with duplicates, evolve them (or don't), and battle friends, a ranked ladder, 16 gym leaders, an endless tower and two Pokémon Leagues.
+A Pokémon gacha card game in the browser: catch all 493 Pokémon of Kanto, Johto, Hoenn and Sinnoh as pixel-art cards,
+level them up with duplicates, evolve them (or don't), and battle friends, a ranked ladder, 32 gym leaders, an endless
+tower and four Pokémon Leagues.
 
 Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 
@@ -68,15 +69,25 @@ scripts/
 ### Adding a generation
 
 ```bash
-npm run pokedex 3     # writes src/data/pokedex/gen3.json
+npm run pokedex 5     # writes src/data/pokedex/gen5.json
 ```
 
-Then add the generation to `src/data/generations.ts`. Rarity, capture odds, evolutions, card art, sprites, cries,
-opponent teams and the region filters are all derived from the data. Region content (gym leaders, league, friends)
-lives in `src/game/modes/`. Notes from adding Johto:
+Then:
+
+1. Add the generation to `src/data/generations.ts` and to the test setup (`src/test/setup.ts`). Rarity, capture odds,
+   evolutions, card art, sprites, cries, opponent teams and the capture/Pokédex region filters come from the data.
+2. Add the region id to `src/game/regions.ts` and its three starters to `STARTERS` (`src/game/economy.ts`).
+3. Add its content in a file like `src/game/modes/sinnoh.ts` (8 gym leaders, Elite Four, Champion, friends) and register
+   it in `gyms.ts` (`REGION_GYMS`), `league.ts` (`ELITE_FOURS`, `CHAMPIONS`, fee, levels, prizes) and `training.ts`.
+   Its texts go in `src/i18n/*/regions.ts`, its badge artwork in `src/screens/battle/badges.ts`.
+4. Bump `SAVE_VERSION` (see below).
+
+Notes from adding Johto, Hoenn and Sinnoh:
 
 - New evolution items need an entry in `src/data/items.ts` (name, description, Mart price), or they get a generic one.
-- Baby Pokémon don't count as a stage, so a new baby form (Pichu) doesn't change its base form's card (Pikachu).
+- Baby Pokémon don't count as a stage, so a new baby form (Pichu, Munchlax) doesn't change its base form's card.
+- Older species gain evolutions from newer generations on their own (Magneton → Magnezone once Sinnoh is loaded).
+- PokeAPI has chain links that aren't real evolutions (Phione → Manaphy): list them in `NOT_EVOLUTIONS` in the build script.
 - Gen 6+ has no Black/White sprites: `src/data/sprites.ts` falls back to the newest pixel sprites.
 
 ### Save compatibility (players have real progress)

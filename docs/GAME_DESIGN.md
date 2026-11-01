@@ -5,7 +5,7 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
 
 ## Cards
 
-- **One card per species**, plus a **shiny** version of each (251 + 251 for Kanto and Johto).
+- **One card per species**, plus a **shiny** version of each (493 + 493 for Kanto, Johto, Hoenn and Sinnoh).
 - Cards are HTML/CSS around the Black/White (Gen 5) pixel sprite, colored by type and framed by rarity.
 - **Rarity** is derived from data (catch rate, evolution stage, base stats): Common, Uncommon, Rare, Epic,
   Legendary, Mythical. Works for any generation without hand-made tables.
@@ -57,9 +57,10 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
 Pulls are cheap on purpose: levels come from duplicates, so players open hundreds of balls.
 The Safari banner is the targeted way to level a specific family.
 
-**Region filter**: the Capture screen has an All / Kanto / Johto picker (one option per loaded generation) that
-applies to every ball: captures, the banner art, Safari's featured families (picked per region), the odds and the
-Master Ball pool (Kanto: the birds, Mewtwo, Mew; Johto: the beasts, Lugia, Ho-Oh, Celebi). Fewer species in the draw
+**Region filter**: the Capture screen has an All / Kanto / Johto / Hoenn / Sinnoh picker (one option per loaded
+generation) that applies to every ball: captures, the banner art, Safari's featured families (picked per region), the
+odds and the Master Ball pool (Kanto: the birds, Mewtwo, Mew; Johto: the beasts, Lugia, Ho-Oh, Celebi; Hoenn: the
+Regis, Latias, Latios, Kyogre, Groudon, Rayquaza, Jirachi, Deoxys; Sinnoh: the lake trio, Dialga, Palkia, Giratina…). Fewer species in the draw
 means each one shows up more often, so duplicates level faster. A species belongs to the generation that introduced
 it (Pichu is Johto, Pikachu is Kanto). Pity counters stay per ball, not per region. The choice is a UI preference
 kept per player in the browser.
@@ -69,12 +70,16 @@ kept per player in the browser.
 Coins come slowly and Rare Candy generously: the early game is about training the few Pokémon you have, not opening
 hundreds of balls at once.
 
-- New trainers choose one of six starters (Lv. 5): **Bulbasaur, Charmander, Squirtle** (Kanto) or
-  **Chikorita, Cyndaquil, Totodile** (Johto), and start with **₽150 (30 Poké Balls) + Rare Candy ×10**.
+- New trainers choose one of twelve starters (Lv. 5): **Bulbasaur, Charmander, Squirtle** (Kanto),
+  **Chikorita, Cyndaquil, Totodile** (Johto), **Treecko, Torchic, Mudkip** (Hoenn) or **Turtwig, Chimchar, Piplup**
+  (Sinnoh), and start with **₽150 (30 Poké Balls) + Rare Candy ×10**.
 - **Daily gift**: ₽80 + ₽10 per streak day (capped at 10 days) and Rare Candy ×2; every 7th day, a **Master Ball** and
   Rare Candy ×5 instead.
-- **Shop** (Mart): Rare Candy ₽300, evolution stones ₽2,500, Link Cable ₽3,000, Johto trade items (King's Rock,
-  Metal Coat, Dragon Scale, Up-Grade) ₽3,500.
+- **Shop** (Mart): Rare Candy ₽300, evolution stones ₽2,500 (including Sinnoh's Shiny, Dusk, Dawn and Oval Stones),
+  Link Cable ₽3,000, trade and held items ₽3,500 (King's Rock, Metal Coat, Dragon Scale, Up-Grade, Deep Sea Tooth and
+  Scale, Protector, Electirizer, Magmarizer, Dubious Disc, Reaper Cloth, Razor Claw, Razor Fang).
+- Older species gain the evolutions later generations added (Magneton → Magnezone, Togetic → Togekiss, Eevee →
+  Leafeon/Glaceon…). Location-based ones use a level (Lv. 30), like Johto's friendship evolutions.
 
 ## Battles
 
@@ -104,9 +109,14 @@ Casual sparring, repeatable, never locked: the main way to earn Rare Candy. Frie
   Jessie & James, the rival Blue.
 - **Johto**: Youngster Tommy, a Kimono Girl (Eeveelutions), Kurt, Eusine, Bill, Professor Elm (hatched babies),
   Lyra, Ethan, the rival Silver.
+- **Hoenn**: a Ruin Maniac, an Aroma Lady, a Ninja Boy, a Tuber, Shelly (Team Aqua), Wally, Professor Birch, Lisia,
+  Wallace, the rival May.
+- **Sinnoh**: Youngster Tristan, Skier Neve, Mars (Team Galactic), Cheryl, Riley, Mira, Buck, Dawn, Professor Rowan,
+  the rival Barry.
 
-Rivals add the starter whose type beats yours (fire beats grass, water beats fire, grass beats water): Blue with
-a Kanto one, Silver with a Johto one (you picked Squirtle or Totodile: Blue brings Bulbasaur, Silver Chikorita).
+Rivals add the starter of their region whose type beats yours (fire beats grass, water beats fire, grass beats
+water): Blue a Kanto one, Silver a Johto one, May a Hoenn one, Barry a Sinnoh one (you picked Squirtle: Blue brings
+Bulbasaur, Silver Chikorita, May Treecko, Barry Turtwig).
 Three difficulties:
 
 | Difficulty | Opponent level | Coins on win | Rare Candy on win |
@@ -130,12 +140,12 @@ little reputation. Rank #1–#10 are Elite trainers with stronger, partially evo
 - One-time milestones: Top 75 → Great Ball ×3 · Top 50 → Ultra Ball + Rare Candy ×10 · Top 25 → Ultra Ball ×3 +
   random stone · Top 10 → Ultra Ball ×5 + Rare Candy ×30 · #1 → Master Ball.
 
-### Gyms: Kanto and Johto leaders
+### Gyms: Kanto, Johto, Hoenn and Sinnoh leaders
 Fixed order, each unlocks after the previous badge. Themed rosters, hard by design: a fresh team needs some training
 first. Simulated with a player who picks perfectly (real players need a bit more): a new team can't beat Brock
 until about 10 Normal Training battles (29% after 10, 81% after 15); Misty needs about 25–30 (41% after 25, 78% after
 30). Losses are free to retry, so gyms are tuned to be near impossible without training. Levels decide HP battles.
-A Kanto / Johto switch shows each region's badge case. Every first win also gives Rare Candy ×5.
+A region switch shows each region's badge case. Every first win also gives Rare Candy ×5.
 
 | # | Leader | Type | Levels | First-win reward (+ Rare Candy ×5) |
 |---|---|---|---|---|
@@ -161,9 +171,35 @@ A Kanto / Johto switch shows each region's badge case. Every first win also give
 | 7 | Pryce | Ice | 78–82 | Glacier Badge, ₽4,000, Up-Grade |
 | 8 | Clair | Dragon | 81–86 | Rising Badge, ₽5,000, Dragon Scale + Ultra Ball ×5 |
 
-Rematches (both regions): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×3.
-Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; the Kanto League needs the 8 Kanto badges,
-the Johto Gyms the 8 Kanto badges and the Johto League the 8 Johto badges (`UNLOCK_BADGES`, `JOHTO_UNLOCK_BADGES`).
+**Hoenn** opens once all 8 Johto badges are earned, **Sinnoh** once all 8 Hoenn badges are. Player cards stop at
+Lv. 100 (only shinies go beyond), so these two regions climb slowly toward 100: from here, species, types and shinies
+decide battles more than levels.
+
+| # | Hoenn | Type | Levels | First-win reward (+ Rare Candy ×5) |
+|---|---|---|---|---|
+| 1 | Roxanne | Rock | 86–89 | Stone Badge, ₽5,000, Protector + Rare Candy ×15 |
+| 2 | Brawly | Fighting | 87–90 | Knuckle Badge, ₽5,250, Rare Candy ×15 + Ultra Ball ×3 |
+| 3 | Wattson | Electric | 88–91 | Dynamo Badge, ₽5,500, Dubious Disc + Rare Candy ×15 |
+| 4 | Flannery | Fire | 89–92 | Heat Badge, ₽5,750, Magmarizer |
+| 5 | Norman | Normal | 90–93 | Balance Badge, ₽6,000, Oval Stone + Rare Candy ×20 |
+| 6 | Winona | Flying | 91–94 | Feather Badge, ₽6,250, Razor Fang + Ultra Ball ×3 |
+| 7 | Tate & Liza | Psychic | 92–95 | Mind Badge, ₽6,500, Dawn Stone + Rare Candy ×20 |
+| 8 | Juan | Water | 94–97 | Rain Badge, ₽7,500, Deep Sea Tooth + Deep Sea Scale + Ultra Ball ×5 |
+
+| # | Sinnoh | Type | Levels | First-win reward (+ Rare Candy ×5) |
+|---|---|---|---|---|
+| 1 | Roark | Rock | 94–96 | Coal Badge, ₽7,500, Rare Candy ×15 + Ultra Ball ×3 |
+| 2 | Gardenia | Grass | 94–97 | Forest Badge, ₽7,750, Shiny Stone + Rare Candy ×15 |
+| 3 | Maylene | Fighting | 95–97 | Cobble Badge, ₽8,000, Dawn Stone + Rare Candy ×20 |
+| 4 | Crasher Wake | Water | 95–98 | Fen Badge, ₽8,250, Rare Candy ×20 + Ultra Ball ×4 |
+| 5 | Fantina | Ghost | 96–98 | Relic Badge, ₽8,500, Reaper Cloth + Dusk Stone |
+| 6 | Byron | Steel | 96–99 | Mine Badge, ₽8,750, Protector + Rare Candy ×20 |
+| 7 | Candice | Ice | 97–99 | Icicle Badge, ₽9,000, Razor Claw + Rare Candy ×20 |
+| 8 | Volkner | Electric | 98–100 | Beacon Badge, ₽10,000, Electirizer + Rare Candy ×25 + Ultra Ball ×5 |
+
+Rematches (every region): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×3.
+Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; each League needs its region's 8 badges,
+and each region's Gyms the 8 badges of the region before (`UNLOCK_BADGES`, `regionGymsOpen`).
 
 ### Shiny Hunt: chains on one species
 Pick a caught species in the Pokédex (card details → **Hunt**) and battle wild hordes of it, one paid attempt at a
@@ -203,7 +239,7 @@ Needs 8 badges; entry fee ₽1,000. Four duels in a row; the first loss ends the
 Opponents: an elite ladder trainer, then Elite Four members (Lorelei, Bruno, Agatha, Lance), then the Champion,
 the rival Blue. Levels start at 60–70 and grow +5 per title won (up to +40). **First title ever**: a shiny copy of your starter, which is uncapped.
 
-**Johto League**: same format, its own run, titles, best placement and Hall of Fame (a Kanto / Johto switch on the
+**Johto League**: same format, its own run, titles, best placement and Hall of Fame (a region switch on the
 League screen). Needs the 8 Johto badges; entry fee ₽2,500. Elite Four: Will (Psychic), Koga (Poison), Bruno
 (Fighting), Karen (Dark); Champion Lance (Dragon). Levels 88–98, +5 per Johto title (up to +40). Prizes are double
 the Kanto table, except the Champion's:
@@ -219,12 +255,24 @@ the Kanto table, except the Champion's:
 **First Johto title**: a shiny copy of the other region's starter of your starter's type (Bulbasaur → Chikorita,
 Charmander → Cyndaquil, Squirtle → Totodile, and back to Kanto for a Johto starter).
 
+**Hoenn League** (8 Hoenn badges, fee ₽4,000): Elite Four Sidney (Dark), Phoebe (Ghost), Glacia (Ice), Drake
+(Dragon); Champion Steven (Steel). Levels 94–100. Prizes triple the Kanto table; Champion: ₽15,000 + Master Ball +
+Rare Candy ×100.
+
+**Sinnoh League** (8 Sinnoh badges, fee ₽6,000): Elite Four Aaron (Bug), Bertha (Ground), Flint (Fire), Lucian
+(Psychic); Champion Cynthia (Garchomp last). Levels 96–100. Prizes quadruple the Kanto table; Champion: ₽20,000 +
+Master Ball ×2 + Rare Candy ×120.
+
+Every league adds +5 levels per title (up to +40), past Lv. 100 for the later ones: only shinies keep up there.
+**First Hoenn / Sinnoh title**: a shiny copy of that region's starter of your starter's type (Charmander → Torchic,
+Chimchar); if that's your own starter (already given by the Kanto title), Kanto's of the same type instead
+(`firstTitleStarter`).
+
 ## Adding a generation
 
-1. `npm run pokedex 3` writes `src/data/pokedex/gen3.json` from PokeAPI.
-2. Add it to `src/data/generations.ts` and bump `SAVE_VERSION` (see "Save compatibility" in the README).
-3. Optionally add trainers, gyms and a league that use the new species. Everything else (rarity, weights,
-   evolutions, sprites, cries, team generation, region filters) is derived from the data.
+See "Adding a generation" in the README for the full checklist (data, region id, starters, gyms, league, friends,
+texts, badges, `SAVE_VERSION`). Rarity, weights, evolutions, sprites, cries, team generation and region filters are
+derived from the data.
 
 Baby Pokémon don't count as a stage, so a new baby form (Pichu before Pikachu) doesn't change its base form's card:
 Pikachu stays a base form.

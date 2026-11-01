@@ -1,15 +1,18 @@
-// Gyms: the eight Kanto gym leaders, then the eight Johto ones, in order. Each unlocks after the previous badge
-// (Johto's first after all 8 Kanto badges); badges unlock other parts of the game (UNLOCK_BADGES).
+// Gyms: eight leaders per region (Kanto, Johto, Hoenn, Sinnoh), in order. Each unlocks after the previous badge, and a
+// region's first gym after all 8 badges of the region before it; badges unlock other parts of the game (UNLOCK_BADGES).
+// Hoenn's and Sinnoh's leaders live in hoenn.ts / sinnoh.ts.
 // Rosters are fixed and themed (base forms evolve for the level automatically).
 // Rematches get harder (+10 levels each, up to +40) and pay half the coins plus Rare Candy.
 
 import { LINK_CABLE, RARE_CANDY } from '../../data/items';
 import type { PokemonType } from '../../data/types';
 import type { TeamMember } from '../battle';
-import { JOHTO_UNLOCK_BADGES } from '../economy';
 import { mergeRewards, type Reward } from '../rewards';
 import { defaultRng, type Rng } from '../rng';
+import { previousRegion, REGION_IDS, type RegionId } from '../regions';
 import { generateTeam } from '../teams';
+import { HOENN_GYMS } from './hoenn';
+import { SINNOH_GYMS } from './sinnoh';
 
 export interface GymRecord {
   wins: number;
@@ -81,22 +84,31 @@ export const JOHTO_GYMS: Gym[] = [
     roster: [148, 130, 148, 149, 142, 230], coins: 5000, items: [{ item: 'dragon-scale', amount: 1 }, { item: 'ultra-ball', amount: 5 }] },
 ];
 
-export type GymRegion = 'kanto' | 'johto';
-export const GYM_REGIONS: GymRegion[] = ['kanto', 'johto'];
-export const REGION_GYMS: Record<GymRegion, Gym[]> = { kanto: GYMS, johto: JOHTO_GYMS };
-export const ALL_GYMS = [...GYMS, ...JOHTO_GYMS];
+export type GymRegion = RegionId;
+export const GYM_REGIONS: GymRegion[] = REGION_IDS;
+export const REGION_GYMS: Record<GymRegion, Gym[]> = { kanto: GYMS, johto: JOHTO_GYMS, hoenn: HOENN_GYMS, sinnoh: SINNOH_GYMS };
+export const ALL_GYMS = GYM_REGIONS.flatMap(region => REGION_GYMS[region]);
 
 export const BADGES = GYMS.map(g => g.badge);
 export const JOHTO_BADGES = JOHTO_GYMS.map(g => g.badge);
 export const getGym = (id: string) => ALL_GYMS.find(g => g.id === id);
-export const gymRegion = (gym: Gym): GymRegion => (JOHTO_GYMS.includes(gym) ? 'johto' : 'kanto');
+export const gymRegion = (gym: Gym): GymRegion => GYM_REGIONS.find(region => REGION_GYMS[region].includes(gym)) ?? 'kanto';
 
 /** Badges earned in one region. */
 export const regionBadges = (gyms: Pick<GymSave, 'badges'>, region: GymRegion) =>
   REGION_GYMS[region].filter(g => gyms.badges.includes(g.badge)).length;
 
-/** Johto's gyms open once every Kanto badge is earned. */
-export const johtoGymsOpen = (gyms: Pick<GymSave, 'badges'>) => regionBadges(gyms, 'kanto') >= JOHTO_UNLOCK_BADGES.gyms;
+/** A region's gyms open once every badge of the region before it is earned (Kanto's are always open). */
+export function regionGymsOpen(gyms: Pick<GymSave, 'badges'>, region: GymRegion): boolean {
+  const before = previousRegion(region);
+  return !before || regionBadges(gyms, before) >= REGION_GYMS[before].length;
+}
+
+export const johtoGymsOpen = (gyms: Pick<GymSave, 'badges'>) => regionGymsOpen(gyms, 'johto');
+
+/** The region whose gyms are in progress: the first one not completed (the last one once all are done). */
+export const currentGymRegion = (gyms: Pick<GymSave, 'badges'>): GymRegion =>
+  GYM_REGIONS.find(region => regionBadges(gyms, region) < REGION_GYMS[region].length) ?? GYM_REGIONS[GYM_REGIONS.length - 1];
 
 export const REMATCH_LEVELS = 10;
 export const REMATCH_MAX = 40;
@@ -106,15 +118,15 @@ export const FIRST_WIN_CANDY = 5;
 
 export type GymStatus = 'locked' | 'open' | 'beaten';
 
-/** A gym is open once the previous gym's badge is earned (Johto's first: once all Kanto badges are). */
+/** A gym is open once the previous gym's badge is earned (a region's first: once the region before it is done). */
 export function gymStatus(gyms: GymSave, index: number, region: GymRegion = 'kanto'): GymStatus {
   const list = REGION_GYMS[region];
   if (gyms.badges.includes(list[index].badge)) return 'beaten';
-  const open = index > 0 ? gyms.badges.includes(list[index - 1].badge) : region === 'kanto' || johtoGymsOpen(gyms);
+  const open = index > 0 ? gyms.badges.includes(list[index - 1].badge) : regionGymsOpen(gyms, region);
   return open ? 'open' : 'locked';
 }
 
-/** Next gym to challenge (Kanto first, then Johto), or null when all sixteen are done. */
+/** Next gym to challenge (Kanto first, then Johto, Hoenn, Sinnoh), or null when all are done. */
 export function nextGym(gyms: GymSave): Gym | null {
   return ALL_GYMS.find(g => !gyms.badges.includes(g.badge)) ?? null;
 }

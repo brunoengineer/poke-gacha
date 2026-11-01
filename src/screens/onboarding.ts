@@ -129,7 +129,7 @@ class Onboarding {
       </button>`;
   }
 
-  /** On small screens the cards only show sprite and name: the picked starter's types and line go below the grid. */
+  /** The cards only show sprite and name (twelve starters): the picked starter's types and line go below the grid. */
   private pickInfoHTML() {
     const t = L().capture.onboarding;
     if (this.picked == null) return `<span class="onb-pick-hint">${esc(t.chooseHint)}</span>`;

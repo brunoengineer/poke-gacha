@@ -1,6 +1,8 @@
 // English strings for the "battle" namespace. Must have exactly the same keys as ../pt/battle.ts.
 import type pt from '../pt/battle';
 
+import regions from './regions';
+
 const n = (value: number) => value.toLocaleString('en-US');
 
 const battle: typeof pt = {
@@ -23,10 +25,10 @@ const battle: typeof pt = {
     modes: {
       training: { name: 'Training', desc: 'Friendly battles with friends who keep up with your level.' },
       competition: { name: 'Competition', desc: 'Challenge 100 trainers and climb the ladder.' },
-      gyms: { name: 'Gyms', desc: 'Take on the Kanto and Johto Gym Leaders, in order.' },
+      gyms: { name: 'Gyms', desc: 'Take on the Gym Leaders of Kanto, Johto, Hoenn and Sinnoh, in order.' },
       hunt: { name: 'Shiny Hunt', desc: 'Pick a Pokémon and battle hordes of it. Every win in a row raises the shiny chance.' },
       tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is 2 levels stronger. How far can you go?' },
-      league: { name: 'Pokémon League', desc: 'Four knockout duels for the Champion title, in Kanto and Johto.' },
+      league: { name: 'Pokémon League', desc: 'Four knockout duels for the Champion title, in Kanto, Johto, Hoenn and Sinnoh.' },
     },
     friendsCount: (count: number) => `${count} friends`,
     rank: (rank: number) => `Rank #${n(rank)}`,
@@ -35,7 +37,7 @@ const battle: typeof pt = {
     regionBadges: (region: string, count: number) => `${region} ${count}/8`,
     regionStatus: (region: string, label: string) => `${region}: ${label}`,
     leagueLocked: 'Requires all 8 badges',
-    johtoLocked: 'needs 8 badges',
+    leagueRegionLocked: 'needs 8 badges',
     leagueNever: 'Not played yet',
     huntStatus: (name: string, chain: number) => `${name} · chain ${n(chain)}`,
     huntNone: 'No target',
@@ -348,18 +350,20 @@ const battle: typeof pt = {
       win: 'Hmph. Weak. Exactly as I expected.',
       lose: "…Tch. This won't happen again. My Pokémon and I will get stronger.",
     },
+    ...regions.friends,
   } as Record<string, { title: string; intro: string; win: string; lose: string }>,
 
   gyms: {
     title: 'Gyms',
-    sub: 'The Kanto and Johto Gym Leaders, in order. Each badge unlocks the next challenge.',
+    sub: 'The Gym Leaders of Kanto, Johto, Hoenn and Sinnoh, in order. Each badge unlocks the next challenge.',
     region: 'Region',
     badgeCase: 'Badge case',
     badgeCaseOf: (region: string) => `Badge case · ${region}`,
-    johtoLockedTitle: 'The Johto Gyms are still closed',
-    johtoLocked: (count: number) => `Earn all 8 Kanto badges to challenge the Johto leaders. You have ${count} of 8.`,
-    lockedKanto: 'Earn all 8 Kanto badges',
-    goKanto: 'See the Kanto Gyms',
+    regionLockedTitle: (region: string) => `The ${region} Gyms are still closed`,
+    regionLocked: (region: string, before: string, count: number) =>
+      `Earn all 8 ${before} badges to challenge the ${region} leaders. You have ${count} of 8.`,
+    lockedRegion: (before: string) => `Earn all 8 ${before} badges`,
+    goRegion: (region: string) => `See the ${region} Gyms`,
     badges: (count: number) => `${count}/8 badges`,
     gymNumber: (num: number) => `Gym ${num}`,
     leaderOf: (city: string) => `${city} Gym Leader`,
@@ -373,8 +377,9 @@ const battle: typeof pt = {
     record: (wins: number, losses: number) => `${wins}W · ${losses}L`,
     levels: (lo: number, hi: number) => `Lv. ${lo}–${hi}`,
     next: 'Next challenge',
-    allDone: 'You have every Kanto badge! The Pokémon League and the Johto Gyms await.',
-    allDoneJohto: 'You have every Johto badge! The Johto League awaits.',
+    allDone: (region: string, next: string | null) => next
+      ? `You have every ${region} badge! The ${region} League and the ${next} Gyms await.`
+      : `You have every ${region} badge! The ${region} League awaits.`,
     earned: (name: string) => `You earned the ${name}!`,
     earnedSub: (leader: string) => `${leader} acknowledges your strength.`,
     winTitle: 'Gym victory!',
@@ -384,8 +389,7 @@ const battle: typeof pt = {
     unlocks: {
       great: 'Unlocks the Great Ball',
       ultra: 'Unlocks the Ultra Ball',
-      league: 'Unlocks the Pokémon League and the Johto Gyms',
-      johtoLeague: 'Unlocks the Johto Pokémon League',
+      league: (region: string, next: string | null) => (next ? `Unlocks the ${region} League and the ${next} Gyms` : `Unlocks the ${region} League`),
     },
   },
 
@@ -486,6 +490,7 @@ const battle: typeof pt = {
       win: 'As expected. Dragons do not bow to just anyone.',
       lose: "I… lost? Fine. Take the Rising Badge. But I'm not done with you yet.",
     },
+    ...regions.leaders,
   } as Record<string, { city: string; intro: string; win: string; lose: string }>,
 
   badgeName: {
@@ -493,12 +498,14 @@ const battle: typeof pt = {
     soul: 'Soul', marsh: 'Marsh', volcano: 'Volcano', earth: 'Earth',
     zephyr: 'Zephyr', hive: 'Hive', plain: 'Plain', fog: 'Fog',
     storm: 'Storm', mineral: 'Mineral', glacier: 'Glacier', rising: 'Rising',
+    ...regions.badgeName,
   } as Record<string, string>,
   badgeFull: {
     boulder: 'Boulder Badge', cascade: 'Cascade Badge', thunder: 'Thunder Badge', rainbow: 'Rainbow Badge',
     soul: 'Soul Badge', marsh: 'Marsh Badge', volcano: 'Volcano Badge', earth: 'Earth Badge',
     zephyr: 'Zephyr Badge', hive: 'Hive Badge', plain: 'Plain Badge', fog: 'Fog Badge',
     storm: 'Storm Badge', mineral: 'Mineral Badge', glacier: 'Glacier Badge', rising: 'Rising Badge',
+    ...regions.badgeFull,
   } as Record<string, string>,
 
 };

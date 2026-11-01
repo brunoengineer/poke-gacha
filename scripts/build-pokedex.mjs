@@ -69,7 +69,10 @@ function walkChain(node, from, out) {
     node.evolves_to.forEach(next => walkChain(next, id, out));
 }
 
-const STAT_KEYS = { hp: 'hp', attack: 'atk', defense: 'def', 'special-attack': 'spa', 'special-defense': 'spd', speed: 'spe' };
+/** PokeAPI chain links that aren't evolutions in the games (Phione never becomes Manaphy): from -> to. */
+const NOT_EVOLUTIONS = [[489, 490]];
+
+const STAT_KEYS ={ hp: 'hp', attack: 'atk', defense: 'def', 'special-attack': 'spa', 'special-defense': 'spd', speed: 'spe' };
 
 async function build() {
     const generation = await get(`generation/${gen}`);
@@ -105,9 +108,10 @@ async function build() {
             legendary: species.is_legendary,
             mythical: species.is_mythical,
             baby: species.is_baby,
-            family: chainId,
-            evolvesFrom: evo.from,
-            evolutions: evo.evolutions,
+            // Species split off a bogus chain link get a family of their own.
+            family: NOT_EVOLUTIONS.some(([, to]) => to === id) ? 10000 + id : chainId,
+            evolvesFrom: NOT_EVOLUTIONS.some(([from, to]) => to === id && from === evo.from) ? null : evo.from,
+            evolutions: evo.evolutions.filter(e => !NOT_EVOLUTIONS.some(([from, to]) => from === id && to === e.to)),
             height: pokemon.height,
             weight: pokemon.weight,
             habitat: species.habitat?.name ?? null,
