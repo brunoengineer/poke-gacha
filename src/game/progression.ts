@@ -14,6 +14,7 @@ import { descendants, evolutionsOf, getSpecies, type Evolution } from '../data/s
 import type { SaveData } from '../state/save';
 import { cardKey, levelCap, parseKey, requiredItem, requiredLevel, startLevel, type CardKey } from './cards';
 import { OVERFLOW_CANDY } from './economy';
+import { replaceInSavedTeams } from './saved-teams';
 
 export interface CopyResult {
   /** Species and shininess that was obtained. */
@@ -223,12 +224,13 @@ function replaceCard(save: SaveData, key: CardKey, to: number, now: number): Omi
   };
   delete save.cards[key];
 
-  // The team keeps the evolved card in the same slot (and drops the duplicate slot when merging).
+  // The team keeps the evolved card in the same slot (and drops the duplicate slot when merging); so do saved teams.
   const slot = save.deck.indexOf(key);
   if (slot >= 0) {
     if (save.deck.includes(toKey)) save.deck.splice(slot, 1);
     else save.deck[slot] = toKey;
   }
+  replaceInSavedTeams(save, key, toKey);
 
   const newSpecies = registerCaught(save, to, now);
   save.evolved[id] = now;

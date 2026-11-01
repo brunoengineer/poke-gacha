@@ -21,6 +21,7 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
 };
 
 import type { CardKey } from '../game/cards';
+import { normalizeSavedTeams, type SavedTeam } from '../game/saved-teams';
 import { STARTING_COINS } from '../game/economy';
 import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
 import { defaultGymSave, type GymSave } from '../game/modes/gyms';
@@ -62,6 +63,8 @@ export interface SaveData {
   evolved: Record<string, number>;
   /** Team of up to DECK_SIZE card keys, in slot order. */
   deck: CardKey[];
+  /** Saved teams (presets) the player can load in one click (added with Hoenn/Sinnoh; older saves have none). */
+  teams: SavedTeam[];
   items: Record<string, number>;
   /** Starter species chosen in onboarding (null until chosen). */
   starter: number | null;
@@ -101,6 +104,7 @@ export function defaultSave(): SaveData {
     caught: {},
     evolved: {},
     deck: [],
+    teams: [],
     items: {},
     starter: null,
     training: defaultTrainingSave(),
@@ -146,6 +150,7 @@ export function normalizeSave(raw: unknown): SaveData {
     // Older saves didn't track this: their next copy of a species they no longer own simply becomes a new card.
     evolved: isObject(s.evolved) ? (s.evolved as SaveData['evolved']) : {},
     deck: Array.isArray(s.deck) ? s.deck.filter(key => typeof key === 'string' && isObject(s.cards) && key in s.cards) : [],
+    teams: normalizeSavedTeams(s.teams),
     items: isObject(s.items) ? (s.items as SaveData['items']) : {},
     starter: typeof s.starter === 'number' ? s.starter : null,
     training: merge(d.training, s.training),

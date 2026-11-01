@@ -82,6 +82,18 @@ hundreds of balls at once.
 - Older species gain the evolutions later generations added (Magneton → Magnezone, Togetic → Togekiss, Eevee →
   Leafeon/Glaceon…). Location-based ones use a level (Lv. 30), like Johto's friendship evolutions.
 
+## Saved teams
+
+Up to **8 named teams** (`src/game/saved-teams.ts`), saved from the **Teams** button on the Collection dock or any
+Battle team strip; the Battle hub also shows them as one-click chips. A team is a list of card keys:
+
+- Evolving a card (or passing its level) rewrites it in every saved team, in the same slot: a saved Charmander comes
+  back as Charmeleon. When it merges into a card already in that team, the duplicate slot is dropped.
+- Loading resolves each card again anyway: one no longer owned becomes its owned evolved form, duplicates collapse,
+  and anything missing is skipped and reported (the saved team is healed to what loaded). Shinies never resolve to
+  another card.
+- The team matching the current one exactly (same cards and order) shows as **In use**.
+
 ## Battles
 
 HP battles, 6 against 6 (rules in `src/game/duel.ts`, arena in `src/screens/battle/arena.ts`):

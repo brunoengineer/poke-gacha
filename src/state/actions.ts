@@ -11,6 +11,9 @@ import {
   type BattleTraining, type EvolveResult,
 } from '../game/progression';
 import { applyRewards, type AppliedReward, type Reward } from '../game/rewards';
+import {
+  deleteSavedTeam, loadSavedTeam, renameSavedTeam, saveCurrentTeam, updateSavedTeam,
+} from '../game/saved-teams';
 import { dayKey, previousDayKey } from '../game/rng';
 import type { Settings } from './save';
 import { emit, store, update } from './store';
@@ -95,6 +98,14 @@ export function moveInDeck(from: number, to: number) {
 export function clearDeck() {
   update(save => { save.deck = []; }, ['deck']);
 }
+
+// --- Saved teams (presets; rules in game/saved-teams.ts). They emit 'deck', like every team change. ---
+
+export const saveTeam = (name: string) => update(save => saveCurrentTeam(save, name), ['deck']);
+export const overwriteTeam = (id: string) => update(save => updateSavedTeam(save, id), ['deck']);
+export const renameTeam = (id: string, name: string) => update(save => renameSavedTeam(save, id, name), ['deck']);
+export const deleteTeam = (id: string) => update(save => deleteSavedTeam(save, id), ['deck']);
+export const loadTeam = (id: string) => update(save => loadSavedTeam(save, id), ['deck']);
 
 /** Fills empty team slots with the strongest owned cards (used after onboarding and by "Auto team"). */
 export function autoFillDeck(score: (key: CardKey) => number) {

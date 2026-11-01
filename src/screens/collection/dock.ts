@@ -1,5 +1,6 @@
 // Team dock (fixed at the bottom of the Collection screen): six slots that accept cards dragged from the grid.
-// Drag between slots to reorder, drag out to remove; right click / Delete removes; "Auto" picks the strongest.
+// Drag between slots to reorder, drag out to remove; right click / Delete removes; "Auto" picks the strongest;
+// "Teams" opens the saved teams (saved-teams.ts).
 
 import { sfx } from '../../audio';
 import { DECK_SIZE } from '../../game/economy';
@@ -11,6 +12,7 @@ import { draggable, dropZone } from '../../ui/dnd';
 import { animateNumber, confirmDialog, esc, icon, toast } from '../../ui/dom';
 import { parseKey } from '../../game/cards';
 import { openDetails } from './details';
+import './saved-teams';
 import { autoTeam, cardLabel, reportAdd, teamPower } from './team';
 
 const COLLAPSED_KEY = 'pg-dock-collapsed';
@@ -35,6 +37,7 @@ export function initDock() {
       <span class="dock-hint" aria-live="polite"></span>
       <div class="dock-actions">
         <button class="btn btn-ghost btn-sm" type="button" data-act="clear" aria-label="${esc(t.clear)}" title="${esc(t.clear)}">${icon('trash')}</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-open-teams title="${esc(t.teamsTitle)}">${icon('layers')}<span>${esc(t.teams)}</span></button>
         <button class="btn btn-secondary btn-sm" type="button" data-act="auto" title="${esc(t.autoTitle)}">${icon('bolt')}<span>${esc(t.auto)}</span></button>
         <a class="btn btn-primary btn-sm" href="#/battle" data-act="battle">${icon('swords')}<span>${esc(t.battle)}</span></a>
       </div>

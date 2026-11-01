@@ -1,4 +1,5 @@
-// Team helpers shared by the Battle hub and the modes: readiness check and the team summary strip.
+// Team helpers shared by the Battle hub and the modes: readiness check and the team summary strip (with the saved
+// teams: a "Teams" button everywhere, one-click chips on the hub).
 
 import { sfx } from '../../audio';
 import { teamPower, toBattleCard } from '../../game/battle';
@@ -9,6 +10,7 @@ import { fmt, L } from '../../i18n';
 import { store } from '../../state/store';
 import { cardHTML } from '../../ui/card';
 import { esc, icon, toast } from '../../ui/dom';
+import { savedTeamChipsHTML } from '../collection/saved-teams';
 
 /** True when the team has all six cards (battles are blocked otherwise). */
 export const teamReady = () => playerTeam(store.save).length >= DECK_SIZE;
@@ -48,6 +50,10 @@ export function teamSummaryHTML(compact = false): string {
             <span><small>${esc(t.avgPower)}</small><b>${fmt(teamPower(cards))}</b></span>
           </span>` : `<span class="team-hint">${esc(t.needMore(DECK_SIZE - team.length))}</span>`}
       </div>
-      <a class="btn ${ready ? 'btn-ghost' : 'btn-primary'} btn-sm" href="#/collection">${icon('cards')} ${esc(ready ? t.edit : t.build)}</a>
+      <div class="team-buttons">
+        <button class="btn btn-ghost btn-sm" type="button" data-open-teams>${icon('layers')} ${esc(L().collection.dock.teams)}</button>
+        <a class="btn ${ready ? 'btn-ghost' : 'btn-primary'} btn-sm" href="#/collection">${icon('cards')} ${esc(ready ? t.edit : t.build)}</a>
+      </div>
+      ${compact ? '' : savedTeamChipsHTML()}
     </section>`;
 }

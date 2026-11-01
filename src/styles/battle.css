@@ -38,6 +38,26 @@
 .team-stats b { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 .team-summary.compact { margin-bottom: 18px; padding: 10px 14px; }
 .team-summary.compact .team-cards { grid-template-columns: repeat(6, 44px); }
+.team-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Saved teams, one click away (hub only). */
+.st-chips { display: flex; gap: 6px; flex-wrap: wrap; flex-basis: 100%; padding-top: 10px; border-top: 1px solid var(--line); }
+.st-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-2);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    transition: background-color .2s, color .2s, border-color .2s;
+}
+.st-chip:hover { color: var(--text); border-color: var(--gold); }
+.st-chip.is-active { color: var(--gold-ink); background: linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color: transparent; }
+.st-chip .i { width: 14px; height: 14px; stroke-width: 3; }
 
 /* --- Hub: mode cards ------------------------------------------------------------- */
 
