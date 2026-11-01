@@ -1,8 +1,8 @@
 // Battle arena: a full-screen layer any mode can open. Intro -> HP battle -> result panel.
 // The opponent sends out its first Pokémon and the player chooses who goes in (tap or drag a card to the field,
 // with a matchup preview). Each duel then plays out by itself, hit by hit, with the rules of src/game/duel.ts:
-// the faster Pokémon strikes first, HP bars drain, the loser faints. When the opponent's Pokémon faints it sends
-// the next one and the player may keep the damaged survivor in or switch; when the player's faints, they pick the
+// the faster Pokémon hits first (players read it from the Speed stats), HP bars drain, the loser faints. When the
+// opponent's Pokémon faints it sends the next one and the player may keep the damaged survivor in or switch; when the player's faints, they pick the
 // next one. Tap the field (or Esc) to skip a duel; 1×/2× speed. The battle ends when one side has no Pokémon left.
 //
 // API contract:
@@ -14,7 +14,7 @@ import { playCry, playMusic, sfx } from '../../audio';
 import { getSpecies } from '../../data/species';
 import { matchup, toBattleCard, type BattleCard, type TeamMember } from '../../game/battle';
 import {
-  battleWinner, createBattle, firstStriker, playDuel, previewDuel, sendIn, standing, strike, summarizeBattle,
+  battleWinner, createBattle, playDuel, sendIn, standing, strike, summarizeBattle,
   type BattleState, type DuelLog, type Hit, type HpBattleSummary, type Side,
 } from '../../game/duel';
 import { DECK_SIZE } from '../../game/economy';
@@ -56,8 +56,6 @@ export interface BattleConfig {
   stage?: string;
   /** Accent color for the field and intro (defaults per mode; gyms pass their type color). */
   accent?: string;
-  /** Shows the predicted outcome of each matchup while choosing (Training). */
-  hints?: boolean;
 }
 
 export interface BattleOutcome extends HpBattleSummary {
@@ -377,23 +375,17 @@ async function sendOutOpp(b: Battle) {
 
 async function playOut(b: Battle, log: DuelLog, before: { you: number; opp: number }) {
   const t = L().battle.arena;
-  const u = ui(b);
   const seq = newSeq(b);
   b.phase = 'duel';
   b.layer.classList.add('dueling');
   const cards = { you: b.hand[log.you], opp: b.opp[log.opp] };
   const hp = { ...before };
-  const first = log.hits[0]?.attacker ?? 'you';
-
-  const firstBox = first === 'you' ? u.hpYou : u.hpOpp;
-  firstBox.classList.add('first');
-  say(b, t.text.faster(name(cards[first])));
   if (!seq.skipped) sfx('click');
-  await seq.wait(650);
+  await seq.wait(450);
 
-  for (const [i, hit] of log.hits.entries()) {
+  for (const hit of log.hits) {
     if (battle !== b) return;
-    if (i > 0) say(b, t.text.attacks(name(cards[hit.attacker]), L().core.stats[hit.stat]));
+    say(b, t.text.attacks(name(cards[hit.attacker]), L().core.stats[hit.stat]));
     const target: Side = hit.attacker === 'you' ? 'opp' : 'you';
     await strikeFx(b, seq, hit, cards[target], hp[target]);
     hp[target] = hit.hpLeft;
@@ -404,7 +396,6 @@ async function playOut(b: Battle, log: DuelLog, before: { you: number; opp: numb
     }
   }
   if (battle !== b) return;
-  firstBox.classList.remove('first');
   b.layer.classList.remove('dueling');
   syncAfterDuel(b, log);
 }
@@ -647,8 +638,7 @@ function renderSide(b: Battle, side: Side) {
   let info = null;
   if (self && foe) {
     const hit = strike(self.card, foe.card);
-    const first = side === 'you' ? firstStriker(self.card, foe.card) === 'you' : firstStriker(foe.card, self.card) === 'opp';
-    info = { uses: hit.stat, mult: hit.mult, first };
+    info = { uses: hit.stat, mult: hit.mult };
   }
   const node = side === 'you' ? ui(b).you : ui(b).opp;
   node.innerHTML = sideHTML(self, info, side === 'you' && b.phase === 'choose');
@@ -683,21 +673,13 @@ function renderHand(b: Battle) {
   }).join('');
 }
 
-/** Matchup preview of a candidate against the opponent on the field (the outcome only with hints on). */
+/** Type matchup of a candidate against the opponent on the field. */
 function preview(b: Battle, index: number): Preview {
   const s = b.state;
   const you = s.you[index];
   const opp = s.opp[s.oppActive];
   const m = matchup(you.card, opp.card);
-  const p: Preview = { you: you.card, opp: opp.card, yourMult: m.you.mult, theirMult: m.opp.mult, first: firstStriker(you.card, opp.card) };
-  if (b.config.hints) {
-    const result = previewDuel(you, opp);
-    const winner = result.winner === 'you' ? you : opp;
-    const lastOnWinner = result.hits.filter(h => h.attacker !== result.winner).at(-1);
-    const left = lastOnWinner ? lastOnWinner.hpLeft : winner.hp;
-    p.predict = { winner: result.winner, pct: Math.max(5, Math.round(((left / winner.card.stats.hp) * 100) / 5) * 5) };
-  }
-  return p;
+  return { you: you.card, opp: opp.card, yourMult: m.you.mult, theirMult: m.opp.mult };
 }
 
 function renderPrompt(b: Battle) {
@@ -715,7 +697,7 @@ function renderPrompt(b: Battle) {
     node.innerHTML = promptHTML({
       title: t.versus(name(you.card), name(opp.card)),
       sub: t.skipHint,
-      preview: { you: you.card, opp: opp.card, yourMult: m.you.mult, theirMult: m.opp.mult, first: firstStriker(you.card, opp.card) },
+      preview: { you: you.card, opp: opp.card, yourMult: m.you.mult, theirMult: m.opp.mult },
       idle: true,
     });
     return;

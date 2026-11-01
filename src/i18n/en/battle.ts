@@ -67,7 +67,6 @@ const battle: typeof pt = {
     advantage: 'Type advantage',
     disadvantage: 'Type disadvantage',
     usesStat: 'Attacks with this stat',
-    faster: 'Faster: strikes first',
     skipHint: 'Tap the field to skip',
     effect: {
       1.6: 'Extremely effective',
@@ -93,15 +92,11 @@ const battle: typeof pt = {
     preview: {
       yours: 'Your hit',
       theirs: 'Their hit',
-      first: (mon: string) => `${mon} strikes first`,
-      wins: (pct: number) => `Prediction: wins with ~${pct}% HP left`,
-      loses: (pct: number) => `Prediction: loses (foe left at ~${pct}%)`,
     },
     text: {
       sends: (trainer: string, mon: string) => `${trainer} sent out ${mon}!`,
       go: (mon: string) => `Go, ${mon}!`,
       comeBack: (mon: string) => `${mon}, come back!`,
-      faster: (mon: string) => `${mon} is faster and strikes first!`,
       attacks: (mon: string, stat: string) => `${mon} attacks with ${stat}!`,
       faints: (mon: string) => `${mon} fainted!`,
     },

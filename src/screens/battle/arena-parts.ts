@@ -91,15 +91,14 @@ export function hpBoxHTML(f: Fighter): string {
   const pct = hpPct(f);
   const max = f.card.stats.hp;
   return `
-    <div class="hpbox-name"><b>${esc(monName(f.card))}</b><small>${esc(L().core.card.level)} ${fmt(f.card.level)}</small>
-      <span class="hpbox-first" title="${esc(L().battle.arena.faster)}">${icon('bolt')}</span></div>
+    <div class="hpbox-name"><b>${esc(monName(f.card))}</b><small>${esc(L().core.card.level)} ${fmt(f.card.level)}</small></div>
     <div class="hpbar" data-tone="${hpTone(pct)}" role="meter" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${f.hp}"
       aria-label="${esc(L().core.stats.hp)}"><span class="hpbar-label">${esc(L().core.statsShort.hp)}</span><i style="width:${pct}%"></i></div>
     <span class="hpbox-num"><b data-hp>${fmt(f.hp)}</b>/${fmt(max)}</span>`;
 }
 
-/** Side panel: the Pokémon's card and stats. Against a foe, marks the stat it attacks with and who is faster. */
-export function sideHTML(f: Fighter | null, foe: { uses: 'atk' | 'spa'; mult: number; first: boolean } | null, dropHint = false): string {
+/** Side panel: the Pokémon's card and stats. Against a foe, marks the stat it attacks with. */
+export function sideHTML(f: Fighter | null, foe: { uses: 'atk' | 'spa'; mult: number } | null, dropHint = false): string {
   const t = L().battle.arena;
   const core = L().core;
   if (!f) {
@@ -110,12 +109,9 @@ export function sideHTML(f: Fighter | null, foe: { uses: 'atk' | 'spa'; mult: nu
   const c = f.card;
   const rows = STAT_IDS.map(id => {
     const uses = foe?.uses === id;
-    const fast = id === 'spe' && foe?.first;
     const value = id === 'hp' ? `${fmt(f.hp)}<small>/${fmt(c.stats.hp)}</small>` : fmt(c.stats[id]);
-    const mark = uses ? ` <em class="stat-mult ${foe!.mult > 1 ? 'up' : foe!.mult < 1 ? 'down' : ''}">${multText(foe!.mult)}</em>`
-      : fast ? ` <em class="stat-fast">${icon('bolt')}</em>` : '';
-    const title = uses ? t.usesStat : fast ? t.faster : '';
-    return `<div class="stat ${uses ? 'uses' : ''} ${fast ? 'fast' : ''}" data-stat="${id}" ${title ? `title="${esc(title)}"` : ''}>
+    const mark = uses ? ` <em class="stat-mult ${foe!.mult > 1 ? 'up' : foe!.mult < 1 ? 'down' : ''}">${multText(foe!.mult)}</em>` : '';
+    return `<div class="stat ${uses ? 'uses' : ''}" data-stat="${id}" ${uses ? `title="${esc(t.usesStat)}"` : ''}>
       <span class="stat-label"><span class="full">${esc(core.stats[id])}</span><span class="short">${esc(core.statsShort[id])}</span></span>
       <b>${value}${mark}</b></div>`;
   }).join('');
@@ -156,20 +152,14 @@ export interface Preview {
   opp: BattleCard;
   yourMult: number;
   theirMult: number;
-  first: Side;
-  /** Predicted outcome (only when hints are on): winner and the HP % the winner keeps. */
-  predict?: { winner: Side; pct: number };
 }
 
 export function previewHTML(p: Preview): string {
   const t = L().battle.arena.preview;
-  const firstName = monName(p.first === 'you' ? p.you : p.opp);
   return `
     <div class="preview">
       ${chipHTML(p.yourMult, p.theirMult, t.yours)}
       ${chipHTML(p.theirMult, p.yourMult, t.theirs)}
-      <span class="pv-first ${p.first}">${icon('bolt')} ${esc(t.first(firstName))}</span>
-      ${p.predict ? `<span class="pv-predict ${p.predict.winner === 'you' ? 'good' : 'bad'}">${esc(p.predict.winner === 'you' ? t.wins(p.predict.pct) : t.loses(p.predict.pct))}</span>` : ''}
     </div>`;
 }
 

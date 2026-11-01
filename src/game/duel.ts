@@ -71,7 +71,7 @@ export function fightDuel(you: Fighter, opp: Fighter): DuelResult {
   return { hits, winner: you.hp > 0 ? 'you' : 'opp' };
 }
 
-/** Predicts a duel without touching the real fighters (for hints and the opponent's planning). */
+/** Predicts a duel without touching the real fighters (balance simulations, future opponent planning). */
 export const previewDuel = (you: Fighter, opp: Fighter) => fightDuel({ ...you }, { ...opp });
 
 // --- A whole battle -------------------------------------------------------------------------------

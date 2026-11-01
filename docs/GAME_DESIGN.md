@@ -79,7 +79,7 @@ HP battles, 6 against 6 (rules in `src/game/duel.ts`, arena in `src/screens/batt
   the field (card, stats, exact HP).
 - **The player's decisions**: who goes in first, who replaces a fainted Pokémon, and an optional free switch each
   time a new opponent enters (keep the damaged survivor in, or send another; whoever leaves keeps its HP).
-  Choosing shows the type multipliers and who strikes first; Training also predicts the outcome.
+  Choosing shows the type multipliers of the matchup; the rest (Speed, stats, HP) is on the cards.
 - Duels play out automatically (tap to skip, 1×/2× speed). The side with Pokémon left wins; **perfect** = none of
   yours fainted.
 - **Training after every battle** (not forfeits): after a win you pick a team member to gain +1 level (+2 for a

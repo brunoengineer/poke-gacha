@@ -67,7 +67,6 @@ const battle = {
     advantage: 'Vantagem de tipo',
     disadvantage: 'Desvantagem de tipo',
     usesStat: 'Ataca com este atributo',
-    faster: 'Mais rápido: ataca primeiro',
     skipHint: 'Toque no campo para pular',
     effect: {
       1.6: 'Extremamente efetivo',
@@ -93,15 +92,11 @@ const battle = {
     preview: {
       yours: 'Seu golpe',
       theirs: 'Golpe rival',
-      first: (mon: string) => `${mon} ataca primeiro`,
-      wins: (pct: number) => `Previsão: vence com ~${pct}% de PS`,
-      loses: (pct: number) => `Previsão: perde (o rival fica com ~${pct}%)`,
     },
     text: {
       sends: (trainer: string, mon: string) => `${trainer} enviou ${mon}!`,
       go: (mon: string) => `Vai, ${mon}!`,
       comeBack: (mon: string) => `${mon}, volte!`,
-      faster: (mon: string) => `${mon} é mais rápido e ataca primeiro!`,
       attacks: (mon: string, stat: string) => `${mon} ataca com ${stat}!`,
       faints: (mon: string) => `${mon} desmaiou!`,
     },

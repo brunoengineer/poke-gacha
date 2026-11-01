@@ -623,8 +623,6 @@ html.arena-open { overflow: hidden; }
 .arena-layer .stat-mult { color: var(--muted); }
 .arena-layer .stat-mult.up { color: var(--success); }
 .arena-layer .stat-mult.down { color: #ff9a9a; }
-.arena-layer .stat.fast { border-color: rgba(90, 169, 255, 0.5); background: rgba(90, 169, 255, 0.08); }
-.arena-layer .stat-fast .i { width: 12px; height: 12px; color: #8cc4ff; }
 
 /* --- Arena: the field ------------------------------------------------------------------------------- */
 
@@ -756,19 +754,6 @@ html.arena-open { overflow: hidden; }
 .arena-layer .hpbox-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .arena-layer .hpbox-name b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-pixel); font-size: 16px; font-weight: 700; }
 .arena-layer .hpbox-name small { font-family: var(--font-pixel); font-size: 13px; font-weight: 700; color: #5a6380; white-space: nowrap; }
-.arena-layer .hpbox-first {
-    display: none;
-    place-items: center;
-    align-self: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #2f6fd6;
-    color: #fff;
-}
-.arena-layer .hpbox-first .i { width: 12px; height: 12px; }
-.arena-layer .hpbox.first .hpbox-first { display: grid; animation: chip-in .3s var(--ease); }
-.arena-layer .hpbox.first { box-shadow: inset 0 0 0 2px #d8d4c4, 0 0 0 3px rgba(90, 169, 255, 0.55), 0 8px 20px rgba(0, 0, 0, 0.35); }
 .arena-layer .hpbar {
     position: relative;
     display: flex;
@@ -878,22 +863,6 @@ html.arena-open { overflow: hidden; }
 .arena-layer .prompt-text span { color: var(--muted); font-size: 13.5px; }
 .arena-layer .preview { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px 8px; max-width: 540px; }
 .arena-layer .chip .chip-label { color: var(--dim); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
-.arena-layer .pv-first, .arena-layer .pv-predict {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-height: 28px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.arena-layer .pv-first { background: rgba(90, 169, 255, 0.12); border: 1px solid rgba(90, 169, 255, 0.4); color: #b8d8ff; }
-.arena-layer .pv-first.opp { background: rgba(240, 106, 106, 0.1); border-color: rgba(240, 106, 106, 0.4); color: #ffc2c2; }
-.arena-layer .pv-first .i { width: 13px; height: 13px; }
-.arena-layer .pv-predict.good { background: rgba(79, 209, 139, 0.14); border: 1px solid rgba(79, 209, 139, 0.5); color: #9ff0c0; }
-.arena-layer .pv-predict.bad { background: rgba(240, 106, 106, 0.12); border: 1px solid rgba(240, 106, 106, 0.45); color: #ffb3b3; }
 .arena-layer .prompt-actions { display: flex; flex-shrink: 0; gap: 8px; }
 .arena-layer .prompt-actions:empty { display: none; }
 .arena-layer .prompt-actions .btn { white-space: nowrap; }
@@ -1250,9 +1219,7 @@ html.arena-open { overflow: hidden; }
     .arena-layer .hpbar { height: 10px; padding-left: 20px; }
     .arena-layer .hpbar i { height: 5px; }
     .arena-layer .hpbar-label { left: 5px; font-size: 7px; }
-    .arena-layer .hpbox-first { width: 16px; height: 16px; }
-    .arena-layer .hpbox-first .i { width: 10px; height: 10px; }
-    .arena-layer .scene-text { left: 8px; right: 8px; bottom: 8px; min-height: 0; padding: 6px 10px; font-size: 13px; border-width: 2px; }
+        .arena-layer .scene-text { left: 8px; right: 8px; bottom: 8px; min-height: 0; padding: 6px 10px; font-size: 13px; border-width: 2px; }
     .arena-layer .pop { font-size: 22px; }
     .arena-layer .pop-dmg.big { font-size: 28px; }
     .arena-layer .pop small { font-size: 9px; }
@@ -1270,7 +1237,6 @@ html.arena-open { overflow: hidden; }
     .arena-layer .stat b { gap: 2px; }
     .arena-layer .stat b small { font-size: 9px; }
     .arena-layer .stat em { font-size: 9px; }
-    .arena-layer .stat-fast .i { width: 9px; height: 9px; }
 
     .arena-prompt { min-height: 0; }
     .arena-layer .prompt { flex-wrap: wrap; gap: 8px; padding: 10px 10px 10px 12px; border-radius: 14px; }
@@ -1285,8 +1251,7 @@ html.arena-open { overflow: hidden; }
     .arena-layer .chip b { font-size: 13px; }
     .arena-layer .chip small:not(.chip-label) { display: none; }
     .arena-layer .chip .chip-label { font-size: 9px; }
-    .arena-layer .pv-first, .arena-layer .pv-predict { min-height: 24px; padding: 2px 8px; font-size: 11.5px; white-space: normal; }
-    .arena-layer .prompt-actions { width: 100%; }
+        .arena-layer .prompt-actions { width: 100%; }
     .arena-layer .prompt-actions .btn { flex: 1; min-width: 0; min-height: 40px; padding-inline: 10px; overflow: hidden; text-overflow: ellipsis; }
 
     .arena-layer .hand-wrap { padding: 8px 8px 10px; border-radius: 16px; }
