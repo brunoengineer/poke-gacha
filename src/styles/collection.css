@@ -968,3 +968,22 @@
 @media (prefers-reduced-motion: reduce) {
     .evo-rays, .dex-evolve::before, .dex-onboard-ball .i, .evo-intro { animation: none; }
 }
+
+/* Shiny Hunt entry in the details modal. */
+.dx-hunt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background:
+        linear-gradient(var(--surface), var(--surface)) padding-box,
+        linear-gradient(135deg, rgba(255, 157, 226, 0.5), rgba(255, 226, 154, 0.5), rgba(155, 231, 255, 0.5)) border-box;
+    border: 1px solid transparent;
+}
+.dx-hunt-text { flex: 1 1 240px; display: grid; gap: 4px; }
+.dx-hunt-text .label { display: inline-flex; align-items: center; gap: 6px; }
+.dx-hunt-text .label .i { width: 15px; height: 15px; color: #ffe29a; }
+.dx-hunt-text p { color: var(--muted); font-size: 13px; }
+.dx-hunt-fee { margin-left: 4px; opacity: .75; font-weight: 600; }

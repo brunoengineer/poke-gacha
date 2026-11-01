@@ -1,4 +1,4 @@
-// Battle tab: a hub with the player's team and the five modes, routed as #/battle/<mode>.
+// Battle tab: a hub with the player's team and the six modes, routed as #/battle/<mode>.
 // Each mode is a ModeModule rendered under a small header with a back button; battles themselves run in
 // the full-screen arena (arena.ts), opened by the modes.
 
@@ -7,6 +7,7 @@ import { playerRank } from '../../game/modes/competition';
 import { johtoGymsOpen, REGION_GYMS, regionBadges } from '../../game/modes/gyms';
 import { leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
 import { FRIENDS } from '../../game/modes/training';
+import { getSpecies } from '../../data/species';
 import { trainerSpriteUrl } from '../../data/sprites';
 import { L } from '../../i18n';
 import { on, store } from '../../state/store';
@@ -17,21 +18,23 @@ import { badgeSVG } from './badges';
 import { regionLabel } from './regions';
 import { competitionMode } from './competition';
 import { gymsMode } from './gyms';
+import { huntMode } from './hunt';
 import { leagueMode } from './league';
 import { leagueOpen, teamSummaryHTML } from './team';
 import { towerOpen, towerMode } from './tower';
 import { trainingMode } from './training';
 
-type ModeId = 'training' | 'competition' | 'gyms' | 'tower' | 'league';
+type ModeId = 'training' | 'competition' | 'gyms' | 'hunt' | 'tower' | 'league';
 
 const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; color: string }> = {
   training: { module: trainingMode, icon: 'users', art: ['youngster', 'oak', 'lass'], color: '#4fd18b' },
   competition: { module: competitionMode, icon: 'trophy', art: ['acetrainerf', 'acetrainer'], color: '#5aa9ff' },
   gyms: { module: gymsMode, icon: 'medal', art: ['misty', 'brock', 'whitney'], color: '#f5b84b' },
+  hunt: { module: huntMode, icon: 'sparkle', art: ['pokemonrangerf', 'pokemaniac', 'pokemonranger'], color: '#7fdcff' },
   tower: { module: towerMode, icon: 'tower', art: ['veteranf', 'acetrainer', 'veteran'], color: '#ff8a5c' },
   league: { module: leagueMode, icon: 'crown', art: ['karen', 'lance', 'blue'], color: '#c58cff' },
 };
-const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'tower', 'league'];
+const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'hunt', 'tower', 'league'];
 
 let section: HTMLElement;
 let current: ModeId | null = null;
@@ -127,6 +130,11 @@ function modeCardHTML(id: ModeId): string {
       <span class="mode-pill">${icon('medal')} ${esc(t.regionBadges(regionLabel('kanto'), regionBadges(s.gyms, 'kanto')))}</span>
       <span class="mode-pill${johtoOpen ? '' : ' locked'}">${icon(johtoOpen ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel('johto'), regionBadges(s.gyms, 'johto')))}</span>
       <span class="mode-badges">${shown.map(g => badgeSVG(g.badge, { earned: s.gyms.badges.includes(g.badge), label: false })).join('')}</span>`;
+  }
+  if (id === 'hunt') {
+    const { target, chain } = s.hunt;
+    status = `<span class="mode-pill">${icon('sparkle')} ${esc(target != null ? t.huntStatus(getSpecies(target).name, chain) : t.huntNone)}</span>`
+      + (s.hunt.shinies ? `<span class="mode-pill">${esc(t.huntFound(s.hunt.shinies))}</span>` : '');
   }
   if (id === 'tower') {
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.towerLocked)}</span>`

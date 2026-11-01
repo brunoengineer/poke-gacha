@@ -14,8 +14,8 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **The easter egg**: unevolved base forms and shiny cards have no level cap. A Lv. 250 Charmander outgrows a Lv. 100 Charizard.
 - **Foil cards**: a card that reaches Lv. 100 turns into a shining gold foil.
 - **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
-- **Five modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Infinity Tower (+2 levels per floor,
-  no top), Pokémon League (Top 16 → Champion).
+- **Six modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Shiny Hunt (chain wins on one species
+  for its shiny), Infinity Tower (+2 levels per floor, no top), Pokémon League (Top 16 → Champion).
 - **Synthesized chiptune** sound effects and original music, plus the Pokémon cries.
 
 The full rules and numbers are in [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md).
@@ -57,7 +57,7 @@ src/
   game/        Pure game rules (tested): cards, progression, gacha, battle, duel, teams, rewards, economy, modes/
   state/       Save format, store (events + local/cloud persistence), actions, Firebase
   ui/          Shell (header + router), login, card renderer, modals/toasts, drag and drop, effects, rewards, settings
-  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, competition, tower, league)
+  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, competition, hunt, tower, league)
   audio/       Synthesized sound effects, music sequencer, cries
   i18n/        pt-BR and English strings, one namespace per feature
   styles/      base.css (tokens, layout, shared components) + one CSS file per feature

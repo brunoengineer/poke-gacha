@@ -11,12 +11,14 @@ import {
   cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, parseKey, rarity, requiredItem, requiredLevel, STAT_IDS, statsAt, type CardKey,
 } from '../../game/cards';
 import { DECK_SIZE } from '../../game/economy';
+import { CHAIN_MAX, entryFee, huntBlock, shinyOdds } from '../../game/modes/hunt';
 import { evolutionOptions, previewEvolution, transferTargets, type EvolutionOption } from '../../game/progression';
 import { fmt, getLang, L } from '../../i18n';
 import { inDeck } from '../../state/actions';
 import { on, store } from '../../state/store';
 import { bindTilt, cardHTML, rarityPips, typeBadge } from '../../ui/card';
 import { esc, icon, isTopModal, openModal } from '../../ui/dom';
+import { huntSpecies } from '../battle/hunt';
 import { candyHTML, feedCandy } from './candy';
 import { evolveFlow, requirementHTML, transferFlow } from './evolution';
 import { toggleTeam } from './team';
@@ -100,6 +102,10 @@ export function openDetails(key: CardKey, list: CardKey[] = []) {
         }
         return;
       }
+      case 'hunt': {
+        if (await huntSpecies(parseKey(current).id)) modal.close();
+        return;
+      }
       case 'capture': return modal.close();
     }
   });
@@ -160,6 +166,7 @@ function template(key: CardKey, list: CardKey[]): string {
         ${state === 'owned' ? levelHTML(key) : registeredHTML(sp)}
         ${statsHTML(sp, state === 'owned' ? card.level : null, shiny)}
         ${state === 'owned' ? actionsHTML(key) : ''}
+        ${huntHTML(id)}
         ${familyHTML(sp, key)}
         ${matchupsHTML(sp.types)}`}
     </div>`;
@@ -278,6 +285,25 @@ function actionsHTML(key: CardKey) {
           <h3 class="label">${esc(t.evolveTitle)}</h3>
           ${rows.join('')}
         </div>` : canEver && shiny ? `<p class="hint">${esc(t.shinyNoEvolve)}</p>` : ''}
+    </section>`;
+}
+
+/** Shiny Hunt entry for a caught species (legendaries get a note instead of the button). */
+function huntHTML(id: number) {
+  const t = L().collection.details;
+  const block = huntBlock(id, s().caught);
+  if (block === 'not-caught') return '';
+  const hunt = s().hunt;
+  const current = hunt.target === id;
+  const text = block ? t.huntLegendary : current ? t.huntCurrent(hunt.chain, shinyOdds(hunt.chain)) : t.huntText(shinyOdds(0), shinyOdds(CHAIN_MAX));
+  return `
+    <section class="dx-section dx-hunt">
+      <div class="dx-hunt-text">
+        <h3 class="label">${icon('sparkle')} ${esc(t.huntTitle)}</h3>
+        <p>${esc(text)}</p>
+      </div>
+      ${block ? '' : `<button class="btn btn-secondary" type="button" data-act="hunt">${icon('search')} ${esc(current ? t.huntContinue : t.hunt)}
+        <small class="dx-hunt-fee">₽ ${fmt(entryFee(id))}</small></button>`}
     </section>`;
 }
 

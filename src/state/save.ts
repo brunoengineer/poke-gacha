@@ -22,6 +22,7 @@ import type { CardKey } from '../game/cards';
 import { STARTING_COINS } from '../game/economy';
 import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
 import { defaultGymSave, type GymSave } from '../game/modes/gyms';
+import { defaultHuntSave, type HuntSave } from '../game/modes/hunt';
 import { defaultLeagueSave, type LeagueSave } from '../game/modes/league';
 import { defaultTowerSave, type TowerSave } from '../game/modes/tower';
 import { defaultTrainingSave, type TrainingSave } from '../game/modes/training';
@@ -68,6 +69,8 @@ export interface SaveData {
   league: LeagueSave;
   /** Infinity Tower progress (added after the Johto release; older saves start at floor 1). */
   tower: TowerSave;
+  /** Shiny Hunt: target species and chain (added after the Johto release; older saves start with no target). */
+  hunt: HuntSave;
   stats: {
     pulls: number;
     shinies: number;
@@ -103,6 +106,7 @@ export function defaultSave(): SaveData {
     ladder: defaultLadderSave(),
     league: defaultLeagueSave(),
     tower: defaultTowerSave(),
+    hunt: defaultHuntSave(),
     stats: { pulls: 0, shinies: 0, evolutions: 0, battles: 0, wins: 0, losses: 0, coinsEarned: 0, candiesUsed: 0 },
     daily: { last: null, streak: 0 },
     pity: {},
@@ -147,6 +151,7 @@ export function normalizeSave(raw: unknown): SaveData {
     ladder: merge(d.ladder, s.ladder),
     league: merge(d.league, s.league),
     tower: merge(d.tower, s.tower),
+    hunt: merge(d.hunt, s.hunt),
     stats: merge(d.stats, s.stats),
     daily: merge(d.daily, s.daily),
     pity: isObject(s.pity) ? (s.pity as SaveData['pity']) : {},

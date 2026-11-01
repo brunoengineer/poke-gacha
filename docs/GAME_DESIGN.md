@@ -162,6 +162,18 @@ Rematches (both regions): +10 levels per rematch (up to +40), half the coins plu
 Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; the Kanto League needs the 8 Kanto badges,
 the Johto Gyms the 8 Kanto badges and the Johto League the 8 Johto badges (`UNLOCK_BADGES`, `JOHTO_UNLOCK_BADGES`).
 
+### Shiny Hunt: chains on one species
+Pick a caught species in the Pokédex (card details → **Hunt**) and battle wild hordes of it, one paid attempt at a
+time. Legendary and mythical Pokémon can't be hunted; neither can species never caught (captures keep their surprise).
+
+- **Horde**: six wild Pokémon of that species at the team's average level ±1.
+- **Entry fee** by rarity: Common ₽100, Uncommon ₽150, Rare ₽250, Epic ₽400 (a copy costs about a Mart Rare Candy).
+- **Each win**: 35% chance of a copy (new card or +1 level), plus the shiny chance of the chain.
+- **Chain**: consecutive wins on the same species. Shiny chance = (1 + 0.23 × chain) / 256, capped at chain 40:
+  1/256 at 0, 1/78 at 10, 1/38 at 25, 1/25 at 40+. A loss or forfeit breaks the chain; switching species restarts it
+  (the game asks first). Finding the shiny doesn't break it.
+- Roughly 40–60 hunts per shiny: about ₽5k for a Common, ₽20k for an Epic, plus the battles.
+
 ### Infinity Tower: the endless climb
 Opens with the first badge (`TOWER_UNLOCK_BADGES`). One battle per floor; there is no top floor, the point is how far
 a player gets.
