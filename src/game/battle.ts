@@ -1,11 +1,8 @@
-// Battle rules. A battle is DECK_SIZE rounds: the opponent's card for the round is shown (its stats stay hidden),
-// the player answers with one of their cards and picks a stat. Both values are multiplied by type advantage
-// (each side's best attacking type against the other's types) and the higher value wins the round.
-// Ties in the final score are broken by the sum of all compared values, so battles always have a winner.
+// Battle cards and type advantage, shared by the HP battle rules (duel.ts), team building and the UI.
 
 import { getSpecies } from '../data/species';
 import { bestEffectiveness, type PokemonType } from '../data/types';
-import { power, statsAt, type StatId, type Stats } from './cards';
+import { power, statsAt, type Stats } from './cards';
 
 export interface TeamMember {
   id: number;
@@ -53,51 +50,6 @@ export function matchup(you: BattleCard, opp: BattleCard): Matchup {
     you: { effectiveness: youEff, mult: typeMultiplier(youEff) },
     opp: { effectiveness: oppEff, mult: typeMultiplier(oppEff) },
   };
-}
-
-export type RoundOutcome = 'win' | 'lose' | 'draw';
-
-export interface RoundResult {
-  stat: StatId;
-  you: BattleCard;
-  opp: BattleCard;
-  /** Values after type multipliers (rounded). */
-  youValue: number;
-  oppValue: number;
-  matchup: Matchup;
-  outcome: RoundOutcome;
-}
-
-export function resolveRound(you: BattleCard, opp: BattleCard, stat: StatId): RoundResult {
-  const m = matchup(you, opp);
-  const youValue = Math.round(you.stats[stat] * m.you.mult);
-  const oppValue = Math.round(opp.stats[stat] * m.opp.mult);
-  const outcome: RoundOutcome = youValue > oppValue ? 'win' : youValue < oppValue ? 'lose' : 'draw';
-  return { stat, you, opp, youValue, oppValue, matchup: m, outcome };
-}
-
-export interface BattleSummary {
-  result: 'win' | 'lose' | 'draw';
-  score: { you: number; opp: number };
-  /** True when the score was tied and the value totals decided it. */
-  tiebreak: boolean;
-  totals: { you: number; opp: number };
-  perfect: boolean;
-}
-
-export function summarize(rounds: RoundResult[]): BattleSummary {
-  const score = { you: 0, opp: 0 };
-  const totals = { you: 0, opp: 0 };
-  for (const r of rounds) {
-    if (r.outcome === 'win') score.you++;
-    if (r.outcome === 'lose') score.opp++;
-    totals.you += r.youValue;
-    totals.opp += r.oppValue;
-  }
-  let result: BattleSummary['result'] = score.you > score.opp ? 'win' : score.you < score.opp ? 'lose' : 'draw';
-  const tiebreak = result === 'draw' && totals.you !== totals.opp;
-  if (tiebreak) result = totals.you > totals.opp ? 'win' : 'lose';
-  return { result, score, tiebreak, totals, perfect: score.you === rounds.length && rounds.length > 0 };
 }
 
 /** Average power of a team (used to scale opponents and show difficulty). */

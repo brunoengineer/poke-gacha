@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { defaultSave } from '../state/save';
 import { cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, rarity, startLevel, statsAt } from './cards';
 import { getSpecies, stage } from '../data/species';
-import { addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, previewEvolution, useCandies } from './progression';
+import { addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, previewEvolution, trainAfterBattle, useCandies } from './progression';
 import { generateTeam, evolveForLevel } from './teams';
-import { resolveRound, summarize, toBattleCard, typeMultiplier } from './battle';
+import { matchup, toBattleCard, typeMultiplier } from './battle';
 import { BANNERS, pull, rarityOdds, roll, safariFeatured } from './gacha';
 import { seeded } from './rng';
 import { applyRewards } from './rewards';
@@ -14,11 +14,11 @@ const CHARMELEON = 5;
 const CHARIZARD = 6;
 
 describe('cards', () => {
-  it('starts evolved species at half their evolution level', () => {
+  it('starts every card at Lv. 1, evolved forms and legendaries included', () => {
     expect(startLevel(CHARMANDER)).toBe(1);
-    expect(startLevel(CHARMELEON)).toBe(8);
-    expect(startLevel(CHARIZARD)).toBe(18);
-    expect(startLevel(150)).toBe(40); // Mewtwo
+    expect(startLevel(CHARMELEON)).toBe(1);
+    expect(startLevel(CHARIZARD)).toBe(1);
+    expect(startLevel(150)).toBe(1); // Mewtwo
   });
 
   it('caps evolved and non-evolving cards at 100, but not unevolved base forms or shinies', () => {
@@ -200,19 +200,9 @@ describe('battle', () => {
   it('applies type advantage', () => {
     const squirtle = toBattleCard({ id: 7, level: 10 });
     const charmander = toBattleCard({ id: CHARMANDER, level: 10 });
-    const round = resolveRound(squirtle, charmander, 'atk');
-    expect(round.matchup.you.mult).toBe(typeMultiplier(2));
-    expect(round.matchup.opp.mult).toBe(typeMultiplier(0.5));
-  });
-
-  it('breaks score ties with value totals', () => {
-    const a = toBattleCard({ id: 150, level: 50 });
-    const b = toBattleCard({ id: 19, level: 2 });
-    const win = resolveRound(a, b, 'spa');
-    const lose = resolveRound(b, a, 'hp');
-    const summary = summarize([win, lose]);
-    expect(summary.score).toEqual({ you: 1, opp: 1 });
-    expect(summary.tiebreak).toBe(true);
+    const m = matchup(squirtle, charmander);
+    expect(m.you.mult).toBe(typeMultiplier(2));
+    expect(m.opp.mult).toBe(typeMultiplier(0.5));
   });
 });
 
@@ -305,5 +295,24 @@ describe('regions', () => {
     const rng = seeded(4);
     for (let i = 0; i < 30; i++) expect([243, 244, 245, 249, 250, 251]).toContain(roll('master', rng, { region: 2 }).id);
     expect(rarityOdds('poke', 2).common).toBeGreaterThan(0.5);
+  });
+});
+
+describe('training after battles', () => {
+  it('lets the player pick after a win (+1, +2 if perfect) and picks at random after a loss', () => {
+    const save = defaultSave();
+    save.cards[cardKey(4)] = { level: 10, copies: 1, obtainedAt: 0 };
+    save.cards[cardKey(7)] = { level: 10, copies: 1, obtainedAt: 0 };
+    expect(trainAfterBattle(save, ['4', '7'], 'win', false, '7', () => 0)!).toMatchObject({ key: '7', levels: 1, from: 10, to: 11, candy: 0 });
+    expect(trainAfterBattle(save, ['4', '7'], 'win', true, '4')!).toMatchObject({ key: '4', levels: 2, to: 12 });
+    // A loss ignores the pick.
+    expect(trainAfterBattle(save, ['4', '7'], 'lose', false, '4', () => 0.9)!).toMatchObject({ key: '7', levels: 1 });
+  });
+
+  it('turns levels past the cap into Rare Candy', () => {
+    const save = defaultSave();
+    save.cards[cardKey(6)] = { level: 99, copies: 1, obtainedAt: 0 };
+    expect(trainAfterBattle(save, ['6'], 'win', true, '6')).toMatchObject({ from: 99, to: 100, candy: 1 });
+    expect(save.items['rare-candy']).toBe(1);
   });
 });

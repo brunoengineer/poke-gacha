@@ -143,7 +143,7 @@ const capture: typeof pt = {
     claim: 'Open gift',
     day: (day: number) => `Day ${n(day)}`,
     streak: (days: number) => `${plural(days, 'day', 'days')} streak`,
-    ballEvery: 'Come back every day: every 7th day in a row brings a Great Ball.',
+    ballEvery: 'Come back every day: every 7th day in a row brings a Master Ball.',
     claimedTitle: 'Gift claimed',
     tomorrow: (coins: string) => `Tomorrow: ${coins}`,
     gotTitle: (day: number) => (day > 1 ? `${n(day)} days in a row!` : 'Daily gift!'),

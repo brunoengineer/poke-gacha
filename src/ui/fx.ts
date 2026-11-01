@@ -5,16 +5,17 @@ import { fxSpeed, reducedMotion } from './dom';
 /**
  * Chains animations (Web Animations API) with `await`.
  * `skip()` finishes everything running and makes the next steps resolve immediately.
- * Durations and delays are scaled by the "fast effects" setting.
+ * Durations and delays are scaled by the "fast effects" setting and by `scale` (e.g. a 2× battle speed).
  */
 export class Sequence {
   skipped = reducedMotion();
+  scale = 1;
   private running = new Set<Animation>();
   private waits = new Set<{ resolve: () => void; timer: ReturnType<typeof setTimeout> }>();
 
   anim(node: Element, keyframes: Keyframe[], options: KeyframeAnimationOptions = {}): Promise<void> {
     if (this.skipped) return Promise.resolve();
-    const speed = fxSpeed();
+    const speed = fxSpeed() * this.scale;
     const animation = node.animate(keyframes, {
       fill: 'both',
       ...options,
@@ -28,7 +29,7 @@ export class Sequence {
   wait(ms: number): Promise<void> {
     if (this.skipped) return Promise.resolve();
     return new Promise(resolve => {
-      const entry = { resolve, timer: setTimeout(() => { this.waits.delete(entry); resolve(); }, ms * fxSpeed()) };
+      const entry = { resolve, timer: setTimeout(() => { this.waits.delete(entry); resolve(); }, ms * fxSpeed() * this.scale) };
       this.waits.add(entry);
     });
   }

@@ -31,11 +31,11 @@ export function portrait(sprite: string, alt = '', cls = '') {
   return `<img class="trainer-portrait ${cls}" src="${esc(trainerSpriteUrl(sprite))}" alt="${esc(alt)}" width="80" height="80" loading="lazy" decoding="async" draggable="false">`;
 }
 
-/** Row of small sprites in type-colored bubbles. `hidden` shows Poké Ball silhouettes instead. */
-export function teamStrip(team: TeamMember[], { hidden = false, size = DECK_SIZE } = {}) {
+/** Row of small sprites in type-colored bubbles. */
+export function teamStrip(team: TeamMember[], { size = DECK_SIZE } = {}) {
   const slots = Array.from({ length: size }, (_, i) => team[i]);
-  return `<span class="team-strip${hidden ? ' is-hidden' : ''}">${slots.map(m => {
-    if (!m || hidden) return `<span class="team-dot is-empty">${hidden && m ? icon('ball') : ''}</span>`;
+  return `<span class="team-strip">${slots.map(m => {
+    if (!m) return '<span class="team-dot is-empty"></span>';
     const s = getSpecies(m.id);
     return `<span class="team-dot${m.shiny ? ' is-shiny' : ''}" style="--tc:${TYPE_COLOR[s.types[0]]}" title="${esc(`${s.name} · ${L().modes.level(m.level)}`)}">
       <img src="${esc(spriteUrl(m.id, !!m.shiny))}" alt="" width="96" height="96" loading="lazy" decoding="async" draggable="false"></span>`;

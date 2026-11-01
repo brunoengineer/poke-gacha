@@ -44,7 +44,7 @@ export interface Gym {
 }
 
 export const GYMS: Gym[] = [
-  { id: 'brock', leader: 'Brock', sprite: 'brock', type: 'rock', badge: 'boulder', levels: [12, 16],
+  { id: 'brock', leader: 'Brock', sprite: 'brock', type: 'rock', badge: 'boulder', levels: [15, 19],
     roster: [74, 27, 138, 140, 111, 95], coins: 250, items: [{ item: 'great-ball', amount: 3 }] },
   { id: 'misty', leader: 'Misty', sprite: 'misty', type: 'water', badge: 'cascade', levels: [18, 22],
     roster: [120, 118, 116, 90, 54, 121], coins: 500, items: [{ item: 'water-stone', amount: 1 }] },

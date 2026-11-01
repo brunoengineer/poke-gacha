@@ -1,6 +1,6 @@
 // Card progression rules, as pure functions over SaveData (they mutate the save they are given).
 //
-//   - New species -> new card (evolved species start at half their evolution level: a pulled Charizard is Lv. 18).
+//   - New species -> new card at Lv. 1 (evolved forms and legendaries too).
 //   - Duplicate -> +1 level. If the player evolved this species away (their Charmander became a Charmeleon), later
 //     copies go to that evolved card instead, so evolving never stalls a line. Owning an evolved form obtained directly
 //     (a pulled Arbok) doesn't count: the next Ekans becomes an Ekans card of its own.
@@ -78,6 +78,43 @@ export function candyRoom(save: SaveData, key: CardKey): number {
   if (!card) return 0;
   const { id, shiny } = parseKey(key);
   return Math.max(0, levelCap(id, shiny) - card.level);
+}
+
+/** Raises a card by up to `levels`; levels past its cap become Rare Candy. */
+export function addLevels(save: SaveData, key: CardKey, levels: number): { from: number; to: number; candy: number } {
+  const card = save.cards[key];
+  const from = card.level;
+  const gained = Math.min(levels, candyRoom(save, key));
+  card.level += gained;
+  const candy = levels - gained;
+  if (candy) addItem(save, RARE_CANDY, candy);
+  return { from, to: card.level, candy };
+}
+
+/** Levels a random team member gets after a battle (forfeits get nothing). */
+export const BATTLE_LEVELS = { win: 1, perfect: 2, lose: 1 } as const;
+
+export interface BattleTraining {
+  key: CardKey;
+  levels: number;
+  from: number;
+  to: number;
+  /** Levels that turned into Rare Candy because the card was at its cap. */
+  candy: number;
+}
+
+/**
+ * After a battle, one Pokémon of the team trains: after a win the player picks it (`chosen`) and it gets +1 level
+ * (+2 for a perfect win); after a loss a random one gets +1.
+ */
+export function trainAfterBattle(
+  save: SaveData, team: CardKey[], result: 'win' | 'lose', perfect: boolean, chosen: CardKey | null = null, rng: () => number = Math.random,
+): BattleTraining | null {
+  const keys = team.filter(key => save.cards[key]);
+  if (!keys.length) return null;
+  const key = result === 'win' && chosen && keys.includes(chosen) ? chosen : keys[Math.floor(rng() * keys.length)];
+  const levels = result === 'win' ? (perfect ? BATTLE_LEVELS.perfect : BATTLE_LEVELS.win) : BATTLE_LEVELS.lose;
+  return { key, levels, ...addLevels(save, key, levels) };
 }
 
 /** Uses up to `amount` Rare Candies on a card. Returns how many were used. */

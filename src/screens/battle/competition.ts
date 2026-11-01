@@ -285,7 +285,6 @@ async function challenge(slot: number) {
         winLine: lineFor(t().winLine, tr, 'win'),
         loseLine: lineFor(t().loseLine, tr, 'lose'),
       },
-      reveal: 'card',
       music: 'battle',
       stage: t().stage(shown),
     });
@@ -309,7 +308,7 @@ async function challenge(slot: number) {
     } else {
       await showRewards(applied, {
         title: t().loseTitle,
-        subtitle: outcome.result === 'draw' ? t().drawSub : t().loseSub(Math.min(LOSS_REPUTATION, result.ratingBefore)),
+        subtitle: t().loseSub(Math.min(LOSS_REPUTATION, result.ratingBefore)),
         tone: 'lose',
       });
     }

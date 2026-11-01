@@ -17,21 +17,23 @@ export const STARTERS = [1, 4, 7, 152, 155, 158];
 /** A duplicate of a card already at its level cap becomes Rare Candy instead. */
 export const OVERFLOW_CANDY = 1;
 
-/** Daily gift: coins grow with the streak (capped), Rare Candy every day, and a Great Ball every 7th day. */
+/** Daily gift: coins grow with the streak (capped), Rare Candy every day, and a Master Ball every 7th day. */
 export const DAILY_BASE = 80;
 export const DAILY_STREAK_BONUS = 10;
 export const DAILY_STREAK_CAP = 10;
 export const DAILY_BALL_EVERY = 7;
+/** Ball given on every DAILY_BALL_EVERY-th day of the streak. */
+export const DAILY_BALL = 'master-ball';
 export const DAILY_CANDY = 2;
 export const DAILY_CANDY_BALL_DAY = 5;
 
-export function dailyGift(streak: number): { coins: number; candy: number; greatBall: boolean } {
+export function dailyGift(streak: number): { coins: number; candy: number; ball: string | null } {
   const day = Math.max(1, streak);
-  const greatBall = day % DAILY_BALL_EVERY === 0;
+  const ballDay = day % DAILY_BALL_EVERY === 0;
   return {
     coins: DAILY_BASE + DAILY_STREAK_BONUS * (Math.min(day, DAILY_STREAK_CAP) - 1),
-    candy: greatBall ? DAILY_CANDY_BALL_DAY : DAILY_CANDY,
-    greatBall,
+    candy: ballDay ? DAILY_CANDY_BALL_DAY : DAILY_CANDY,
+    ball: ballDay ? DAILY_BALL : null,
   };
 }
 

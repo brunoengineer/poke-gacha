@@ -6,7 +6,9 @@ import { getItem } from '../data/items';
 import { cardKey, type CardKey } from '../game/cards';
 import { DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
 import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
-import { addItem, evolve as evolveCard, useCandies as applyCandies, type EvolveResult } from '../game/progression';
+import {
+  addItem, evolve as evolveCard, trainAfterBattle, useCandies as applyCandies, type BattleTraining, type EvolveResult,
+} from '../game/progression';
 import { applyRewards, type AppliedReward, type Reward } from '../game/rewards';
 import { dayKey, previousDayKey } from '../game/rng';
 import type { Settings } from './save';
@@ -115,7 +117,7 @@ export const items = (item: string) => s().items[item] ?? 0;
 export const candies = () => items(RARE_CANDY);
 
 /** Daily gift, if not claimed today. Returns what was given, or null. */
-export function claimDaily(now = new Date()): { coins: number; candy: number; greatBall: boolean; streak: number } | null {
+export function claimDaily(now = new Date()): { coins: number; candy: number; ball: string | null; streak: number } | null {
   const today = dayKey(now);
   const { last, streak } = s().daily;
   if (last === today) return null;
@@ -127,7 +129,7 @@ export function claimDaily(now = new Date()): { coins: number; candy: number; gr
     applyRewards(save, [
       { kind: 'coins', amount: gift.coins },
       { kind: 'item', item: RARE_CANDY, amount: gift.candy },
-      ...(gift.greatBall ? [{ kind: 'item', item: 'great-ball', amount: 1 } as Reward] : []),
+      ...(gift.ball ? [{ kind: 'item', item: gift.ball, amount: 1 } as Reward] : []),
     ]);
   }, ['items']);
   return { ...gift, streak: nextStreak };
@@ -150,6 +152,16 @@ export function chooseStarter(id: number) {
 }
 
 // --- Battles ---------------------------------------------------------------------
+
+/**
+ * A Pokémon of the team trains after a battle (not for forfeits): after a win, the one the player picked (+1 level,
+ * +2 for a perfect win); after a loss, a random one (+1).
+ */
+export function trainTeamAfterBattle(result: 'win' | 'lose', perfect: boolean, chosen: CardKey | null = null): BattleTraining | null {
+  const trained = update(save => trainAfterBattle(save, save.deck, result, perfect, chosen), ['items']);
+  if (trained) emit('cards', [trained.key]);
+  return trained;
+}
 
 /** Records a finished battle in the global stats (modes record their own progress with update()). */
 export function recordBattle(result: 'win' | 'lose' | 'draw' | 'forfeit') {

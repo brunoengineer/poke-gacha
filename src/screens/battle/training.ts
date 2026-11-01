@@ -138,6 +138,7 @@ async function challenge(friend: Friend) {
     },
     stage: `${t.stage} · ${L().battle.difficulty[diff]}`,
     accent: friend.color,
+    hints: true,
   });
 
   const result = outcome.forfeit ? 'forfeit' : outcome.result;

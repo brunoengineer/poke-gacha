@@ -1,9 +1,9 @@
-// Daily gift card on the Capture screen: shows today's reward and the week track (a Great Ball every 7th day),
+// Daily gift card on the Capture screen: shows today's reward and the week track (a Master Ball every 7th day),
 // opens with a small gift animation, then stays as a compact "come back tomorrow" card.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
-import { DAILY_BALL_EVERY, dailyGift } from '../../game/economy';
+import { DAILY_BALL, DAILY_BALL_EVERY, dailyGift } from '../../game/economy';
 import { previousDayKey } from '../../game/rng';
 import { fmt, itemName, L } from '../../i18n';
 import { claimDaily, dailyAvailable } from '../../state/actions';
@@ -25,7 +25,7 @@ function trackHTML(day: number, claimed: boolean) {
       ${Array.from({ length: DAILY_BALL_EVERY }, (_, i) => {
         const n = i + 1;
         const state = n < pos || (claimed && n === pos) ? 'done' : n === pos ? 'today' : '';
-        const ball = n === DAILY_BALL_EVERY ? `<img src="${esc(itemSprite('great-ball'))}" alt="" width="24" height="24">` : '';
+        const ball = n === DAILY_BALL_EVERY ? `<img src="${esc(itemSprite(DAILY_BALL))}" alt="" width="24" height="24">` : '';
         return `<li class="${state}">${ball || (state === 'done' ? icon('check') : `<span>${n}</span>`)}</li>`;
       }).join('')}
     </ol>`;
@@ -36,7 +36,7 @@ function rewardChips(day: number) {
   return `
     <span class="daily-chip">${icon('coin', 'i-coin')}${fmt(gift.coins)}</span>
     <span class="daily-chip"><img src="${esc(itemSprite('rare-candy'))}" alt="" width="22" height="22">${esc(itemName('rare-candy'))} ×${gift.candy}</span>
-    ${gift.greatBall ? `<span class="daily-chip"><img src="${esc(itemSprite('great-ball'))}" alt="" width="22" height="22">${esc(itemName('great-ball'))}</span>` : ''}`;
+    ${gift.ball ? `<span class="daily-chip"><img src="${esc(itemSprite(gift.ball))}" alt="" width="22" height="22">${esc(itemName(gift.ball))}</span>` : ''}`;
 }
 
 export function dailyHTML() {

@@ -1,149 +1,194 @@
-// HTML pieces of the battle arena (src/screens/battle/arena.ts): layout, hand, stats, track, sprites,
-// intro and result panels. Pure templates: no state, no listeners.
+// HTML pieces of the battle arena (src/screens/battle/arena.ts): layout, team strips, HP boxes, side panels,
+// hand, choice prompt, intro and result panels. Pure templates: no state, no listeners.
 
 import { animatedBackSpriteUrl, animatedSpriteUrl, backSpriteUrl, spriteUrl } from '../../data/sprites';
 import { getSpecies } from '../../data/species';
-import { TYPE_COLOR } from '../../data/types';
-import type { BattleCard, RoundOutcome, RoundResult } from '../../game/battle';
-import { STAT_IDS, type StatId } from '../../game/cards';
+import type { BattleCard } from '../../game/battle';
+import { STAT_IDS } from '../../game/cards';
+import type { DuelLog, Fighter, Side } from '../../game/duel';
+import type { BattleTraining } from '../../game/progression';
 import { fmt, getLang, L } from '../../i18n';
-import { cardBackHTML, cardHTML, typeBadge } from '../../ui/card';
+import { cardHTML } from '../../ui/card';
 import { esc, icon } from '../../ui/dom';
-
-export const OUTCOME_ICON: Record<RoundOutcome, string> = { win: 'check', lose: 'x', draw: 'minus' };
 
 export const frontSprite = (c: Pick<BattleCard, 'id' | 'shiny'>) => animatedSpriteUrl(c.id, c.shiny) ?? spriteUrl(c.id, c.shiny);
 export const backSprite = (c: Pick<BattleCard, 'id' | 'shiny'>) => animatedBackSpriteUrl(c.id, c.shiny) ?? backSpriteUrl(c.id, c.shiny);
 export const staticFront = (c: Pick<BattleCard, 'id' | 'shiny'>) => spriteUrl(c.id, c.shiny);
 export const staticBack = (c: Pick<BattleCard, 'id' | 'shiny'>) => backSpriteUrl(c.id, c.shiny);
 
+const monName = (c: BattleCard) => getSpecies(c.id).name;
+
 /** Multiplier as shown to the player: ×1,3 (pt) / ×1.3 (en). */
 export const multText = (mult: number) => `×${getLang() === 'pt' ? String(mult).replace('.', ',') : String(mult)}`;
 
-export function layoutHTML(opts: { stage: string; opponentName: string; forfeitLabel: string }): string {
+/** HP as a percentage of max, and the bar color band. */
+export const hpPct = (f: Fighter) => Math.max(0, Math.min(100, (f.hp / f.card.stats.hp) * 100));
+export const hpTone = (pct: number) => (pct > 50 ? 'high' : pct > 20 ? 'mid' : 'low');
+
+export function layoutHTML(opts: { stage: string; opponentName: string; fast: boolean }): string {
   const t = L().battle.arena;
   return `
     <div class="arena">
       <header class="arena-bar">
-        <button class="btn btn-ghost btn-sm arena-forfeit" type="button" data-act="forfeit">${icon('flag')}<span>${esc(opts.forfeitLabel)}</span></button>
+        <button class="btn btn-ghost btn-sm arena-forfeit" type="button" data-act="forfeit">${icon('flag')}<span>${esc(t.forfeit)}</span></button>
         <div class="arena-info">
           <span class="arena-stage">${esc(opts.stage)}</span>
           <span class="arena-round" data-round></span>
         </div>
+        <button class="btn btn-ghost btn-sm arena-speed" type="button" data-act="speed" aria-pressed="${opts.fast}" aria-label="${esc(t.speed)}">
+          ${icon('bolt')}<b data-speed>${opts.fast ? '2×' : '1×'}</b></button>
+      </header>
+      <div class="arena-teams">
+        <ol class="team-balls you" aria-label="${esc(t.yourTeam)}"></ol>
         <div class="scoreboard" role="group" aria-label="${esc(t.scoreboard)}">
           <span class="score you"><small>${esc(t.you)}</small><b data-score="you">0</b></span>
           <span class="score-sep" aria-hidden="true">:</span>
           <span class="score opp"><b data-score="opp">0</b><small>${esc(opts.opponentName)}</small></span>
         </div>
-      </header>
-      <ol class="arena-track" aria-label="${esc(t.track)}"></ol>
+        <ol class="team-balls opp" aria-label="${esc(t.theirTeam(opts.opponentName))}"></ol>
+      </div>
       <div class="arena-main">
-        <section class="side side-you" aria-label="${esc(t.you)}">
-          <div class="side-card" data-drop="arena-slot"></div>
-          <div class="stats" role="group" aria-label="${esc(t.yourStats)}"></div>
-        </section>
-        <section class="scene" aria-label="${esc(t.label)}">
+        <section class="side side-you" aria-label="${esc(t.you)}"></section>
+        <section class="scene" data-drop="arena-field" aria-label="${esc(t.label)}">
           <div class="scene-bg" aria-hidden="true"><i class="scene-sun"></i><i class="scene-hill"></i></div>
-          <div class="mon mon-opp"><i class="platform" aria-hidden="true"></i><div class="mon-body"></div><div class="mon-tag"></div></div>
-          <div class="mon mon-you"><i class="platform" aria-hidden="true"></i><div class="mon-body"></div><div class="mon-tag"></div></div>
+          <div class="mon mon-opp"><i class="platform" aria-hidden="true"></i><div class="mon-body"></div></div>
+          <div class="mon mon-you"><i class="platform" aria-hidden="true"></i><div class="mon-body"></div></div>
+          <div class="hpbox hpbox-opp"></div>
+          <div class="hpbox hpbox-you"></div>
           <div class="scene-fx" aria-hidden="true"><div class="fx-particles"></div></div>
           <p class="scene-text" aria-live="polite"></p>
-          <div class="round-result"></div>
         </section>
-        <section class="side side-opp" aria-label="${esc(opts.opponentName)}">
-          <div class="side-card"></div>
-          <div class="stats" role="group" aria-label="${esc(t.oppStats)}"></div>
-        </section>
+        <section class="side side-opp" aria-label="${esc(opts.opponentName)}"></section>
       </div>
-      <div class="hand-wrap">
-        <div class="hand-head">
-          <span class="label">${esc(t.hand)}</span>
-          <span class="hand-tip">${esc(t.handTip)}</span>
+      <div class="arena-dock">
+        <div class="arena-prompt"></div>
+        <div class="hand-wrap">
+          <div class="hand-head">
+            <span class="label">${esc(t.hand)}</span>
+            <span class="hand-tip">${esc(t.handTip)}</span>
+          </div>
+          <div class="hand"></div>
         </div>
-        <div class="hand"></div>
       </div>
     </div>`;
 }
 
-/** Player's card slot: the chosen card (button to send it back) or the drop hint. */
-export function slotHTML(card: BattleCard | null, locked: boolean): string {
+/** One side's six Poké Balls. The opponent's Pokémon show their sprite once sent out. */
+export function teamBallsHTML(fighters: Fighter[], active: number | null, side: Side, seen = fighters.length): string {
   const t = L().battle.arena;
-  if (!card) return `<div class="drop-hint">${icon('ball')}<span>${esc(t.dropHint)}</span></div>`;
-  const name = getSpecies(card.id).name;
-  return `<button class="arena-pick" type="button" data-act="unselect" ${locked ? 'disabled' : ''} aria-label="${esc(t.returnCard(name))}">
-    ${cardHTML({ id: card.id, shiny: card.shiny, level: card.level }, { size: 'md', eager: true, animated: false })}</button>`;
-}
-
-/** Opponent card, as far as the reveal mode allows. */
-export function oppCardHTML(card: BattleCard, reveal: 'card' | 'type' | 'hidden'): string {
-  const t = L().battle.arena;
-  if (reveal === 'card') return cardHTML({ id: card.id, shiny: card.shiny, level: card.level }, { size: 'md', eager: true });
-  if (reveal === 'hidden') return `<div class="mystery-wrap" role="img" aria-label="${esc(t.hiddenCard)}">${cardBackHTML('md')}</div>`;
-  const [t1, t2] = card.types;
-  return `
-    <div class="mystery-card" role="img" aria-label="${esc(card.types.map(type => L().core.types[type]).join(' / '))}"
-      style="--t1:${TYPE_COLOR[t1]};--t2:${TYPE_COLOR[t2 ?? t1]}">
-      <div class="mystery-frame">
-        <span class="mystery-name">???</span>
-        <img class="mystery-sprite" src="${esc(staticFront(card))}" alt="" draggable="false">
-        <span class="mystery-types">${card.types.map(typeBadge).join('')}</span>
-      </div>
-    </div>`;
-}
-
-export function statsHTML(card: BattleCard | null, side: 'you' | 'opp', opts: { enabled?: boolean; hidden?: boolean } = {}): string {
-  const t = L();
-  return STAT_IDS.map(id => {
-    const labels = `<span class="stat-label"><span class="full">${esc(t.core.stats[id])}</span><span class="short">${esc(t.core.statsShort[id])}</span></span>`;
-    if (side === 'opp') {
-      const hidden = opts.hidden || !card;
-      return `<div class="stat ${hidden ? 'hidden' : ''}" data-stat="${id}">${labels}<b>${hidden ? '???' : fmt(card!.stats[id])}</b></div>`;
-    }
-    return `<button class="stat" type="button" data-stat="${id}" ${opts.enabled && card ? 'data-pick' : 'disabled'}>
-      ${labels}<b>${card ? fmt(card.stats[id]) : '—'}</b></button>`;
+  return fighters.map((f, i) => {
+    const state = side === 'opp' && i >= seen ? 'unseen' : f.hp <= 0 ? 'fainted' : i === active ? 'active' : 'standing';
+    const name = state === 'unseen' ? '???' : monName(f.card);
+    const inner = side === 'opp' && state !== 'unseen'
+      ? `<img src="${esc(staticFront(f.card))}" alt="" draggable="false">`
+      : icon('ball-color', 'tb-ball');
+    return `<li class="tb tb-${state}" aria-label="${esc(t.ballLabel(i + 1, name, t.ball[state]))}">${inner}${state === 'fainted' ? `<span class="tb-x">${icon('x')}</span>` : ''}</li>`;
   }).join('');
 }
 
-/** Hand card button. `edge` marks a type advantage/disadvantage against the current opponent. */
-export function handCardHTML(card: BattleCard, i: number, state: { outcome?: RoundOutcome; selected: boolean; disabled: boolean; edge: number | null }): string {
+/** Name, level and HP bar next to a Pokémon on the field. */
+export function hpBoxHTML(f: Fighter): string {
+  const pct = hpPct(f);
+  const max = f.card.stats.hp;
+  return `
+    <div class="hpbox-name"><b>${esc(monName(f.card))}</b><small>${esc(L().core.card.level)} ${fmt(f.card.level)}</small>
+      <span class="hpbox-first" title="${esc(L().battle.arena.faster)}">${icon('bolt')}</span></div>
+    <div class="hpbar" data-tone="${hpTone(pct)}" role="meter" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${f.hp}"
+      aria-label="${esc(L().core.stats.hp)}"><span class="hpbar-label">${esc(L().core.statsShort.hp)}</span><i style="width:${pct}%"></i></div>
+    <span class="hpbox-num"><b data-hp>${fmt(f.hp)}</b>/${fmt(max)}</span>`;
+}
+
+/** Side panel: the Pokémon's card and stats. Against a foe, marks the stat it attacks with and who is faster. */
+export function sideHTML(f: Fighter | null, foe: { uses: 'atk' | 'spa'; mult: number; first: boolean } | null, dropHint = false): string {
   const t = L().battle.arena;
-  const name = getSpecies(card.id).name;
-  const label = state.outcome ? t.usedCard(name) : t.pickCard(name, card.level);
-  const edge = state.edge == null || state.outcome ? ''
+  const core = L().core;
+  if (!f) {
+    return dropHint
+      ? `<div class="side-card" data-drop="arena-field"><div class="drop-hint">${icon('ball')}<span>${esc(t.dropHint)}</span></div></div>`
+      : '<div class="side-card"><div class="side-empty">' + icon('ball-color') + '</div></div>';
+  }
+  const c = f.card;
+  const rows = STAT_IDS.map(id => {
+    const uses = foe?.uses === id;
+    const fast = id === 'spe' && foe?.first;
+    const value = id === 'hp' ? `${fmt(f.hp)}<small>/${fmt(c.stats.hp)}</small>` : fmt(c.stats[id]);
+    const mark = uses ? ` <em class="stat-mult ${foe!.mult > 1 ? 'up' : foe!.mult < 1 ? 'down' : ''}">${multText(foe!.mult)}</em>`
+      : fast ? ` <em class="stat-fast">${icon('bolt')}</em>` : '';
+    const title = uses ? t.usesStat : fast ? t.faster : '';
+    return `<div class="stat ${uses ? 'uses' : ''} ${fast ? 'fast' : ''}" data-stat="${id}" ${title ? `title="${esc(title)}"` : ''}>
+      <span class="stat-label"><span class="full">${esc(core.stats[id])}</span><span class="short">${esc(core.statsShort[id])}</span></span>
+      <b>${value}${mark}</b></div>`;
+  }).join('');
+  return `
+    <div class="side-card ${f.hp <= 0 ? 'fainted' : ''}">${cardHTML({ id: c.id, shiny: c.shiny, level: c.level }, { size: 'md', eager: true })}</div>
+    <div class="stats">${rows}</div>`;
+}
+
+/** Hand card: the card, its HP bar, and its state (on the field, fainted, chosen). */
+export function handCardHTML(f: Fighter, i: number, state: { active: boolean; selected: boolean; disabled: boolean; edge: number | null }): string {
+  const t = L().battle.arena;
+  const c = f.card;
+  const fainted = f.hp <= 0;
+  const pct = hpPct(f);
+  const label = fainted ? t.faintedCard(monName(c)) : t.pickCard(monName(c), c.level, `${f.hp}/${c.stats.hp}`);
+  const edge = state.edge == null || fainted ? ''
     : state.edge > 0 ? `<span class="hand-edge good" title="${esc(t.advantage)}">${icon('up')}<span class="sr-only">${esc(t.advantage)}</span></span>`
       : state.edge < 0 ? `<span class="hand-edge bad" title="${esc(t.disadvantage)}">${icon('up')}<span class="sr-only">${esc(t.disadvantage)}</span></span>` : '';
   return `
-    <button class="hand-card ${state.outcome ? `used ${state.outcome}` : ''} ${state.selected ? 'selected' : ''}" type="button" data-index="${i}"
-      ${state.outcome || state.disabled ? 'disabled' : ''} aria-pressed="${state.selected}" aria-label="${esc(label)}">
-      ${cardHTML({ id: card.id, shiny: card.shiny, level: card.level }, { size: 'sm', eager: true })}
+    <button class="hand-card ${fainted ? 'fainted' : ''} ${state.active ? 'active' : ''} ${state.selected ? 'selected' : ''}" type="button" data-index="${i}"
+      ${fainted || state.disabled ? 'disabled' : ''} aria-pressed="${state.selected}" aria-label="${esc(label)}">
+      ${cardHTML({ id: c.id, shiny: c.shiny, level: c.level }, { size: 'sm', eager: true })}
       ${edge}
-      ${state.outcome ? `<span class="hand-mark">${icon(OUTCOME_ICON[state.outcome])}</span>` : ''}
+      ${state.active && !fainted ? `<span class="hand-tag">${esc(t.inField)}</span>` : ''}
+      ${fainted ? `<span class="hand-mark">${icon('x')}</span>` : ''}
+      <span class="hand-hp" data-tone="${hpTone(pct)}" aria-hidden="true"><i style="width:${pct}%"></i></span>
     </button>`;
 }
 
-export function trackHTML(opp: BattleCard[], results: RoundResult[], round: number, reveal: 'card' | 'type' | 'hidden'): string {
-  const t = L().battle.arena;
-  return opp.map((card, i) => {
-    const result = results[i];
-    if (result) {
-      return `<li class="track-item done ${result.outcome}" aria-label="${esc(t.trackDone(i + 1, `${getSpecies(card.id).name}, ${t.outcome[result.outcome]}`))}">
-        <img src="${esc(staticFront(card))}" alt="" draggable="false"><span class="track-mark">${icon(OUTCOME_ICON[result.outcome])}</span></li>`;
-    }
-    if (i === round) {
-      const inner = reveal === 'card' ? `<img src="${esc(staticFront(card))}" alt="" draggable="false">`
-        : reveal === 'type' ? `<img class="silhouette" src="${esc(staticFront(card))}" alt="" draggable="false">` : icon('ball-color', 'track-ball');
-      return `<li class="track-item current" aria-current="step" aria-label="${esc(t.trackCurrent(i + 1))}">${inner}</li>`;
-    }
-    return `<li class="track-item next" aria-label="${esc(t.trackNext(i + 1))}">${icon('ball-color', 'track-ball')}</li>`;
-  }).join('');
+/** Type multiplier chip: "×1.3 Super effective". */
+export function chipHTML(mult: number, against: number, label: string): string {
+  const tone = mult > against ? 'good' : mult < against ? 'bad' : mult > 1 ? 'good' : mult < 1 ? 'bad' : 'even';
+  return `<span class="chip chip-${tone}"><small class="chip-label">${esc(label)}</small><b>${multText(mult)}</b><small>${esc(L().battle.arena.effect[mult] ?? '')}</small></span>`;
 }
 
-/** Matchup chip next to a sprite: "×1.3 Super effective" or "?" when unknown. */
-export function chipHTML(mult: number | null, against: number | null): string {
-  const t = L().battle.arena;
-  if (mult == null) return `<span class="chip chip-unknown">? <small>${esc(t.matchupUnknown)}</small></span>`;
-  const tone = against != null && mult > against ? 'good' : against != null && mult < against ? 'bad' : mult > 1 ? 'good' : mult < 1 ? 'bad' : 'even';
-  return `<span class="chip chip-${tone}"><b>${multText(mult)}</b> <small>${esc(t.effect[mult] ?? '')}</small></span>`;
+export interface Preview {
+  you: BattleCard;
+  opp: BattleCard;
+  yourMult: number;
+  theirMult: number;
+  first: Side;
+  /** Predicted outcome (only when hints are on): winner and the HP % the winner keeps. */
+  predict?: { winner: Side; pct: number };
+}
+
+export function previewHTML(p: Preview): string {
+  const t = L().battle.arena.preview;
+  const firstName = monName(p.first === 'you' ? p.you : p.opp);
+  return `
+    <div class="preview">
+      ${chipHTML(p.yourMult, p.theirMult, t.yours)}
+      ${chipHTML(p.theirMult, p.yourMult, t.theirs)}
+      <span class="pv-first ${p.first}">${icon('bolt')} ${esc(t.first(firstName))}</span>
+      ${p.predict ? `<span class="pv-predict ${p.predict.winner === 'you' ? 'good' : 'bad'}">${esc(p.predict.winner === 'you' ? t.wins(p.predict.pct) : t.loses(p.predict.pct))}</span>` : ''}
+    </div>`;
+}
+
+/** The choice bar above the hand: what to do, the matchup preview and the confirm buttons. */
+export function promptHTML(opts: {
+  title: string; sub?: string; preview?: Preview; confirm?: string; keep?: string; idle?: boolean;
+}): string {
+  return `
+    <div class="prompt ${opts.idle ? 'idle' : ''}">
+      <div class="prompt-text">
+        <strong>${esc(opts.title)}</strong>
+        ${opts.sub ? `<span>${esc(opts.sub)}</span>` : ''}
+      </div>
+      ${opts.preview ? previewHTML(opts.preview) : ''}
+      <div class="prompt-actions">
+        ${opts.keep ? `<button class="btn btn-ghost" type="button" data-act="keep">${esc(opts.keep)}</button>` : ''}
+        ${opts.confirm ? `<button class="btn btn-primary" type="button" data-act="confirm">${icon('ball')} ${esc(opts.confirm)}</button>` : ''}
+      </div>
+    </div>`;
 }
 
 export function introHTML(opts: {
@@ -165,46 +210,95 @@ export function introHTML(opts: {
       ${opts.line ? `<p class="intro-line"><span>${esc(t.intro.challenge(opts.name))}</span>“${esc(opts.line)}”</p>` : `<p class="intro-line"><span>${esc(t.intro.challenge(opts.name))}</span></p>`}
       <div class="intro-band intro-you">
         <ul class="intro-team" aria-label="${esc(t.intro.yourTeam)}">
-          ${opts.team.map(c => `<li><img src="${esc(staticFront(c))}" alt="${esc(getSpecies(c.id).name)}" draggable="false"></li>`).join('')}
+          ${opts.team.map(c => `<li><img src="${esc(staticFront(c))}" alt="${esc(monName(c))}" draggable="false"></li>`).join('')}
         </ul>
         <button class="btn btn-primary btn-lg intro-start" type="button" data-act="start">${icon('swords')} ${esc(t.intro.start)}</button>
       </div>
     </div>`;
 }
 
+export function trainingHTML(training: BattleTraining, card: BattleCard | undefined): string {
+  const t = L().battle.arena.end;
+  if (!card) return '';
+  const name = monName(card);
+  return `
+    <div class="end-training">
+      ${cardHTML({ id: card.id, shiny: card.shiny, level: training.to }, { size: 'xs', eager: true })}
+      <div class="end-training-text">
+        <strong>${icon('up')} ${esc(t.trained(name))}</strong>
+        ${training.to > training.from ? `<span class="end-levels">${esc(t.levels(training.from, training.to))}</span>` : ''}
+        ${training.candy ? `<span class="end-candy">${esc(t.candy(training.candy))}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+/** After a win the player picks who trains: the team's cards at their current levels. */
+export function trainChoiceHTML(team: { card: BattleCard; level: number; fainted: boolean }[], levels: number): string {
+  const t = L().battle.arena.end;
+  return `
+    <div class="end-train-choice" role="group" aria-labelledby="end-train-title">
+      <strong id="end-train-title">${icon('up')} ${esc(t.chooseTrain(levels))}</strong>
+      <span class="end-train-hint" hidden>${esc(t.chooseFirst)}</span>
+      <div class="train-cards">
+        ${team.map(({ card, level, fainted }) => `
+          <button class="train-card ${fainted ? 'fainted' : ''}" type="button" data-train="${esc(card.key ?? '')}"
+            aria-label="${esc(t.trainCard(monName(card), level))}">
+            ${cardHTML({ id: card.id, shiny: card.shiny, level }, { size: 'xs', eager: true })}
+            <span class="train-lv">${esc(L().core.card.level)} ${fmt(level)}</span>
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
 export function endHTML(opts: {
-  result: 'win' | 'lose' | 'draw'; score: { you: number; opp: number }; perfect: boolean; tiebreak: boolean;
-  totals: { you: number; opp: number }; rounds: RoundResult[]; name: string; portrait?: string; line?: string;
+  result: 'win' | 'lose'; score: { you: number; opp: number }; perfect: boolean; duels: DuelLog[];
+  you: BattleCard[]; opp: BattleCard[]; name: string; portrait?: string; line?: string;
+  /** The training result, or the choice HTML (after a win, before the player picks). */
+  training: BattleTraining | null;
+  trainChoice?: string;
 }): string {
   const t = L().battle.arena;
-  const core = L().core;
-  const crest = opts.result === 'win' ? 'trophy' : opts.result === 'lose' ? 'flag' : 'minus';
+  const trainedCard = opts.training ? opts.you.find(c => c.key === opts.training!.key) : undefined;
+  const sprite = (c: BattleCard) => `<img src="${esc(staticFront(c))}" alt="" draggable="false">`;
   return `
     <div class="arena-end end-${opts.result}" role="alertdialog" aria-modal="true" aria-labelledby="arena-end-title">
       <div class="end-panel">
-        <div class="end-crest">${icon(crest)}</div>
+        <div class="end-crest">${icon(opts.result === 'win' ? 'trophy' : 'flag')}</div>
         <h2 class="end-title" id="arena-end-title">${esc(t.end[opts.result])}</h2>
         ${opts.perfect ? `<p class="end-perfect">${icon('star')} ${esc(t.end.perfect)} ${icon('star')}</p>` : ''}
-        <p class="end-score" aria-label="${esc(`${t.scoreboard}: ${opts.score.you} × ${opts.score.opp}`)}"><b>${opts.score.you}</b><span>×</span><b>${opts.score.opp}</b></p>
-        ${opts.tiebreak ? `<p class="end-tiebreak">${esc(t.end.tiebreak(opts.totals.you, opts.totals.opp))}</p>` : ''}
+        <p class="end-score" aria-label="${esc(`${t.scoreboard}: ${opts.score.you} × ${opts.score.opp}`)}">
+          <small>${esc(t.you)}</small><b>${opts.score.you}</b><span>×</span><b>${opts.score.opp}</b><small>${esc(opts.name)}</small></p>
+        <div class="end-train-slot">${opts.training ? trainingHTML(opts.training, trainedCard) : opts.trainChoice ?? ''}</div>
         ${opts.line ? `
           <figure class="end-quote">
             ${opts.portrait ? `<img src="${esc(opts.portrait)}" alt="" draggable="false">` : ''}
             <blockquote><cite>${esc(opts.name)}</cite><p>“${esc(opts.line)}”</p></blockquote>
           </figure>` : ''}
+        ${opts.duels.length ? `
         <details class="end-log">
           <summary>${icon('chevron')} ${esc(t.end.log)}</summary>
           <ol>
-            ${opts.rounds.map((r, i) => `
-              <li class="log-${r.outcome}">
+            ${opts.duels.map((d, i) => {
+              const you = opts.you[d.you];
+              const opp = opts.opp[d.opp];
+              const won = d.winner === 'you';
+              const dealt = (side: Side) => d.hits.filter(h => h.attacker === side);
+              const sum = (side: Side) => dealt(side).reduce((s, h) => s + h.damage, 0);
+              return `
+              <li class="log-${won ? 'win' : 'lose'}" title="${esc(won ? t.end.beat(monName(you), monName(opp)) : t.end.beat(monName(opp), monName(you)))}">
                 <span class="log-round">${i + 1}</span>
-                <span class="log-mon"><img src="${esc(staticFront(r.you))}" alt="">${esc(getSpecies(r.you.id).name)}</span>
-                <span class="log-stat">${esc(core.statsShort[r.stat as StatId])} <b>${fmt(r.youValue)}</b> × <b>${fmt(r.oppValue)}</b></span>
-                <span class="log-mon opp">${esc(getSpecies(r.opp.id).name)}<img src="${esc(staticFront(r.opp))}" alt=""></span>
-                <span class="log-mark">${icon(OUTCOME_ICON[r.outcome])}</span>
-              </li>`).join('')}
+                <span class="log-mon ${won ? 'winner' : ''}">${sprite(you)}${esc(monName(you))}</span>
+                <span class="log-vs">${icon('swords')}</span>
+                <span class="log-mon opp ${won ? '' : 'winner'}">${esc(monName(opp))}${sprite(opp)}</span>
+                <span class="log-mark">${icon(won ? 'check' : 'x')}</span>
+                <span class="log-hits">
+                  <span class="you">${esc(t.end.hits(dealt('you').length, sum('you')))}</span>
+                  <span class="opp">${esc(t.end.hits(dealt('opp').length, sum('opp')))}</span>
+                </span>
+              </li>`;
+            }).join('')}
           </ol>
-        </details>
+        </details>` : ''}
         <button class="btn btn-primary btn-lg end-continue" type="button" data-act="continue">${esc(t.end.continue)} ${icon('right')}</button>
       </div>
     </div>`;

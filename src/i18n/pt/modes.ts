@@ -65,7 +65,6 @@ const modes = {
     loseTitle: 'Derrota',
     loseSub: (pts: number) => `Você perdeu ${n(pts)} pontos de reputação.`,
     forfeit: (pts: number) => `Você desistiu e perdeu ${n(pts)} pontos de reputação.`,
-    drawSub: 'Empate: sua reputação não mudou.',
     intro: [
       'Quer o meu lugar no ranking? Vai ter que me vencer primeiro!',
       'Treinei a semana inteira para este momento.',
@@ -126,8 +125,6 @@ const modes = {
     abandon: 'Desistir',
     abandonTitle: 'Desistir da Liga?',
     abandonText: (placement: string) => `Sua campanha termina agora, com a colocação ${placement}.`,
-    hiddenTeam: 'O time do Campeão é segredo até a batalha.',
-    revealType: 'Na final, você só vê o tipo da próxima carta do Campeão.',
     advanced: (stage: string) => `Vitória! Próxima fase: ${stage}.`,
     outTitle: (placement: string) => `Colocação: ${placement}`,
     outSub: (name: string, stage: string) => `Eliminado por ${name} (${stage}).`,

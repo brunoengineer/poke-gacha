@@ -232,8 +232,7 @@ function runHTML() {
         <h2 class="next-name">${esc(opp.name)}</h2>
         <p class="next-title">${kind === 'champion' ? icon('crown') : kind === 'e4' ? icon('star') : ''} ${esc(entrantTitle(opp))}</p>
         <div class="next-meta">${typeBadges(opp.types)}<span class="pill">${esc(L().modes.levelRange(info.levels[0], info.levels[1]))}</span></div>
-        <div class="next-team">${teamStrip(info.team, { hidden: info.final })}</div>
-        ${info.final ? `<p class="next-note">${icon('sparkle')} ${esc(t().hiddenTeam)} ${esc(t().revealType)}</p>` : ''}
+        <div class="next-team">${teamStrip(info.team)}</div>
         <div class="next-actions">
           <button class="btn btn-primary btn-lg" type="button" data-act="fight">${icon('swords')} ${esc(info.final ? t().finalBattle : t().battle)}</button>
           <button class="btn btn-ghost" type="button" data-act="abandon">${icon('flag')} ${esc(t().abandon)}</button>
@@ -349,7 +348,6 @@ async function fight() {
         team: info.team,
         ...opponentLines(opp),
       },
-      reveal: info.final ? 'type' : 'card',
       music: info.final ? 'champion' : 'league',
       stage: `${rt('title')} · ${t().stages[duel]}`,
     });

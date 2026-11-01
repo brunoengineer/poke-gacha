@@ -66,7 +66,6 @@ const modes: typeof pt = {
     loseTitle: 'Defeat',
     loseSub: (pts: number) => `You lost ${n(pts)} reputation points.`,
     forfeit: (pts: number) => `You forfeited and lost ${n(pts)} reputation points.`,
-    drawSub: 'Draw: your reputation did not change.',
     intro: [
       'You want my spot on the ladder? You will have to beat me first!',
       'I trained all week for this moment.',
@@ -127,8 +126,6 @@ const modes: typeof pt = {
     abandon: 'Give up',
     abandonTitle: 'Give up the League?',
     abandonText: (placement: string) => `Your run ends now, placing ${placement}.`,
-    hiddenTeam: 'The Champion\'s team stays secret until the battle.',
-    revealType: 'In the final you only see the type of the Champion\'s next card.',
     advanced: (stage: string) => `Victory! Next up: ${stage}.`,
     outTitle: (placement: string) => `Placement: ${placement}`,
     outSub: (name: string, stage: string) => `Knocked out by ${name} (${stage}).`,

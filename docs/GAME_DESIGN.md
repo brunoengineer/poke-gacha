@@ -24,8 +24,9 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
   - a **base form that can evolve but never did** has **no cap**: a Lv. 250 Charmander outgrows a Lv. 100 Charizard;
   - **shiny cards never evolve and have no cap**: a shiny Charizard can go past Lv. 100.
 - A duplicate of a capped card turns into a Rare Candy.
-- Obtaining an evolved species directly starts it at half its evolution level (Charizard Lv. 18), a jackpot that
-  doesn't skip the early game; legendaries start at Lv. 40. Opponent trainers use the real evolution levels.
+- **Every card starts at Lv. 1**, evolved forms and legendaries included (only the starter begins at Lv. 5). A pulled
+  Charizard or Mewtwo is the better long-term card, since its stats grow faster, but levels always come from duplicates,
+  Rare Candy and battles. Opponent trainers use the real evolution levels.
 
 ## Evolution (optional)
 
@@ -61,20 +62,28 @@ hundreds of balls at once.
 
 - New trainers choose one of six starters (Lv. 5): **Bulbasaur, Charmander, Squirtle** (Kanto) or
   **Chikorita, Cyndaquil, Totodile** (Johto), and start with **₽150 (30 Poké Balls) + Rare Candy ×10**.
-- **Daily gift**: ₽80 + ₽10 per streak day (capped at 10 days) and Rare Candy ×2; every 7th day, a Great Ball and
+- **Daily gift**: ₽80 + ₽10 per streak day (capped at 10 days) and Rare Candy ×2; every 7th day, a **Master Ball** and
   Rare Candy ×5 instead.
 - **Shop** (Mart): Rare Candy ₽300, evolution stones ₽2,500, Link Cable ₽3,000, Johto trade items (King's Rock,
   Metal Coat, Dragon Scale, Up-Grade) ₽3,500.
 
 ## Battles
 
-- Team of **6** cards; a battle is 6 rounds. Each round the opponent's card is shown with its stats hidden;
-  you answer with a card from your hand and choose one of the six stats.
-- Both values are multiplied by **type advantage** (each side's best attacking type vs. the other's types):
-  ×1.6 (4×), ×1.3 (2×), ×1, ×0.8 (½), ×0.65 (¼), ×0.5 (immune).
-- Higher value wins the round. A tied score is broken by the sum of all compared values (no draws).
-- Harder opponents hide their next card: **gym leaders and League finals show only its type** (`reveal: 'type'`),
-  so you can't pick the perfect counter-stat from knowing the species; `'hidden'` shows nothing.
+HP battles, 6 against 6 (rules in `src/game/duel.ts`, arena in `src/screens/battle/arena.ts`):
+
+- Two Pokémon fight at a time until one faints. The faster one (Speed; ties go to the player) hits first, then
+  they alternate. There are no moves: each hit uses the attacker's better offensive stat (Attack vs. the target's
+  Defense, or Sp. Atk vs. Sp. Def, whichever deals more), scaled by **type advantage** (the attacker's best type
+  against the target's types): ×1.6 (4×), ×1.3 (2×), ×1, ×0.8 (½), ×0.65 (¼), ×0.5 (immune).
+- The winner stays in with the HP it has left; the opponent sends its team in order, always shown in full once on
+  the field (card, stats, exact HP).
+- **The player's decisions**: who goes in first, who replaces a fainted Pokémon, and an optional free switch each
+  time a new opponent enters (keep the damaged survivor in, or send another; whoever leaves keeps its HP).
+  Choosing shows the type multipliers and who strikes first; Training also predicts the outcome.
+- Duels play out automatically (tap to skip, 1×/2× speed). The side with Pokémon left wins; **perfect** = none of
+  yours fainted.
+- **Training after every battle** (not forfeits): after a win you pick a team member to gain +1 level (+2 for a
+  perfect win); after a loss a random one gains +1. Capped cards get Rare Candy instead.
 
 ## Modes
 
@@ -112,14 +121,15 @@ little reputation. Rank #1–#10 are Elite trainers with stronger, partially evo
   random stone · Top 10 → Ultra Ball ×5 + Rare Candy ×30 · #1 → Master Ball.
 
 ### Gyms: Kanto and Johto leaders
-Fixed order, each unlocks after the previous badge. Themed rosters, hard by design: leaders only show the type of
-their next Pokémon, and a fresh team needs some training first (simulated: a brand-new team beats Brock about 28% of
-the time, 72% after ~5 levels per card; Misty 3%, then 71% after ~10). A Kanto / Johto switch shows each region's
-badge case. Every first win also gives Rare Candy ×5.
+Fixed order, each unlocks after the previous badge. Themed rosters, hard by design: a fresh team needs some training
+first. Simulated with a player who picks perfectly (real players need a bit more): a new team can't beat Brock
+until about 10 Normal Training battles (29% after 10, 81% after 15); Misty needs about 25–30 (41% after 25, 78% after
+30). Losses are free to retry, so gyms are tuned to be near impossible without training. Levels decide HP battles.
+A Kanto / Johto switch shows each region's badge case. Every first win also gives Rare Candy ×5.
 
 | # | Leader | Type | Levels | First-win reward (+ Rare Candy ×5) |
 |---|---|---|---|---|
-| 1 | Brock | Rock | 12–16 | Boulder Badge, ₽250, Great Ball ×3 |
+| 1 | Brock | Rock | 15–19 | Boulder Badge, ₽250, Great Ball ×3 |
 | 2 | Misty | Water | 18–22 | Cascade Badge, ₽500, Water Stone |
 | 3 | Lt. Surge | Electric | 24–28 | Thunder Badge, ₽750, Thunder Stone |
 | 4 | Erika | Grass | 30–34 | Rainbow Badge, ₽1,000, Leaf Stone |
@@ -157,8 +167,7 @@ Needs 8 badges; entry fee ₽1,000. Four duels in a row; the first loss ends the
 | Won all four | **Champion** | ₽5,000 + Master Ball + Rare Candy ×40 |
 
 Opponents: an elite ladder trainer, then Elite Four members (Lorelei, Bruno, Agatha, Lance), then the Champion,
-the rival Blue. Levels start at 60–70 and grow +5 per title won (up to +40). The final hides the opponent's next card
-(`reveal: 'type'`). **First title ever**: a shiny copy of your starter, which is uncapped.
+the rival Blue. Levels start at 60–70 and grow +5 per title won (up to +40). **First title ever**: a shiny copy of your starter, which is uncapped.
 
 **Johto League**: same format, its own run, titles, best placement and Hall of Fame (a Kanto / Johto switch on the
 League screen). Needs the 8 Johto badges; entry fee ₽2,500. Elite Four: Will (Psychic), Koga (Poison), Bruno

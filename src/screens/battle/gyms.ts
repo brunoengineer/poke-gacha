@@ -182,8 +182,6 @@ async function challenge(gym: Gym) {
       intro: tx.intro, winLine: tx.win, loseLine: tx.lose,
     },
     music: 'gym',
-    // Leaders keep their next Pokémon hidden (only its type shows): no picking the perfect counter-stat.
-    reveal: 'type',
     stage: rematch ? `${stage} · ${t.rematch}` : stage,
     accent: TYPE_COLOR[gym.type],
   });

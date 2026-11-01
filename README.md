@@ -12,7 +12,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
   Captures can focus on one region, so its Pokémon show up more often.
 - **Optional evolution** with real evolution levels, stones and a Link Cable for trade evolutions.
 - **The easter egg**: unevolved base forms and shiny cards have no level cap. A Lv. 250 Charmander outgrows a Lv. 100 Charizard.
-- **Battles**: 6 rounds, pick a card and a stat, type advantage matters.
+- **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
 - **Four modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Pokémon League (Top 16 → Champion).
 - **Synthesized chiptune** sound effects and original music, plus the Pokémon cries.
 
@@ -52,7 +52,7 @@ GitHub Pages (Settings → Pages → Source: GitHub Actions).
 ```
 src/
   data/        Pokédex data (generated), species registry, types chart, items, sprite/cry URLs, generations
-  game/        Pure game rules (tested): cards, progression, gacha, battle, teams, rewards, economy, modes/
+  game/        Pure game rules (tested): cards, progression, gacha, battle, duel, teams, rewards, economy, modes/
   state/       Save format, store (events + local/cloud persistence), actions, Firebase
   ui/          Shell (header + router), login, card renderer, modals/toasts, drag and drop, effects, rewards, settings
   screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, competition, league)

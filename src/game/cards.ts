@@ -18,7 +18,6 @@ export const SHINY_STAT_BONUS = 1.1;
 /** Level evolutions that aren't level-based (friendship, special conditions) use in this game. */
 export const FRIENDSHIP_LEVEL = 25;
 export const OTHER_EVOLUTION_LEVEL = 30;
-export const LEGENDARY_START_LEVEL = 40;
 
 export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type StatId = (typeof STAT_IDS)[number];
@@ -85,13 +84,11 @@ export function evolutionLevel(id: number): number {
 }
 
 /**
- * Level a card starts at when obtained directly. Evolved forms start at half their evolution level (a pulled
- * Charizard is Lv. 18): a jackpot, but not one that skips the early game. Legendaries start at Lv. 40.
+ * Level a card starts at when obtained: always 1, evolved forms and legendaries included. A pulled Charizard or
+ * Mewtwo is the better long-term card (its stats grow faster), but levels come from duplicates and training.
  */
-export function startLevel(id: number): number {
-  const species = getSpecies(id);
-  if (species.legendary || species.mythical) return LEGENDARY_START_LEVEL;
-  return Math.max(1, Math.ceil(evolutionLevel(id) / 2));
+export function startLevel(_id: number): number {
+  return 1;
 }
 
 // --- Rarity ------------------------------------------------------------------
