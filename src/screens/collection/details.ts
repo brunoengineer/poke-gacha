@@ -8,7 +8,7 @@ import { descendants, evolutionsOf, familyOf, getSpecies, preEvolution, type Spe
 import { spriteUrl } from '../../data/sprites';
 import { effectiveness, TYPE_COLOR, TYPES, type PokemonType } from '../../data/types';
 import {
-  cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, parseKey, rarity, requiredItem, requiredLevel, STAT_IDS, statsAt, type CardKey,
+  cardKey, cardPower, isUncapped, levelCap, parseKey, rarity, requiredItem, requiredLevel, STAT_IDS, statsAt, type CardKey,
 } from '../../game/cards';
 import { DECK_SIZE } from '../../game/economy';
 import { CHAIN_MAX, entryFee, huntBlock, shinyOdds } from '../../game/modes/hunt';
@@ -195,7 +195,7 @@ function levelHTML(key: CardKey) {
   const level = s().cards[key].level;
   const cap = levelCap(id, shiny);
   const uncapped = isUncapped(id, shiny);
-  const note = shiny ? t.capShiny : level >= cap ? t.capMaxed : t.capNormal(MAX_LEVEL);
+  const note = shiny ? t.capShiny : level >= cap ? t.capMaxed(cap) : t.capNormal(cap);
 
   return `
     <div class="dx-panel dx-level ${uncapped ? 'is-uncapped' : ''}">

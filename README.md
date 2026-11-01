@@ -12,7 +12,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **Cheap captures, slow mastery**: Poké, Safari, Great, Ultra and Master Balls; every duplicate is +1 level.
   Captures can focus on one region, so its Pokémon show up more often.
 - **Optional evolution** with real evolution levels, stones and a Link Cable for trade evolutions.
-- **Shinies have no level cap**: every other card stops at Lv. 100, a shiny keeps growing (and stays a foil past 100).
+- **Level caps by rarity**: cards stop at Lv. 100, legendaries at 120, mythicals at 140; shinies never stop growing.
 - **Foil cards**: a card that reaches Lv. 100 turns into a shining gold foil.
 - **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
 - **Six modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Shiny Hunt (chain wins on one species

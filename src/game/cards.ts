@@ -1,8 +1,9 @@
 // Card rules: one card per species plus its shiny version. Cards have a level; stats grow with it.
 //
-// Level caps:
-//   - Every card stops at Lv. 100…
-//   - …except shiny cards: they never evolve and have no cap, which is what makes hunting them worth it.
+// Level caps: each tier "just reaches" a region's ceiling.
+//   - Normal cards stop at Lv. 100 (Johto's League tops out near it).
+//   - Legendaries at Lv. 120 (Hoenn's ceiling), mythicals at Lv. 140 (Sinnoh's).
+//   - Shiny cards never evolve and have no cap: the only way past 140 (title rematches, the Infinity Tower).
 //   - Until Nov 2026 unevolved base forms had no cap either. Cards already past 100 keep their level (saves never
 //     lose levels) but can't grow any further.
 
@@ -13,7 +14,10 @@ import {
 
 export type CardKey = string;
 
+/** Cap of normal cards; also the level where a card becomes a foil. */
 export const MAX_LEVEL = 100;
+export const LEGENDARY_LEVEL_CAP = 120;
+export const MYTHICAL_LEVEL_CAP = 140;
 export const SHINY_STAT_BONUS = 1.1;
 /** Level evolutions that aren't level-based (friendship, special conditions) use in this game. */
 export const FRIENDSHIP_LEVEL = 25;
@@ -57,7 +61,11 @@ export function isUncapped(_id: number, shiny: boolean): boolean {
   return shiny;
 }
 
-export const levelCap = (id: number, shiny: boolean) => (isUncapped(id, shiny) ? Infinity : MAX_LEVEL);
+export function levelCap(id: number, shiny: boolean): number {
+  if (isUncapped(id, shiny)) return Infinity;
+  const s = getSpecies(id);
+  return s.mythical ? MYTHICAL_LEVEL_CAP : s.legendary ? LEGENDARY_LEVEL_CAP : MAX_LEVEL;
+}
 
 /** Level a requirement asks for (only level-like evolutions have one). */
 export function requiredLevel(evo: Evolution): number | null {

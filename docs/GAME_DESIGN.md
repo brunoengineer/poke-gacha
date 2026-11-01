@@ -20,8 +20,9 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
   so evolving never stalls a line. Getting an evolved form directly (pulling an Arbok) doesn't count: the next Ekans
   becomes an Ekans card of its own. Nothing ever evolves automatically, and pulls never take levels away.
 - A **Rare Candy** gives +1 level to any card.
-- **Cap Lv. 100** for every card except **shinies**: they never evolve and have **no cap**, so a shiny Charizard can go
-  past Lv. 100. That's the reward for hunting them (and the only way to keep up with the Infinity Tower past floor 43).
+- **Level caps by tier**, each one "just reaching" a region's ceiling: normal cards **Lv. 100** (Johto), **legendaries
+  Lv. 120** (Hoenn), **mythicals Lv. 140** (Sinnoh). **Shinies** never evolve and have **no cap**: they're the only way
+  past 140 (League title bonuses, rematches, the Infinity Tower). Raising a cap never lowers a level.
   Until Nov 2026 unevolved base forms had no cap either; cards already past 100 keep their level (saves never lose
   levels) but can't grow any further.
 - A duplicate of a capped card turns into a Rare Candy. Rare Candy can't be used on a capped card, and the post-battle
@@ -172,9 +173,10 @@ A region switch shows each region's badge case. Every first win also gives Rare 
 | 8 | Clair | Dragon | 81–86 | Rising Badge, ₽5,000, Dragon Scale + Ultra Ball ×5 |
 
 **Hoenn** opens once all 8 Johto badges are earned, **Sinnoh** once all 8 Hoenn badges are. They are the endgame and
-go past the Lv. 100 cap of normal cards: Hoenn climbs from 100 to 120 (its League), Sinnoh from 120 to 140. Only shiny
-cards grow past 100, so progressing here **requires shinies** (Shiny Hunt) leveled with Rare Candy and training; the
-Gyms screen says so on both regions, with a link to the Hunt. Their big candy rewards feed that leveling.
+go past the Lv. 100 cap of normal cards: Hoenn climbs from 100 to 120 (its League), Sinnoh from 120 to 140. Progressing
+here **requires shinies** (Shiny Hunt) or, for the patient and lucky, legendaries (cap 120, enough for Hoenn) and
+mythicals (cap 140, enough for Sinnoh), all leveled with Rare Candy and training. The Gyms screen says so on both
+regions, with a link to the Hunt. Their big candy rewards feed that leveling.
 
 | # | Hoenn | Type | Levels | First-win reward (+ Rare Candy ×5) |
 |---|---|---|---|---|

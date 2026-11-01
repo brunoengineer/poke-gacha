@@ -88,7 +88,7 @@ const collection: typeof pt = {
     openCard: (name: string) => `Open ${name}`,
     level: 'Level',
     capNormal: (max: number) => `Grows up to Lv. ${max}. Each duplicate and Rare Candy gives +1 level.`,
-    capMaxed: 'Max level! New copies turn into Rare Candy. Only shiny cards go past Lv. 100.',
+    capMaxed: (cap: number) => `Max level (Lv. ${n(cap)})! New copies turn into Rare Candy. Normal cards stop at 100, legendaries at 120, mythicals at 140; shinies have no cap.`,
     capShiny: 'Shiny cards never evolve, so they have no level cap. How far can you take it?',
     statsAt: (level: number) => `Stats at Lv. ${n(level)}`,
     baseStats: 'Base stats',

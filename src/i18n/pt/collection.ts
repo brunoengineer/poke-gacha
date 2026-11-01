@@ -88,7 +88,7 @@ const collection = {
     openCard: (name: string) => `Abrir ${name}`,
     level: 'Nível',
     capNormal: (max: number) => `Sobe até o Nv. ${max}. Cópias repetidas e Doces Raros dão +1 nível cada.`,
-    capMaxed: 'Nível máximo! Novas cópias viram Doces Raros. Só cartas shiny passam do Nv. 100.',
+    capMaxed: (cap: number) => `Nível máximo (Nv. ${n(cap)})! Novas cópias viram Doces Raros. Cartas normais param no 100, lendários no 120, míticos no 140; shinies não têm limite.`,
     capShiny: 'Cartas shiny nunca evoluem e, por isso, não têm limite de nível. Até onde você chega?',
     statsAt: (level: number) => `Atributos no Nv. ${n(level)}`,
     baseStats: 'Atributos base',

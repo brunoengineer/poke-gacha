@@ -190,7 +190,7 @@ const capture = {
       },
       {
         title: 'Evoluir é opcional',
-        text: 'Evoluções são mais fortes, mas guardam o nível máximo 100. Dizem que formas básicas que nunca evoluíram, e os raríssimos shinies, não têm limite nenhum…',
+        text: 'As cartas param no nível 100, os lendários no 120 e os míticos no 140. Dizem que os raríssimos shinies não têm limite nenhum…',
         secret: 'Mas isso fica só entre nós.',
       },
       {

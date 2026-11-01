@@ -23,11 +23,14 @@ describe('cards', () => {
     expect(startLevel(150)).toBe(1); // Mewtwo
   });
 
-  it('caps every card at 100 except shinies', () => {
+  it('caps cards at 100, legendaries at 120, mythicals at 140, and never shinies', () => {
     expect(levelCap(CHARMANDER, false)).toBe(MAX_LEVEL);
     expect(levelCap(CHARMELEON, false)).toBe(MAX_LEVEL);
     expect(levelCap(128, false)).toBe(MAX_LEVEL); // Tauros never evolves
     expect(levelCap(CHARMANDER, true)).toBe(Infinity);
+    expect(levelCap(384, false)).toBe(120); // Rayquaza, legendary
+    expect(levelCap(386, false)).toBe(140); // Deoxys, mythical
+    expect(levelCap(384, true)).toBe(Infinity);
     expect(isUncapped(CHARIZARD, true)).toBe(true);
   });
 
@@ -110,6 +113,11 @@ describe('copies and levels', () => {
     expect(useCandies(save, cardKey(CHARMANDER), 7)).toBe(0);
     expect(addCopy(save, CHARMANDER).kind).toBe('max');
     expect(save.cards[cardKey(CHARMANDER)].level).toBe(150);
+    // Legendaries keep growing past 100, up to 120.
+    save.cards[cardKey(150)] = { level: 100, copies: 1, obtainedAt: 0 }; // Mewtwo
+    save.items['rare-candy'] = 50;
+    expect(useCandies(save, cardKey(150), 50)).toBe(20);
+    expect(addCopy(save, 150).kind).toBe('max');
   });
 });
 

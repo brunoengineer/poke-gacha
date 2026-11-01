@@ -191,7 +191,7 @@ const capture: typeof pt = {
       },
       {
         title: 'Evolving is optional',
-        text: 'Evolved forms are stronger, but they stop at level 100. Rumor has it that base forms that never evolved, and the ultra-rare shinies, have no limit at all…',
+        text: 'Cards stop at level 100, legendaries at 120 and mythicals at 140. Rumor has it that the ultra-rare shinies have no limit at all…',
         secret: 'But let\'s keep that between us.',
       },
       {
