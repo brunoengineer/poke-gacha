@@ -6,6 +6,8 @@
 //     (a pulled Arbok) doesn't count: the next Ekans becomes an Ekans card of its own.
 //   - Duplicate of a capped card -> Rare Candy.
 //   - Evolving is optional; it keeps the level (clamped to the new form's cap) and consumes any required item.
+//   - When an evolved form is already owned, the card can pass its level to it instead (no level or item needed):
+//     both merge into the evolved card and the old species stays registered.
 
 import { RARE_CANDY } from '../data/items';
 import { descendants, evolutionsOf, getSpecies, type Evolution } from '../data/species';
@@ -182,12 +184,34 @@ export function previewEvolution(save: SaveData, key: CardKey, to: number): { le
 export function evolve(save: SaveData, key: CardKey, to: number, now = Date.now()): EvolveResult | null {
   const option = evolutionOptions(save, key).find(o => o.to === to);
   if (!option?.ready) return null;
+  if (option.item) addItem(save, option.item, -1);
+  save.stats.evolutions += 1;
+  return { ...replaceCard(save, key, to, now), item: option.item };
+}
+
+/** Owned evolved forms (any stage) a card can pass its level to, with no level or item needed. Never for shinies. */
+export function transferTargets(save: SaveData, key: CardKey): number[] {
+  const { id, shiny } = parseKey(key);
+  if (!save.cards[key] || shiny) return [];
+  return descendants(id).filter(d => owns(save, cardKey(d)));
+}
+
+/**
+ * Optional alternative to evolving when the evolved card is already owned (a Lv. 27 Nidorino and a Lv. 1 Nidoking):
+ * the cards merge into the evolved one, as if evolved, and the old one stays registered in the Pokédex.
+ */
+export function transferLevel(save: SaveData, key: CardKey, to: number, now = Date.now()): EvolveResult | null {
+  if (!transferTargets(save, key).includes(to)) return null;
+  return { ...replaceCard(save, key, to, now), item: null };
+}
+
+/** Turns card `key` into species `to`, merging into its card when owned. Shared by evolve() and transferLevel(). */
+function replaceCard(save: SaveData, key: CardKey, to: number, now: number): Omit<EvolveResult, 'item'> {
   const card = save.cards[key];
   const { id } = parseKey(key);
   const toKey = cardKey(to);
   const { level, merged } = previewEvolution(save, key, to);
 
-  if (option.item) addItem(save, option.item, -1);
   const target = save.cards[toKey];
   save.cards[toKey] = {
     level,
@@ -205,8 +229,7 @@ export function evolve(save: SaveData, key: CardKey, to: number, now = Date.now(
 
   const newSpecies = registerCaught(save, to, now);
   save.evolved[id] = now;
-  save.stats.evolutions += 1;
-  return { from: id, to, fromKey: key, toKey, levelBefore: card.level, level, merged, item: option.item, newSpecies };
+  return { from: id, to, fromKey: key, toKey, levelBefore: card.level, level, merged, newSpecies };
 }
 
 /** Name helper for logs and tests. */

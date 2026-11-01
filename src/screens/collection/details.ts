@@ -1,5 +1,6 @@
 // Card details modal: large animated card with tilt, Pokédex info, level and cap, stats, type matchups,
-// evolution family with requirements, and actions (team, Rare Candy, evolve, shiny/normal switch).
+// evolution family with requirements, and actions (team, Rare Candy, evolve or pass the level to an owned evolved
+// form, shiny/normal switch).
 // Arrows (buttons or keyboard) move through the list the modal was opened from.
 
 import { sfx } from '../../audio';
@@ -10,14 +11,14 @@ import {
   cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, parseKey, rarity, requiredItem, requiredLevel, STAT_IDS, statsAt, type CardKey,
 } from '../../game/cards';
 import { DECK_SIZE } from '../../game/economy';
-import { evolutionOptions } from '../../game/progression';
+import { evolutionOptions, previewEvolution, transferTargets, type EvolutionOption } from '../../game/progression';
 import { fmt, getLang, L } from '../../i18n';
 import { inDeck } from '../../state/actions';
 import { on, store } from '../../state/store';
 import { bindTilt, cardHTML, rarityPips, typeBadge } from '../../ui/card';
 import { esc, icon, isTopModal, openModal } from '../../ui/dom';
 import { candyHTML, feedCandy } from './candy';
-import { evolveFlow, requirementHTML } from './evolution';
+import { evolveFlow, requirementHTML, transferFlow } from './evolution';
 import { toggleTeam } from './team';
 
 type State = 'owned' | 'registered' | 'locked';
@@ -85,6 +86,14 @@ export function openDetails(key: CardKey, list: CardKey[] = []) {
       case 'candy': return void feedCandy(root, current, button.dataset.n!);
       case 'evolve': {
         const result = await evolveFlow(current, Number(button.dataset.to));
+        if (result && !modal.root.classList.contains('closing')) {
+          current = result.toKey;
+          render();
+        }
+        return;
+      }
+      case 'transfer': {
+        const result = await transferFlow(current, Number(button.dataset.to));
         if (result && !modal.root.classList.contains('closing')) {
           current = result.toKey;
           render();
@@ -226,7 +235,34 @@ function actionsHTML(key: CardKey) {
   const isIn = inDeck(key);
   const full = s().deck.length >= DECK_SIZE;
   const options = evolutionOptions(s(), key);
+  const transfers = transferTargets(s(), key);
   const canEver = evolutionsOf(id).length > 0;
+
+  const evolveRow = (o: EvolutionOption) => `
+    <div class="dx-evo-opt ${o.ready ? 'ready' : ''}" style="--tc:${TYPE_COLOR[getSpecies(o.to).types[0]]}">
+      <img src="${esc(spriteUrl(o.to))}" alt="" width="96" height="96">
+      <div class="dx-evo-text">
+        <b>${esc(getSpecies(o.to).name)}</b>
+        <span class="dx-evo-reqs">${requirementHTML(o)}</span>
+      </div>
+      <button class="btn btn-evolve btn-sm" type="button" data-act="evolve" data-to="${o.to}" ${o.ready ? '' : 'disabled'}
+        aria-label="${esc(t.evolveTo(getSpecies(o.to).name))}">${icon('up')} ${esc(L().collection.evolution.evolve)}</button>
+    </div>`;
+  // An evolved form already owned: the level can be passed to it with no requirements (instead of evolving).
+  const transferRow = (to: number) => `
+    <div class="dx-evo-opt ready" style="--tc:${TYPE_COLOR[getSpecies(to).types[0]]}">
+      <img src="${esc(spriteUrl(to))}" alt="" width="96" height="96">
+      <div class="dx-evo-text">
+        <b>${esc(getSpecies(to).name)}</b>
+        <span class="dx-evo-reqs"><span class="evo-req ok">${icon('cards')}${esc(t.transferInfo(s().cards[cardKey(to)].level, previewEvolution(s(), key, to).level))}</span></span>
+      </div>
+      <button class="btn btn-evolve btn-sm" type="button" data-act="transfer" data-to="${to}"
+        aria-label="${esc(t.transferTo(getSpecies(to).name))}">${icon('up')} ${esc(t.transfer)}</button>
+    </div>`;
+  const rows = [
+    ...options.map(o => (transfers.includes(o.to) ? transferRow(o.to) : evolveRow(o))),
+    ...transfers.filter(to => !options.some(o => o.to === to)).map(transferRow),
+  ];
 
   const teamButton = isIn
     ? `<button class="btn btn-danger" type="button" data-act="team">${icon('minus')} ${esc(t.removeTeam)}</button>`
@@ -237,19 +273,10 @@ function actionsHTML(key: CardKey) {
       <div class="dx-actions">${teamButton}</div>
       ${full && !isIn ? `<p class="hint">${esc(t.teamFullHint)}</p>` : ''}
       ${candyHTML(key)}
-      ${options.length ? `
+      ${rows.length ? `
         <div class="dx-evolve">
           <h3 class="label">${esc(t.evolveTitle)}</h3>
-          ${options.map(o => `
-            <div class="dx-evo-opt ${o.ready ? 'ready' : ''}" style="--tc:${TYPE_COLOR[getSpecies(o.to).types[0]]}">
-              <img src="${esc(spriteUrl(o.to))}" alt="" width="96" height="96">
-              <div class="dx-evo-text">
-                <b>${esc(getSpecies(o.to).name)}</b>
-                <span class="dx-evo-reqs">${requirementHTML(o)}</span>
-              </div>
-              <button class="btn btn-evolve btn-sm" type="button" data-act="evolve" data-to="${o.to}" ${o.ready ? '' : 'disabled'}
-                aria-label="${esc(t.evolveTo(getSpecies(o.to).name))}">${icon('up')} ${esc(L().collection.evolution.evolve)}</button>
-            </div>`).join('')}
+          ${rows.join('')}
         </div>` : canEver && shiny ? `<p class="hint">${esc(t.shinyNoEvolve)}</p>` : ''}
     </section>`;
 }

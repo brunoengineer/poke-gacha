@@ -10,10 +10,10 @@ import { TYPE_COLOR } from '../../data/types';
 import { parseKey, STAT_IDS, statsAt, type CardKey } from '../../game/cards';
 import { evolutionOptions, itemCount, previewEvolution, type EvolutionOption, type EvolveResult } from '../../game/progression';
 import { fmt, itemName, L } from '../../i18n';
-import { evolve } from '../../state/actions';
+import { evolve, transferLevel } from '../../state/actions';
 import { store } from '../../state/store';
 import { cardHTML } from '../../ui/card';
-import { esc, icon, openModal, toast } from '../../ui/dom';
+import { confirmDialog, esc, icon, openModal, toast } from '../../ui/dom';
 import { burst, Sequence } from '../../ui/fx';
 
 /** Short requirement label for an evolution option ("Lv. 16", "Fire Stone"). */
@@ -60,6 +60,27 @@ export async function evolveFlow(key: CardKey, to?: number): Promise<EvolveResul
     return null;
   }
   await playEvolution(result);
+  return result;
+}
+
+/** Asks for confirmation, then passes the card's level to an owned evolved form. Resolves with the result, or null. */
+export async function transferFlow(key: CardKey, to: number): Promise<EvolveResult | null> {
+  const t = L().collection.evolution;
+  const from = getSpecies(parseKey(key).id).name;
+  const target = getSpecies(to).name;
+  const preview = previewEvolution(store.save, key, to);
+  const message = t.transferText(from, store.save.cards[key].level, target, preview.level)
+    + (preview.clamped ? ` ${t.transferClamp(target, preview.level)}` : '');
+  const ok = await confirmDialog({ title: t.transferTitle(from, target), message, confirmText: L().collection.details.transfer });
+  if (!ok) return null;
+  const result = transferLevel(key, to);
+  if (!result) {
+    toast(t.failed, 'error');
+    return null;
+  }
+  sfx('levelUp');
+  playCry(to);
+  toast(t.transferDone(target, result.level), 'success');
   return result;
 }
 

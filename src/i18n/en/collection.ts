@@ -102,6 +102,9 @@ const collection: typeof pt = {
     teamFullHint: 'Team is full: remove someone or drag this card onto a team slot.',
     evolveTitle: 'Evolution',
     evolveTo: (name: string) => `Evolve into ${name}`,
+    transfer: 'Pass level',
+    transferTo: (name: string) => `Pass the level to ${name}`,
+    transferInfo: (level: number, to: number) => `You own it (Lv. ${n(level)}) · becomes Lv. ${n(to)}`,
     shinyNoEvolve: "Shiny cards don't evolve (in exchange, they have no level cap).",
     family: 'Evolution family',
     baby: 'Baby',
@@ -136,6 +139,11 @@ const collection: typeof pt = {
     clampWarning: (name: string, level: number, to: number) =>
       `${name} is Lv. ${n(level)} with no cap. The evolved form has a cap: the card will drop to Lv. ${n(to)}.`,
     mergeNote: (name: string, level: number) => `You already own ${name}: both cards merge into one, at Lv. ${n(level)}.`,
+    transferTitle: (from: string, to: string) => `Pass ${from}'s level to ${to}?`,
+    transferText: (from: string, level: number, to: string, result: number) =>
+      `${from} (Lv. ${n(level)}) merges into your ${to}, which becomes Lv. ${n(result)}. ${from} stays registered in your Pokédex, and new ${from} copies go to ${to}.`,
+    transferClamp: (to: string, cap: number) => `${to} can't go past Lv. ${n(cap)}: the extra levels are lost.`,
+    transferDone: (to: string, level: number) => `${to} is now Lv. ${n(level)}!`,
     animLabel: 'Evolution',
     intro: (name: string) => `${name} is glowing with a strange new energy…`,
     done: (from: string, to: string) => `${from} became ${to}!`,

@@ -34,6 +34,10 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
 - Stone evolutions need the stone item (consumed). Trade evolutions need a **Link Cable** (consumed).
 - Evolving keeps the level, clamped to 100 (so an uncapped base form loses its extra levels; the UI warns).
 - Evolving into a species you already own merges both cards: `max(levels) + 1`.
+- **Pass level** (optional): when an evolved form of the card is already owned (any stage: a Lv. 27 Nidorino and a
+  Lv. 1 Nidoking, or Charmander and Charizard), the card can merge into it with no level or item needed. Same result
+  as the merge above (`max(levels) + 1`, clamped to the cap); the old species stays registered and its new copies go
+  to the evolved card. It doesn't count as an evolution in the stats.
 
 ## Captures (gacha)
 

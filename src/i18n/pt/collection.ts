@@ -102,6 +102,9 @@ const collection = {
     teamFullHint: 'Equipe cheia: tire alguém ou arraste esta carta sobre um espaço da equipe.',
     evolveTitle: 'Evolução',
     evolveTo: (name: string) => `Evoluir para ${name}`,
+    transfer: 'Passar nível',
+    transferTo: (name: string) => `Passar o nível para ${name}`,
+    transferInfo: (level: number, to: number) => `Você já tem (Nv. ${n(level)}) · fica Nv. ${n(to)}`,
     shinyNoEvolve: 'Cartas shiny não evoluem (em troca, não têm limite de nível).',
     family: 'Família evolutiva',
     baby: 'Bebê',
@@ -136,6 +139,11 @@ const collection = {
     clampWarning: (name: string, level: number, to: number) =>
       `${name} está no Nv. ${n(level)} sem limite. A forma evoluída tem limite: a carta vai para o Nv. ${n(to)}.`,
     mergeNote: (name: string, level: number) => `Você já tem ${name}: as duas cartas se juntam em uma só, no Nv. ${n(level)}.`,
+    transferTitle: (from: string, to: string) => `Passar o nível de ${from} para ${to}?`,
+    transferText: (from: string, level: number, to: string, result: number) =>
+      `${from} (Nv. ${n(level)}) se junta ao seu ${to}, que fica no Nv. ${n(result)}. ${from} continua registrado na Pokédex, e novas cópias de ${from} vão para ${to}.`,
+    transferClamp: (to: string, cap: number) => `${to} não passa do Nv. ${n(cap)}: os níveis a mais se perdem.`,
+    transferDone: (to: string, level: number) => `${to} agora está no Nv. ${n(level)}!`,
     animLabel: 'Evolução',
     intro: (name: string) => `${name} está brilhando com uma energia diferente…`,
     done: (from: string, to: string) => `${from} virou ${to}!`,

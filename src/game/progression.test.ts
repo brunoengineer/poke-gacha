@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { defaultSave } from '../state/save';
 import { cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, rarity, startLevel, statsAt } from './cards';
 import { getSpecies, stage } from '../data/species';
-import { addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, previewEvolution, trainAfterBattle, useCandies } from './progression';
+import {
+  addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, previewEvolution, trainAfterBattle, transferLevel, transferTargets, useCandies,
+} from './progression';
 import { generateTeam, evolveForLevel } from './teams';
 import { matchup, toBattleCard, typeMultiplier } from './battle';
 import { BANNERS, pull, rarityOdds, roll, safariFeatured } from './gacha';
@@ -149,6 +151,34 @@ describe('evolution', () => {
 
     save.cards[cardKey(64)] = { level: 5, copies: 1, obtainedAt: 0 }; // Kadabra
     expect(evolutionOptions(save, cardKey(64))[0].missing.item).toBe('link-cable');
+  });
+
+  it('passes the level to an owned evolved form with no level or item needed', () => {
+    const save = defaultSave();
+    save.cards[cardKey(33)] = { level: 27, copies: 5, obtainedAt: 0 }; // Nidorino (Moon Stone evolution)
+    save.cards[cardKey(34)] = { level: 1, copies: 1, obtainedAt: 0 }; // Nidoking
+    save.deck = [cardKey(33)];
+    expect(evolve(save, cardKey(33), 34)).toBeNull();
+    expect(transferTargets(save, cardKey(33))).toEqual([34]);
+    const result = transferLevel(save, cardKey(33), 34)!;
+    expect(result).toMatchObject({ merged: true, level: 28, item: null });
+    expect(save.cards[cardKey(33)]).toBeUndefined();
+    expect(save.cards[cardKey(34)]).toMatchObject({ level: 28, copies: 6 });
+    expect(save.deck).toEqual([cardKey(34)]);
+    expect(save.stats.evolutions).toBe(0);
+    // Later Nidorino copies go to Nidoking, as after evolving.
+    expect(addCopy(save, 33).key).toBe(cardKey(34));
+  });
+
+  it('passes the level across stages, but only to owned forms and never from shinies', () => {
+    const save = defaultSave();
+    save.cards[cardKey(CHARMANDER)] = { level: 12, copies: 1, obtainedAt: 0 };
+    expect(transferTargets(save, cardKey(CHARMANDER))).toEqual([]);
+    expect(transferLevel(save, cardKey(CHARMANDER), CHARIZARD)).toBeNull();
+    save.cards[cardKey(CHARIZARD)] = { level: 3, copies: 1, obtainedAt: 0 };
+    save.cards[cardKey(CHARMANDER, true)] = { level: 50, copies: 1, obtainedAt: 0 };
+    expect(transferTargets(save, cardKey(CHARMANDER, true))).toEqual([]);
+    expect(transferLevel(save, cardKey(CHARMANDER), CHARIZARD)).toMatchObject({ level: 13 });
   });
 
   it('never evolves shinies', () => {

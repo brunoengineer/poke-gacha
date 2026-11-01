@@ -7,7 +7,8 @@ import { cardKey, type CardKey } from '../game/cards';
 import { DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
 import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
 import {
-  addItem, evolve as evolveCard, trainAfterBattle, useCandies as applyCandies, type BattleTraining, type EvolveResult,
+  addItem, evolve as evolveCard, trainAfterBattle, transferLevel as transferCardLevel, useCandies as applyCandies,
+  type BattleTraining, type EvolveResult,
 } from '../game/progression';
 import { applyRewards, type AppliedReward, type Reward } from '../game/rewards';
 import { dayKey, previousDayKey } from '../game/rng';
@@ -42,6 +43,15 @@ export function evolve(key: CardKey, to: number): EvolveResult | null {
   if (result) {
     emit('cards', [result.fromKey, result.toKey]);
     emit('items');
+    emit('deck');
+  }
+  return result;
+}
+
+export function transferLevel(key: CardKey, to: number): EvolveResult | null {
+  const result = update(save => transferCardLevel(save, key, to), []);
+  if (result) {
+    emit('cards', [result.fromKey, result.toKey]);
     emit('deck');
   }
   return result;
