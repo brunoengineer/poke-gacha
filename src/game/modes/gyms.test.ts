@@ -55,7 +55,7 @@ describe('gym progression', () => {
     applyRewards(save, first);
     recordGym(save.gyms, 'brock', true);
     expect(save.gyms.badges).toEqual(['boulder']);
-    expect(gymRewards(save.gyms, brock)).toEqual([{ kind: 'coins', amount: 125 }, { kind: 'item', item: RARE_CANDY, amount: 5 }]);
+    expect(gymRewards(save.gyms, brock)).toEqual([{ kind: 'coins', amount: 125 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
     expect(getGym('sabrina')!.items.map(i => i.item)).toEqual(['moon-stone', 'link-cable']);
   });
 
@@ -125,7 +125,7 @@ describe('johto gyms', () => {
     applyRewards(save, first);
     recordGym(save.gyms, 'clair', true);
     expect(save.items['dragon-scale']).toBe(1);
-    expect(gymRewards(save.gyms, clair)).toEqual([{ kind: 'coins', amount: 2500 }, { kind: 'item', item: RARE_CANDY, amount: 5 }]);
+    expect(gymRewards(save.gyms, clair)).toEqual([{ kind: 'coins', amount: 2500 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
     expect(gymLevels(save.gyms, clair)).toEqual([91, 96]);
   });
 

@@ -100,7 +100,7 @@ export const johtoGymsOpen = (gyms: Pick<GymSave, 'badges'>) => regionBadges(gym
 
 export const REMATCH_LEVELS = 10;
 export const REMATCH_MAX = 40;
-export const REMATCH_CANDY = 5;
+export const REMATCH_CANDY = 3;
 /** Rare Candy on every first win, on top of the badge and the gym's own items. */
 export const FIRST_WIN_CANDY = 5;
 

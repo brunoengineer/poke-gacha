@@ -152,7 +152,7 @@ A Kanto / Johto switch shows each region's badge case. Every first win also give
 | 7 | Pryce | Ice | 78–82 | Glacier Badge, ₽4,000, Up-Grade |
 | 8 | Clair | Dragon | 81–86 | Rising Badge, ₽5,000, Dragon Scale + Ultra Ball ×5 |
 
-Rematches (both regions): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×5.
+Rematches (both regions): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×3.
 Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; the Kanto League needs the 8 Kanto badges,
 the Johto Gyms the 8 Kanto badges and the Johto League the 8 Johto badges (`UNLOCK_BADGES`, `JOHTO_UNLOCK_BADGES`).
 
