@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each player can only read and write their own Poké Gacha save.
+    // If this Firebase project also hosts other games, merge this block into its existing rules.
+    match /pokegacha_saves/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

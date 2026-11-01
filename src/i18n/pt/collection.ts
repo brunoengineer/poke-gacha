@@ -1,0 +1,144 @@
+// Textos em português do namespace "collection" (Pokédex, equipe, detalhes, Doce Raro, evolução).
+// Funções recebem parâmetros (contagens, nomes).
+const n = (value: number) => value.toLocaleString('pt-BR');
+
+const collection = {
+  title: 'Pokédex',
+  /** HTML: recebe números já formatados. */
+  stats: (caught: string, total: string, shinies: string) =>
+    `<b>${caught}</b>/${total} capturados · <b>${shinies}</b> ${shinies === '1' ? 'shiny' : 'shinies'}`,
+  caughtLabel: 'Progresso da Pokédex',
+  search: 'Buscar Pokémon ou nº…',
+  filterLabel: 'Filtrar',
+  modes: { all: 'Todos', owned: 'Tenho', missing: 'Faltam', evolve: 'Evoluir', shiny: 'Shinies' },
+  rarityLabel: 'Filtrar por raridade',
+  regionLabel: 'Região',
+  allRegions: 'Todas as regiões',
+  typeLabel: 'Tipo',
+  allTypes: 'Todos os tipos',
+  sortLabel: 'Ordenar por',
+  sortBy: (label: string) => `Ordem: ${label}`,
+  sorts: { dex: 'Nº Pokédex', name: 'Nome', level: 'Nível', power: 'Poder (PC)', rarity: 'Raridade', recent: 'Recentes' },
+  showing: (count: string) => `${count} Pokémon com esses filtros`,
+  empty: 'Nenhum Pokémon encontrado com esses filtros.',
+  clearFilters: 'Limpar filtros',
+  tip: 'Dica: arraste uma carta até a equipe (no celular, toque e segure). Clique com o botão direito ou aperte T para adicionar ou remover.',
+
+  onboard: {
+    title: 'Sua Pokédex está vazia!',
+    text: 'Abra Poké Balls para capturar seus primeiros Pokémon e depois monte sua equipe de 6.',
+    cta: 'Ir capturar',
+  },
+
+  tile: {
+    inTeam: 'Na equipe',
+    shinyOwned: 'Você tem a versão shiny',
+    registered: 'Registrado',
+    evolve: (name: string) => `Evoluir ${name}`,
+    evolveShort: 'Pode evoluir',
+    canEvolve: 'pode evoluir',
+  },
+
+  team: {
+    full: (size: number) => `Equipe cheia (${size}/${size}). Solte a carta sobre um espaço para trocar.`,
+    duplicate: (name: string) => `${name} já está na equipe.`,
+    notOwned: 'Você ainda não tem esta carta.',
+    added: (name: string) => `${name} entrou na equipe.`,
+    removed: (name: string) => `${name} saiu da equipe.`,
+    noCards: 'Capture alguns Pokémon primeiro!',
+    autoDone: 'Equipe montada com seus Pokémon mais fortes.',
+    autoSame: 'Sua equipe já é a mais forte possível!',
+  },
+
+  dock: {
+    title: 'Equipe',
+    powerTitle: 'Poder de Combate somado da equipe',
+    clear: 'Limpar equipe',
+    clearTitle: 'Limpar a equipe?',
+    clearText: 'Todos os Pokémon saem da equipe (eles continuam na sua coleção).',
+    auto: 'Auto',
+    autoTitle: 'Montar a equipe com os 6 mais fortes',
+    battle: 'Batalhar',
+    needFull: (size: number) => `Monte uma equipe com ${size} Pokémon para batalhar.`,
+    hintEmpty: (missing: number) => `Arraste cartas para cá · ${missing === 1 ? 'falta 1' : `faltam ${missing}`}`,
+    hintFull: 'Equipe completa! Solte uma carta sobre um espaço para trocar.',
+    hintDrop: 'Solte em um espaço da equipe',
+    hintReplace: 'Solte sobre um Pokémon para substituí-lo',
+    hintRemove: 'Solte fora da equipe para remover',
+    slotLabel: (slot: number, name: string, level: number) => `Espaço ${slot}: ${name}, nível ${n(level)}. Enter abre os detalhes, Delete remove, Alt + setas move.`,
+    remove: (name: string) => `Remover ${name} da equipe`,
+  },
+
+  details: {
+    label: 'Detalhes do Pokémon',
+    prev: 'Anterior',
+    next: 'Próximo',
+    showShiny: 'Ver shiny',
+    showNormal: 'Ver normal',
+    inTeam: 'Na equipe',
+    size: (height: number, weight: number) =>
+      `Altura ${height.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} m · Peso ${weight.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg`,
+    lockedText: 'Este Pokémon ainda não foi capturado. Quem será? Tente a sorte na aba Capturar!',
+    goCapture: 'Ir capturar',
+    registeredText: (name: string) => `${name} está registrado na sua Pokédex, mas você não tem a carta agora.`,
+    registeredEvolved: (name: string, evolved: string) =>
+      `${name} está registrado na sua Pokédex: a sua carta evoluiu para ${evolved}. Novas cópias de ${name} vão direto para ela.`,
+    openCard: (name: string) => `Abrir ${name}`,
+    level: 'Nível',
+    capNormal: (max: number) => `Sobe até o Nv. ${max}. Cópias repetidas e Doces Raros dão +1 nível cada.`,
+    capMaxed: 'Nível máximo! Novas cópias viram Doces Raros.',
+    capBase: (name: string) =>
+      `Segredo de treinador: enquanto ${name} não evoluir, ele não tem limite de nível. Com paciência, pode até superar a própria evolução final!`,
+    capBeyond: (name: string, level: number) =>
+      `Nv. ${n(level)} e subindo! ${name} já passou do limite das formas evoluídas. Se evoluir agora, cai para o Nv. 100.`,
+    capShiny: 'Cartas shiny nunca evoluem e, por isso, não têm limite de nível. Até onde você chega?',
+    statsAt: (level: number) => `Atributos no Nv. ${n(level)}`,
+    baseStats: 'Atributos base',
+    addTeam: 'Pôr na equipe',
+    removeTeam: 'Tirar da equipe',
+    teamFull: 'Equipe cheia',
+    teamFullHint: 'Equipe cheia: tire alguém ou arraste esta carta sobre um espaço da equipe.',
+    evolveTitle: 'Evolução',
+    evolveTo: (name: string) => `Evoluir para ${name}`,
+    shinyNoEvolve: 'Cartas shiny não evoluem (em troca, não têm limite de nível).',
+    family: 'Família evolutiva',
+    matchups: 'Defesa contra tipos',
+    weak: 'Fraco contra',
+    resist: 'Resiste a',
+    immune: 'Imune a',
+  },
+
+  candy: {
+    use: 'Usar Doce Raro',
+    useN: (count: number) => `Usar ${n(count)} ${count === 1 ? 'Doce Raro' : 'Doces Raros'}`,
+    max: 'Máx.',
+    atCap: 'Esta carta está no nível máximo.',
+    none: 'Sem Doces Raros. Ganhe em batalhas ou compre no Mercado.',
+    confirmTitle: 'Usar todos os doces?',
+    confirmText: (count: number, name: string) => `${n(count)} Doces Raros serão usados em ${name}.`,
+    done: (name: string, level: number) => `${name} subiu para o Nv. ${n(level)}!`,
+    levelUp: (count: number) => `+${n(count)} Nv.`,
+  },
+
+  evolution: {
+    evolve: 'Evoluir',
+    levelReq: (level: number) => `Nv. ${n(level)}`,
+    needLevel: (level: number) => `Precisa chegar ao Nv. ${n(level)} para evoluir.`,
+    needItem: (item: string) => `Precisa de ${item} para evoluir.`,
+    failed: 'Não foi possível evoluir agora.',
+    confirmTitle: (name: string) => `Evoluir ${name}?`,
+    chooseBranch: 'Escolha em qual Pokémon ele vai se transformar:',
+    consumes: (item: string) => `Gasta 1 ${item}.`,
+    clampWarning: (name: string, level: number, to: number) =>
+      `${name} está no Nv. ${n(level)} sem limite. A forma evoluída tem limite: a carta vai para o Nv. ${n(to)}.`,
+    mergeNote: (name: string, level: number) => `Você já tem ${name}: as duas cartas se juntam em uma só, no Nv. ${n(level)}.`,
+    animLabel: 'Evolução',
+    intro: (name: string) => `${name} está brilhando com uma energia diferente…`,
+    done: (from: string, to: string) => `${from} virou ${to}!`,
+    newEntry: 'Novo registro na Pokédex!',
+    mergedDone: 'Cartas unidas',
+    clampedDone: (from: number, to: number) => `Nv. ${n(from)} → ${n(to)}`,
+  },
+};
+
+export default collection;

@@ -1,0 +1,132 @@
+// Save format. Everything the player owns lives in one JSON object, stored locally and (when signed in) in Firestore.
+// New fields must get a default in defaultSave(); normalizeSave() fills them in for older saves.
+
+import type { CardKey } from '../game/cards';
+import { STARTING_COINS } from '../game/economy';
+import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
+import { defaultGymSave, type GymSave } from '../game/modes/gyms';
+import { defaultLeagueSave, type LeagueSave } from '../game/modes/league';
+import { defaultTrainingSave, type TrainingSave } from '../game/modes/training';
+
+export interface CardState {
+  level: number;
+  /** Copies obtained so far (pulls, rewards), including the first one. */
+  copies: number;
+  obtainedAt: number;
+}
+
+export interface Settings {
+  sound: boolean;
+  music: boolean;
+  cries: boolean;
+  /** 0..1 */
+  volume: number;
+  /** 0..1 */
+  musicVolume: number;
+  /** Shorter animations. */
+  fastFx: boolean;
+}
+
+export interface SaveData {
+  v: 1;
+  coins: number;
+  cards: Record<CardKey, CardState>;
+  /** Pokédex: species id -> when it was first obtained (pulled, rewarded or evolved into). */
+  caught: Record<string, number>;
+  /** Team of up to DECK_SIZE card keys, in slot order. */
+  deck: CardKey[];
+  items: Record<string, number>;
+  /** Starter species chosen in onboarding (null until chosen). */
+  starter: number | null;
+  training: TrainingSave;
+  gyms: GymSave;
+  ladder: LadderSave;
+  league: LeagueSave;
+  stats: {
+    pulls: number;
+    shinies: number;
+    evolutions: number;
+    battles: number;
+    wins: number;
+    losses: number;
+    coinsEarned: number;
+    candiesUsed: number;
+  };
+  /** Daily gift: last claimed day (YYYY-MM-DD) and consecutive-day streak. */
+  daily: { last: string | null; streak: number };
+  /** Pulls since the last rare-or-better card, per banner (pity counter). */
+  pity: Record<string, number>;
+  settings: Settings;
+  /** One-time hints already shown, by id. */
+  seen: Record<string, boolean>;
+  updatedAt: number;
+}
+
+export function defaultSave(): SaveData {
+  return {
+    v: 1,
+    coins: STARTING_COINS,
+    cards: {},
+    caught: {},
+    deck: [],
+    items: {},
+    starter: null,
+    training: defaultTrainingSave(),
+    gyms: defaultGymSave(),
+    ladder: defaultLadderSave(),
+    league: defaultLeagueSave(),
+    stats: { pulls: 0, shinies: 0, evolutions: 0, battles: 0, wins: 0, losses: 0, coinsEarned: 0, candiesUsed: 0 },
+    daily: { last: null, streak: 0 },
+    pity: {},
+    settings: { sound: true, music: true, cries: true, volume: 0.7, musicVolume: 0.35, fastFx: false },
+    seen: {},
+    updatedAt: 0,
+  };
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
+
+/** Fills missing fields so older saves keep working as the game grows. */
+export function normalizeSave(raw: unknown): SaveData {
+  const d = defaultSave();
+  if (!isObject(raw)) return d;
+  const s = raw as Partial<SaveData>;
+  const merge = <T extends object>(base: T, value: unknown): T => (isObject(value) ? { ...base, ...value } : base);
+  return {
+    ...d,
+    coins: Number.isFinite(s.coins) ? Math.max(0, Math.floor(s.coins!)) : d.coins,
+    cards: isObject(s.cards) ? (s.cards as SaveData['cards']) : {},
+    caught: isObject(s.caught) ? (s.caught as SaveData['caught']) : {},
+    deck: Array.isArray(s.deck) ? s.deck.filter(key => typeof key === 'string' && isObject(s.cards) && key in s.cards) : [],
+    items: isObject(s.items) ? (s.items as SaveData['items']) : {},
+    starter: typeof s.starter === 'number' ? s.starter : null,
+    training: merge(d.training, s.training),
+    gyms: merge(d.gyms, s.gyms),
+    ladder: merge(d.ladder, s.ladder),
+    league: merge(d.league, s.league),
+    stats: merge(d.stats, s.stats),
+    daily: merge(d.daily, s.daily),
+    pity: isObject(s.pity) ? (s.pity as SaveData['pity']) : {},
+    settings: merge(d.settings, s.settings),
+    seen: isObject(s.seen) ? (s.seen as SaveData['seen']) : {},
+    updatedAt: Number.isFinite(s.updatedAt) ? s.updatedAt! : 0,
+    v: 1,
+  };
+}
+
+export const hasProgress = (s: SaveData) => s.starter != null || s.stats.pulls > 0 || s.updatedAt > 0;
+
+export type SaveChoice = { kind: 'abort' } | { kind: 'use'; save: SaveData; fromGuest: boolean };
+
+/**
+ * Which save a signed-in account gets: the newest of its local and cloud copies; a brand-new account takes
+ * this browser's guest progress (once); if the cloud is unreachable and nothing is cached, abort rather
+ * than risk overwriting a real cloud save.
+ */
+export function chooseAccountSave(local: SaveData | null, cloud: SaveData | null, cloudOk: boolean, guest: SaveData | null): SaveChoice {
+  if (!cloudOk && !local) return { kind: 'abort' };
+  const newest = [local, cloud].filter((s): s is SaveData => !!s).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+  if (newest) return { kind: 'use', save: newest, fromGuest: false };
+  if (guest && hasProgress(guest)) return { kind: 'use', save: guest, fromGuest: true };
+  return { kind: 'use', save: defaultSave(), fromGuest: false };
+}

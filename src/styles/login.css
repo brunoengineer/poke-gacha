@@ -1,0 +1,62 @@
+/* Login screen (src/ui/login.ts) */
+
+#login-root { position: fixed; inset: 0; z-index: 100; overflow-y: auto; }
+.login {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 64px 16px 24px;
+    overflow: hidden;
+    background:
+        radial-gradient(900px 500px at 50% -10%, rgba(239, 74, 74, 0.18), transparent 65%),
+        radial-gradient(800px 600px at 50% 120%, rgba(90, 120, 220, 0.2), transparent 60%);
+}
+.floaters { position: absolute; inset: 0; pointer-events: none; }
+.floaters img {
+    position: absolute;
+    bottom: -160px;
+    image-rendering: pixelated;
+    opacity: .22;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+    animation: float-up linear infinite;
+}
+@keyframes float-up {
+    from { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-60vh) rotate(4deg); }
+    to { transform: translateY(-125vh) rotate(-4deg); }
+}
+
+.login-card {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    width: min(420px, 100%);
+    padding: 36px 28px 28px;
+    border-radius: 26px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(28, 38, 66, 0.92), rgba(21, 29, 51, 0.94));
+    border: 1px solid var(--line-gold);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    animation: pop-in .5s var(--ease);
+}
+.login-ball {
+    width: 78px;
+    height: 78px;
+    margin-top: -76px;
+    filter: drop-shadow(0 10px 24px rgba(239, 74, 74, 0.45));
+    animation: ball-bob 3s ease-in-out infinite;
+}
+@keyframes ball-bob {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50% { transform: translateY(-8px) rotate(8deg); }
+}
+.login-title { font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1; }
+.login-title b { color: var(--poke-red-hi); }
+.login-tagline { color: var(--muted); margin-bottom: 8px; }
+.login-card .btn { width: 100%; }
+.login-note { color: var(--dim); font-size: 12.5px; margin-top: -4px; }
+.login-error { color: #ffb9b9; font-size: 13px; }
+.login-card .lang-switch { margin-top: 8px; }

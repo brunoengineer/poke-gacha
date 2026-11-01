@@ -1,0 +1,674 @@
+/* =========================================================================
+   Pokémon card (src/ui/card.ts). One design for every size: the card is a size container and every
+   measurement inside uses cqw (percent of the card width), so xs/sm/md/lg only change the width.
+
+   Layers:  .pcard (container, size)  >  .pcard-frame (rarity frame)  >  .pcard-face (art, head, foot, foil)
+   The art background is themed by the primary type (data-type) and tinted by the second type (--t2);
+   the frame metal is set by data-rarity; data-shiny adds foil, sparkles and a star.
+   ========================================================================= */
+
+.pcard {
+    --t1: #a8a77a;
+    --t2: #a8a77a;
+    --rc: var(--ra-common);
+    /* Frame metal: light / mid / dark */
+    --f1: #f4f6fa;
+    --f2: #b4bbc8;
+    --f3: #5f6676;
+    --glow: transparent;
+    position: relative;
+    container-type: inline-size;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 5 / 7;
+    flex-shrink: 0;
+    align-self: start;
+    /* Percent radii keep the corners circular at any size (height = 1.4 × width). */
+    border-radius: 6.5% / 4.64%;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.pcard-xs { width: 72px; }
+.pcard-md { width: 170px; }
+.pcard-lg { width: 280px; }
+
+.pcard[data-rarity="uncommon"] { --f1: #d7fbe6; --f2: #4fd18b; --f3: #17683f; }
+.pcard[data-rarity="rare"] { --f1: #d9ecff; --f2: #5aa9ff; --f3: #1f4f9a; }
+.pcard[data-rarity="epic"] { --f1: #f1e3ff; --f2: #b678ff; --f3: #4f2391; --glow: rgba(182, 120, 255, 0.4); }
+.pcard[data-rarity="legendary"] { --f1: #fff6cf; --f2: #f6c453; --f3: #94620f; --glow: rgba(246, 196, 83, 0.5); }
+.pcard[data-rarity="mythical"] { --f1: #ffe3f6; --f2: #ff7ad9; --f3: #8e2f86; --glow: rgba(255, 122, 217, 0.5); }
+
+/* --- Frame (rarity) ------------------------------------------------------------ */
+
+.pcard-frame {
+    position: absolute;
+    inset: 0;
+    padding: 3.4cqw;
+    border-radius: inherit;
+    background:
+        linear-gradient(135deg, var(--f1) 0%, var(--f2) 16%, var(--f3) 46%, var(--f2) 68%, var(--f1) 84%, var(--f2) 100%);
+    box-shadow:
+        inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.4),
+        inset 0 -0.8cqw 1.2cqw rgba(0, 0, 0, 0.25),
+        0 2.4cqw 6cqw rgba(0, 0, 0, 0.45),
+        0 0 7cqw var(--glow);
+}
+
+/* Moving shine on the metal (legendary and mythical): a light band masked to the border only. */
+.pcard[data-rarity="legendary"] .pcard-frame::before,
+.pcard[data-rarity="mythical"] .pcard-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: 3.4cqw;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.95) 48%, rgba(255, 255, 255, 0.2) 54%, transparent 62%) 0 0 / 300% 100%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+    animation: pcard-frame-shine 3.6s ease-in-out infinite;
+}
+@keyframes pcard-frame-shine {
+    0% { background-position: 110% 0; }
+    55%, 100% { background-position: -10% 0; }
+}
+
+/* Mythical: prismatic, pink-led metal that slowly shifts. */
+.pcard[data-rarity="mythical"] .pcard-frame {
+    background:
+        linear-gradient(115deg, #ff7ad9 0%, #ffd2f1 12%, #9be7ff 26%, #ff9ee6 40%, #c58cff 54%, #ffe39a 68%, #ff7ad9 82%, #ffd2f1 100%) 0 0 / 300% 300%;
+    animation: pcard-prism 9s linear infinite;
+}
+@keyframes pcard-prism { to { background-position: 300% 0; } }
+
+/* --- Face ------------------------------------------------------------------------- */
+
+.pcard-face {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 3.6cqw;
+    background: #0d1326;
+    box-shadow: 0 0 0 0.55cqw rgba(8, 10, 20, 0.7);
+    isolation: isolate;
+}
+
+/* --- Art: type-themed background ------------------------------------------------------ */
+
+.pcard-art {
+    --pat: none;
+    --pat-size: auto;
+    --pat-pos: 0 0;
+    --pat-o: 0.32;
+    --pat-blend: overlay;
+    --halo: color-mix(in srgb, var(--t1) 45%, #fff);
+    --deep: color-mix(in srgb, var(--t1) 42%, #0a0f20);
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(58% 40% at 50% 36%, color-mix(in srgb, var(--halo) 75%, transparent) 0%, transparent 72%),
+        linear-gradient(172deg, color-mix(in srgb, var(--t1) 88%, #0a0f20) 0%, var(--deep) 58%, color-mix(in srgb, var(--t2) 55%, #0a0f20) 100%);
+}
+.pcard-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: var(--pat);
+    background-size: var(--pat-size);
+    background-position: var(--pat-pos);
+    opacity: var(--pat-o);
+    mix-blend-mode: var(--pat-blend);
+}
+/* Vignette + floor shadow under the sprite. */
+.pcard-art::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 77cqw;
+    width: 50cqw;
+    height: 8cqw;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent);
+    z-index: 1;
+}
+.pcard-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 50% 38%, transparent 55%, rgba(4, 6, 14, 0.45));
+    pointer-events: none;
+}
+
+/* Patterns (white strokes blended over the type color). Sizes use cqw so they scale with the card. */
+.pcard[data-type="normal"] .pcard-art {
+    --pat:
+        radial-gradient(circle, #fff 0 1.1cqw, transparent 1.4cqw),
+        radial-gradient(circle, #fff 0 0.7cqw, transparent 1cqw);
+    --pat-size: 10cqw 10cqw, 10cqw 10cqw;
+    --pat-pos: 0 0, 5cqw 5cqw;
+    --pat-o: 0.22;
+}
+.pcard[data-type="fire"] .pcard-art {
+    --pat:
+        radial-gradient(28% 34% at 18% 100%, #fff3b0, transparent 72%),
+        radial-gradient(30% 46% at 52% 104%, #ffd36e, transparent 72%),
+        radial-gradient(26% 30% at 86% 100%, #fff3b0, transparent 72%),
+        radial-gradient(circle at 22% 30%, #fff 0 0.6cqw, transparent 0.9cqw),
+        radial-gradient(circle at 78% 18%, #fff 0 0.8cqw, transparent 1.1cqw),
+        radial-gradient(circle at 66% 52%, #fff 0 0.5cqw, transparent 0.8cqw),
+        radial-gradient(circle at 12% 62%, #fff 0 0.7cqw, transparent 1cqw),
+        repeating-linear-gradient(0deg, transparent 0 7cqw, rgba(255, 255, 255, 0.35) 7cqw 7.4cqw);
+    --pat-o: 0.5;
+    --pat-blend: soft-light;
+    --halo: #ffd27a;
+}
+.pcard[data-type="water"] .pcard-art {
+    --pat: radial-gradient(circle at 50% 0, transparent 0 4.4cqw, #fff 4.6cqw 5.3cqw, transparent 5.5cqw);
+    --pat-size: 11cqw 5.6cqw;
+    --pat-o: 0.26;
+    --halo: #9fd0ff;
+}
+.pcard[data-type="electric"] .pcard-art {
+    --pat:
+        linear-gradient(135deg, #fff 25%, transparent 25%),
+        linear-gradient(225deg, #fff 25%, transparent 25%),
+        linear-gradient(315deg, #fff 25%, transparent 25%),
+        linear-gradient(45deg, #fff 25%, transparent 25%);
+    --pat-size: 12cqw 12cqw;
+    --pat-pos: -6cqw 0, -6cqw 0, 0 0, 0 0;
+    --pat-o: 0.16;
+    --halo: #fff3a8;
+    --deep: color-mix(in srgb, var(--t1) 46%, #2a2208);
+}
+.pcard[data-type="grass"] .pcard-art {
+    --pat:
+        radial-gradient(100% 100% at 0 100%, transparent 68%, #fff 69% 72%, transparent 73%),
+        radial-gradient(100% 100% at 100% 0, transparent 68%, #fff 69% 72%, transparent 73%);
+    --pat-size: 12cqw 12cqw;
+    --pat-o: 0.24;
+    --halo: #c9f5a5;
+}
+.pcard[data-type="ice"] .pcard-art {
+    --pat:
+        radial-gradient(circle, #fff 0 0.6cqw, transparent 0.9cqw),
+        conic-gradient(from 45deg, rgba(255, 255, 255, 0.9) 0 25%, transparent 0 50%, rgba(255, 255, 255, 0.45) 0 75%, transparent 0);
+    --pat-size: 9cqw 9cqw, 16cqw 16cqw;
+    --pat-pos: 2cqw 3cqw, 0 0;
+    --pat-o: 0.22;
+    --halo: #e6fffd;
+    --deep: color-mix(in srgb, var(--t1) 40%, #10203a);
+}
+.pcard[data-type="fighting"] .pcard-art {
+    --pat: repeating-conic-gradient(from 0deg at 50% 36%, #fff 0 3.5deg, transparent 3.5deg 13deg);
+    --pat-o: 0.18;
+    --halo: #ffb08a;
+}
+.pcard[data-type="poison"] .pcard-art {
+    --pat:
+        radial-gradient(circle at 18% 82%, transparent 0 6cqw, #fff 6.3cqw 7cqw, transparent 7.3cqw),
+        radial-gradient(circle at 84% 70%, transparent 0 4cqw, #fff 4.3cqw 4.9cqw, transparent 5.2cqw),
+        radial-gradient(circle at 76% 18%, transparent 0 3cqw, #fff 3.3cqw 3.9cqw, transparent 4.2cqw),
+        radial-gradient(circle at 20% 24%, #fff 0 1.6cqw, transparent 1.9cqw),
+        radial-gradient(circle, #fff 0 0.8cqw, transparent 1.1cqw);
+    --pat-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 13cqw 13cqw;
+    --pat-o: 0.26;
+    --halo: #e3a6ff;
+}
+.pcard[data-type="ground"] .pcard-art {
+    --pat:
+        repeating-linear-gradient(174deg, transparent 0 7cqw, rgba(0, 0, 0, 0.55) 7cqw 8cqw, transparent 8cqw 12cqw, #fff 12cqw 12.6cqw, transparent 12.6cqw 17cqw),
+        radial-gradient(circle at 30% 88%, #fff 0 1.2cqw, transparent 1.5cqw),
+        radial-gradient(circle at 72% 80%, #fff 0 0.9cqw, transparent 1.2cqw);
+    --pat-o: 0.22;
+    --halo: #ffe7a8;
+    --deep: color-mix(in srgb, var(--t1) 40%, #20160a);
+}
+.pcard[data-type="flying"] .pcard-art {
+    --pat:
+        radial-gradient(30% 14% at 22% 92%, #fff, transparent 70%),
+        radial-gradient(34% 16% at 70% 96%, #fff, transparent 70%),
+        radial-gradient(22% 10% at 84% 22%, #fff, transparent 70%),
+        radial-gradient(18% 8% at 16% 30%, #fff, transparent 70%),
+        repeating-linear-gradient(0deg, transparent 0 9cqw, rgba(255, 255, 255, 0.6) 9cqw 9.4cqw, transparent 9.4cqw 13cqw);
+    --pat-o: 0.3;
+    --halo: #e8e0ff;
+}
+.pcard[data-type="psychic"] .pcard-art {
+    --pat: repeating-radial-gradient(circle at 50% 36%, transparent 0 5.2cqw, #fff 5.2cqw 6cqw);
+    --pat-o: 0.2;
+    --halo: #ffc1d6;
+}
+.pcard[data-type="bug"] .pcard-art {
+    --pat:
+        linear-gradient(30deg, #fff 12%, transparent 12.5%, transparent 87%, #fff 87.5%, #fff),
+        linear-gradient(150deg, #fff 12%, transparent 12.5%, transparent 87%, #fff 87.5%, #fff),
+        linear-gradient(30deg, #fff 12%, transparent 12.5%, transparent 87%, #fff 87.5%, #fff),
+        linear-gradient(150deg, #fff 12%, transparent 12.5%, transparent 87%, #fff 87.5%, #fff),
+        linear-gradient(60deg, rgba(255, 255, 255, 0.5) 25%, transparent 25.5%, transparent 75%, rgba(255, 255, 255, 0.5) 75%, rgba(255, 255, 255, 0.5)),
+        linear-gradient(60deg, rgba(255, 255, 255, 0.5) 25%, transparent 25.5%, transparent 75%, rgba(255, 255, 255, 0.5) 75%, rgba(255, 255, 255, 0.5));
+    --pat-size: 12cqw 21cqw;
+    --pat-pos: 0 0, 0 0, 6cqw 10.5cqw, 6cqw 10.5cqw, 0 0, 6cqw 10.5cqw;
+    --pat-o: 0.12;
+    --halo: #e8f59a;
+}
+.pcard[data-type="rock"] .pcard-art {
+    --pat:
+        linear-gradient(118deg, transparent 34%, rgba(0, 0, 0, 0.6) 34% 46%, transparent 46%),
+        linear-gradient(32deg, transparent 58%, #fff 58% 68%, transparent 68%),
+        linear-gradient(160deg, transparent 70%, rgba(255, 255, 255, 0.6) 70% 77%, transparent 77%),
+        linear-gradient(72deg, transparent 12%, rgba(0, 0, 0, 0.5) 12% 20%, transparent 20%);
+    --pat-o: 0.22;
+    --halo: #f2e3a0;
+    --deep: color-mix(in srgb, var(--t1) 38%, #1c170a);
+}
+.pcard[data-type="ghost"] .pcard-art {
+    --pat:
+        radial-gradient(40% 18% at 24% 90%, #fff, transparent 70%),
+        radial-gradient(36% 16% at 78% 82%, #fff, transparent 70%),
+        radial-gradient(30% 14% at 60% 14%, #fff, transparent 70%),
+        radial-gradient(circle at 18% 26%, #fff 0 0.7cqw, transparent 1cqw),
+        radial-gradient(circle at 84% 40%, #fff 0 0.6cqw, transparent 0.9cqw);
+    --pat-o: 0.2;
+    --halo: #c9a8ff;
+    --deep: color-mix(in srgb, var(--t1) 40%, #07050f);
+}
+.pcard[data-type="dragon"] .pcard-art {
+    --pat:
+        radial-gradient(circle at 50% 100%, transparent 0 3.7cqw, #fff 3.9cqw 4.5cqw, transparent 4.7cqw),
+        radial-gradient(circle at 50% 100%, transparent 0 3.7cqw, #fff 3.9cqw 4.5cqw, transparent 4.7cqw);
+    --pat-size: 9cqw 5cqw;
+    --pat-pos: 0 0, 4.5cqw 2.5cqw;
+    --pat-o: 0.2;
+    --halo: #b9a0ff;
+}
+.pcard[data-type="dark"] .pcard-art {
+    --pat:
+        radial-gradient(circle at 81% 15%, #000 0 6.2cqw, transparent 6.5cqw),
+        radial-gradient(circle at 76% 19%, #fff 0 7cqw, transparent 7.3cqw),
+        radial-gradient(circle at 18% 22%, #fff 0 0.6cqw, transparent 0.9cqw),
+        radial-gradient(circle at 34% 12%, #fff 0 0.4cqw, transparent 0.7cqw),
+        radial-gradient(circle at 12% 46%, #fff 0 0.5cqw, transparent 0.8cqw);
+    --pat-o: 0.26;
+    --pat-blend: soft-light;
+    --halo: #a08672;
+    --deep: color-mix(in srgb, var(--t1) 38%, #050407);
+}
+.pcard[data-type="steel"] .pcard-art {
+    --pat:
+        radial-gradient(circle at 7% 6%, #fff 0 1.2cqw, rgba(0, 0, 0, 0.6) 1.3cqw 1.7cqw, transparent 1.8cqw),
+        radial-gradient(circle at 93% 6%, #fff 0 1.2cqw, rgba(0, 0, 0, 0.6) 1.3cqw 1.7cqw, transparent 1.8cqw),
+        linear-gradient(125deg, transparent 30%, rgba(255, 255, 255, 0.7) 42%, transparent 54%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0 0.35cqw, transparent 0.35cqw 1.4cqw);
+    --pat-o: 0.2;
+    --halo: #eef0ff;
+    --deep: color-mix(in srgb, var(--t1) 34%, #121626);
+}
+.pcard[data-type="fairy"] .pcard-art {
+    --pat:
+        radial-gradient(circle, #fff 0 0.7cqw, transparent 1cqw),
+        radial-gradient(circle, #fff 0 0.45cqw, transparent 0.7cqw),
+        radial-gradient(40% 30% at 50% 36%, rgba(255, 255, 255, 0.6), transparent 70%);
+    --pat-size: 13cqw 13cqw, 7cqw 9cqw, 100% 100%;
+    --pat-pos: 2cqw 4cqw, 0 0, 0 0;
+    --pat-o: 0.34;
+    --halo: #ffd6ec;
+}
+
+/* --- Sprite ------------------------------------------------------------------------------ */
+
+.pcard .sprite {
+    position: absolute;
+    left: 50%;
+    top: 48cqw;
+    z-index: 2;
+    width: 98cqw;
+    height: auto;
+    translate: -50% -50%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 1.2cqw 0 rgba(0, 0, 0, 0.18)) drop-shadow(0 0 2.2cqw color-mix(in srgb, var(--halo) 35%, transparent));
+    -webkit-user-drag: none;
+}
+/* Animated GIFs: same pixel scale as the 96 px sprites, feet on the floor shadow. */
+.pcard .sprite[data-anim] {
+    top: auto;
+    bottom: calc(100% - 81cqw);
+    width: calc(var(--sw, 0.6) * 98cqw);
+    max-width: 94cqw;
+    max-height: 78cqw;
+    object-fit: contain;
+    translate: -50% 0;
+    opacity: 0;
+}
+.pcard .sprite[data-anim].ready { opacity: 1; transition: opacity .2s; }
+
+/* --- Head: level and shiny star ----------------------------------------------------------- */
+
+.pcard-head {
+    position: absolute;
+    top: 3cqw;
+    left: 3cqw;
+    right: 3cqw;
+    z-index: 4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2cqw;
+    pointer-events: none;
+}
+.pcard-level {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.15em;
+    padding: 0.32em 0.55em 0.28em;
+    border-radius: 999px;
+    background: rgba(6, 9, 20, 0.62);
+    box-shadow: inset 0 0 0 0.45cqw rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-family: var(--font-pixel);
+    font-weight: 700;
+    font-size: 9.4cqw;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0.3cqw 0 rgba(0, 0, 0, 0.5);
+}
+.pcard-level small { font-size: .72em; opacity: .8; }
+.pcard-inf {
+    margin-left: 0.2em;
+    color: var(--gold-hi);
+    font-family: var(--font-display);
+    font-size: 1.05em;
+    font-weight: 700;
+    line-height: 0.6;
+    text-shadow: 0 0 1.6cqw rgba(246, 196, 83, 0.8);
+}
+.pcard-level.beyond {
+    background: linear-gradient(180deg, rgba(70, 48, 8, 0.85), rgba(30, 20, 4, 0.85));
+    box-shadow: inset 0 0 0 0.45cqw rgba(246, 196, 83, 0.75), 0 0 3cqw rgba(246, 196, 83, 0.45);
+    color: #ffe9a8;
+}
+
+.pcard-shiny { width: 12cqw; height: 12cqw; margin-left: auto; }
+.pcard-star {
+    width: 100%;
+    height: 100%;
+    fill: #ffe27a;
+    stroke: #8a5a00;
+    stroke-width: 1.2;
+    filter: drop-shadow(0 0 1.5cqw rgba(255, 216, 77, 0.9));
+    animation: pcard-star-pulse 2.4s ease-in-out infinite;
+}
+@keyframes pcard-star-pulse {
+    50% { transform: scale(1.12) rotate(8deg); filter: drop-shadow(0 0 2.6cqw rgba(255, 236, 160, 1)); }
+}
+
+/* --- Foot: rarity gems, name, types, power ------------------------------------------------------ */
+
+.pcard-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.8cqw;
+    padding: 4.4cqw 4.6cqw 4.2cqw;
+    background: linear-gradient(180deg, rgba(12, 16, 32, 0.86), rgba(7, 10, 22, 0.96));
+    border-top: 0.6cqw solid color-mix(in srgb, var(--f2) 80%, transparent);
+    box-shadow: 0 -1cqw 3cqw rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
+.pcard-pips {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: flex;
+    gap: 0.9cqw;
+    padding: 0.9cqw 1.8cqw;
+    translate: -50% -55%;
+    border-radius: 999px;
+    background: rgba(7, 10, 22, 0.92);
+    box-shadow: 0 0 0 0.5cqw color-mix(in srgb, var(--f2) 80%, transparent);
+}
+.pcard-pips i {
+    width: 2.8cqw;
+    height: 2.8cqw;
+    rotate: 45deg;
+    border-radius: 0.5cqw;
+    background: linear-gradient(135deg, var(--f1), var(--f2) 55%, var(--f3));
+    box-shadow: 0 0 1.2cqw color-mix(in srgb, var(--f2) 70%, transparent);
+}
+.pcard-title { display: flex; align-items: baseline; gap: 2cqw; min-width: 0; }
+.pcard-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 10.6cqw;
+    line-height: 1.1;
+    letter-spacing: .01em;
+}
+.pcard-dex {
+    flex-shrink: 0;
+    font-family: var(--font-pixel);
+    font-size: 7cqw;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.55);
+}
+.pcard-row { display: flex; align-items: center; justify-content: space-between; gap: 2cqw; min-height: 9cqw; }
+.pcard-types { display: flex; gap: 1.4cqw; min-width: 0; }
+.pcard-power {
+    flex-shrink: 0;
+    font-family: var(--font-pixel);
+    font-weight: 700;
+    font-size: 8.6cqw;
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+.pcard-power small { font-size: .74em; margin-right: .25em; color: var(--f1); opacity: .9; }
+
+/* Type badges (also used outside cards). */
+.type-badge {
+    --tc: #a8a77a;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.32em 0.75em 0.32em 0.4em;
+    border-radius: 999px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 88%, #fff), var(--tc) 55%, color-mix(in srgb, var(--tc) 80%, #000));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+.type-ico {
+    width: 1.25em;
+    height: 1.25em;
+    flex-shrink: 0;
+    fill: currentColor;
+    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+}
+/* On cards the badges are round icons; the label shows on large cards. */
+.pcard .type-badge { font-size: 6cqw; padding: 0; width: 10cqw; height: 10cqw; justify-content: center; }
+.pcard .type-badge .type-ico { width: 7cqw; height: 7cqw; }
+.pcard .type-name { display: none; }
+
+@container (min-width: 200px) {
+    .pcard .type-badge { width: auto; height: auto; padding: 0.3em 0.8em 0.3em 0.4em; font-size: 5.2cqw; }
+    .pcard .type-badge .type-ico { width: 1.3em; height: 1.3em; }
+    .pcard .type-name { display: inline; }
+    /* Two labeled badges plus a 5-digit power don't fit: dual-type cards keep the round icons. */
+    .pcard[data-type2] .type-badge { width: 10cqw; height: 10cqw; padding: 0; font-size: 6cqw; }
+    .pcard[data-type2] .type-badge .type-ico { width: 7cqw; height: 7cqw; }
+    .pcard[data-type2] .type-name { display: none; }
+    .pcard-name { font-size: 9.6cqw; }
+    .pcard-row { min-height: 8cqw; }
+}
+
+/* Small cards (team slots): level, sprite and name only. */
+@container (max-width: 100px) {
+    .pcard-row, .pcard-dex, .pcard-pips { display: none; }
+    .pcard-foot { padding: 3.6cqw 5cqw 4.4cqw; }
+    .pcard-name { font-size: 12.5cqw; text-align: center; }
+    .pcard-level { font-size: 11cqw; padding: 0.25em 0.45em 0.2em; }
+    .pcard-level small { display: none; }
+    .pcard-inf { font-size: .9em; }
+    .pcard .sprite { top: 56cqw; width: 108cqw; }
+    .pcard .sprite[data-anim] { bottom: calc(100% - 94cqw); width: calc(var(--sw, 0.6) * 108cqw); }
+    .pcard-art::before { top: 86cqw; }
+    .pcard-shiny { width: 16cqw; height: 16cqw; }
+}
+
+/* --- Species view (Pokédex entry without a card) ----------------------------------------- */
+
+.pcard[data-species] .pcard-row { min-height: 9cqw; }
+
+/* --- Not caught: silhouette ------------------------------------------------------------------ */
+
+.pcard[data-locked] { --f1: #59627e; --f2: #333b56; --f3: #1c2236; --glow: transparent; }
+.pcard[data-locked] .pcard-frame { background: linear-gradient(135deg, #4a5372, #2a314a 45%, #1e2438); animation: none; }
+.pcard[data-locked] .pcard-frame::before { display: none; }
+.pcard[data-locked] .pcard-art {
+    background:
+        radial-gradient(58% 40% at 50% 36%, rgba(120, 140, 200, 0.18), transparent 72%),
+        linear-gradient(172deg, #1b2340, #10162b);
+}
+.pcard[data-locked] .pcard-pattern { display: none; }
+.pcard[data-locked] .sprite { filter: brightness(0) drop-shadow(0 0 1.4cqw rgba(140, 170, 255, 0.35)); opacity: .85; }
+.pcard[data-locked] .pcard-name { color: rgba(255, 255, 255, 0.45); letter-spacing: .12em; }
+.pcard[data-locked] .pcard-foot { border-top-color: #3a4260; }
+
+/* --- Shiny: holographic foil, sparkles and star -------------------------------------------------- */
+
+.pcard[data-shiny] .pcard-art::after {
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.6) 0 0.3cqw, transparent 0.55cqw) 0 0 / 7cqw 7cqw,
+        radial-gradient(circle, rgba(255, 236, 170, 0.5) 0 0.25cqw, transparent 0.5cqw) 3cqw 4cqw / 11cqw 9cqw,
+        radial-gradient(120% 90% at 50% 38%, transparent 55%, rgba(4, 6, 14, 0.4));
+    mix-blend-mode: normal;
+    opacity: .9;
+}
+.pcard-holo {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(115deg, #ff7ad9 0%, #ffd86b 6%, #8dffb1 12%, #7fdcff 18%, #c58cff 24%, #ff7ad9 30%) 0 0 / 300% 300%,
+        linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.55) 45%, transparent 60%) 0 0 / 250% 100%;
+    background-position: var(--mx, 0%) var(--my, 0%), calc(var(--mx, 50%) * 1.5) 0;
+    mix-blend-mode: color-dodge;
+    opacity: .26;
+    -webkit-mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
+    mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
+    animation: pcard-holo-drift 7s linear infinite;
+}
+.pcard.tilting .pcard-holo { animation: none; opacity: .42; }
+@keyframes pcard-holo-drift {
+    0% { background-position: 0% 0%, 120% 0; }
+    50% { background-position: 100% 100%, -20% 0; }
+    100% { background-position: 200% 200%, 120% 0; }
+}
+.pcard[data-shiny] .pcard-frame { box-shadow:
+        inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.5),
+        inset 0 -0.8cqw 1.2cqw rgba(0, 0, 0, 0.25),
+        0 2.4cqw 6cqw rgba(0, 0, 0, 0.45),
+        0 0 6cqw rgba(255, 216, 107, 0.45);
+}
+/* Prismatic sheen over the metal too. */
+.pcard[data-shiny] .pcard-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 3.4cqw;
+    border-radius: inherit;
+    background: linear-gradient(115deg, #ff9de2, #ffe29a, #9bffcf, #9be7ff, #d3a6ff, #ff9de2) 0 0 / 300% 100%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    mix-blend-mode: overlay;
+    opacity: .85;
+    pointer-events: none;
+    animation: pcard-prism 6s linear infinite;
+}
+
+.pcard-sparkles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.pcard-sparkles i {
+    position: absolute;
+    width: 7cqw;
+    height: 7cqw;
+    background: #fffbe0;
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    filter: drop-shadow(0 0 1cqw #ffd84d);
+    opacity: 0;
+    animation: pcard-twinkle 2.6s ease-in-out infinite;
+}
+.pcard-sparkles i:nth-child(1) { left: 14%; top: 20cqw; animation-delay: 0s; }
+.pcard-sparkles i:nth-child(2) { left: 78%; top: 30cqw; width: 5cqw; height: 5cqw; animation-delay: .7s; }
+.pcard-sparkles i:nth-child(3) { left: 24%; top: 64cqw; width: 4.5cqw; height: 4.5cqw; animation-delay: 1.3s; }
+.pcard-sparkles i:nth-child(4) { left: 70%; top: 70cqw; width: 6cqw; height: 6cqw; animation-delay: 1.9s; }
+.pcard-sparkles i:nth-child(5) { left: 50%; top: 13cqw; width: 4cqw; height: 4cqw; animation-delay: 2.2s; }
+@keyframes pcard-twinkle {
+    0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); }
+    18% { opacity: 1; transform: scale(1) rotate(45deg); }
+    36% { opacity: 0; transform: scale(.4) rotate(90deg); }
+}
+
+/* --- Hover tilt and glare (bindTilt / bindTiltGroup) ----------------------------------------------- */
+
+.pcard.tiltable {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .5s var(--ease);
+    will-change: transform;
+}
+.pcard.tilting { transition: transform .08s linear; }
+.pcard-glare {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.06) 35%, transparent 60%);
+    mix-blend-mode: overlay;
+    opacity: 0;
+    transition: opacity .3s;
+}
+.pcard.tilting .pcard-glare { opacity: 1; }
+
+/* --- Card back (Poké Ball) -------------------------------------------------------------------------- */
+
+.pcard-back .pcard-frame {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1), transparent 55%),
+        repeating-linear-gradient(45deg, #1b2547 0 6cqw, #17203d 6cqw 12cqw);
+    box-shadow: inset 0 0 0 2.4cqw #0f1630, inset 0 0 0 3.2cqw rgba(239, 74, 74, 0.6), 0 2.4cqw 6cqw rgba(0, 0, 0, 0.45);
+}
+.pcard-back-ball {
+    width: 46cqw;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 50% 50%, #f4f4f6 0 9cqw, #1b1b24 9cqw 12.5cqw, transparent 12.5cqw),
+        linear-gradient(180deg, var(--poke-red) 0 46%, #1b1b24 46% 54%, #f4f4f6 54%);
+    box-shadow: 0 0 0 2cqw #1b1b24, 0 0 8cqw rgba(239, 74, 74, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pcard-frame, .pcard-frame::before, .pcard-frame::after, .pcard-holo, .pcard-star, .pcard-sparkles i { animation: none !important; }
+    .pcard-sparkles i { opacity: .8; transform: scale(.7) rotate(45deg); }
+    .pcard.tiltable { transform: none; }
+}
