@@ -23,6 +23,7 @@ import { STARTING_COINS } from '../game/economy';
 import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
 import { defaultGymSave, type GymSave } from '../game/modes/gyms';
 import { defaultLeagueSave, type LeagueSave } from '../game/modes/league';
+import { defaultTowerSave, type TowerSave } from '../game/modes/tower';
 import { defaultTrainingSave, type TrainingSave } from '../game/modes/training';
 
 export interface CardState {
@@ -65,6 +66,8 @@ export interface SaveData {
   gyms: GymSave;
   ladder: LadderSave;
   league: LeagueSave;
+  /** Infinity Tower progress (added after the Johto release; older saves start at floor 1). */
+  tower: TowerSave;
   stats: {
     pulls: number;
     shinies: number;
@@ -99,6 +102,7 @@ export function defaultSave(): SaveData {
     gyms: defaultGymSave(),
     ladder: defaultLadderSave(),
     league: defaultLeagueSave(),
+    tower: defaultTowerSave(),
     stats: { pulls: 0, shinies: 0, evolutions: 0, battles: 0, wins: 0, losses: 0, coinsEarned: 0, candiesUsed: 0 },
     daily: { last: null, streak: 0 },
     pity: {},
@@ -142,6 +146,7 @@ export function normalizeSave(raw: unknown): SaveData {
     gyms: merge(d.gyms, s.gyms),
     ladder: merge(d.ladder, s.ladder),
     league: merge(d.league, s.league),
+    tower: merge(d.tower, s.tower),
     stats: merge(d.stats, s.stats),
     daily: merge(d.daily, s.daily),
     pity: isObject(s.pity) ? (s.pity as SaveData['pity']) : {},

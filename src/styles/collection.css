@@ -266,21 +266,25 @@
 .dex-tile.in-team .dex-team { display: grid; }
 .dex-tile.in-team .pcard-frame { outline: 2px solid var(--gold); outline-offset: 2px; }
 
+/* "You own the shiny": a small dark chip with a prismatic sparkle, tucked into the corner. */
 .dex-shiny-mark {
     position: absolute;
-    right: -5px;
-    top: -5px;
+    right: 3px;
+    top: 3px;
     z-index: 3;
     display: none;
     place-items: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff6c8, #ffd04d 55%, #e08a00);
-    color: #7a4600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 216, 77, 0.6), 0 0 0 2px var(--bg);
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    background:
+        linear-gradient(var(--bg-2), var(--bg-2)) padding-box,
+        linear-gradient(135deg, #ff9de2, #ffe29a, #9bffcf, #9be7ff, #d3a6ff) border-box;
+    border: 1.5px solid transparent;
+    color: #fff3c4;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
-.dex-shiny-mark .i { width: 13px; height: 13px; }
+.dex-shiny-mark .i { width: 13px; height: 13px; filter: drop-shadow(0 0 3px rgba(255, 226, 154, 0.8)); }
 .dex-tile.has-shiny .dex-shiny-mark { display: grid; }
 
 .dex-evolve {

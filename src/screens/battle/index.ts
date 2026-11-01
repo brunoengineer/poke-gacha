@@ -1,4 +1,4 @@
-// Battle tab: a hub with the player's team and the four modes, routed as #/battle/<mode>.
+// Battle tab: a hub with the player's team and the five modes, routed as #/battle/<mode>.
 // Each mode is a ModeModule rendered under a small header with a back button; battles themselves run in
 // the full-screen arena (arena.ts), opened by the modes.
 
@@ -19,17 +19,19 @@ import { competitionMode } from './competition';
 import { gymsMode } from './gyms';
 import { leagueMode } from './league';
 import { leagueOpen, teamSummaryHTML } from './team';
+import { towerOpen, towerMode } from './tower';
 import { trainingMode } from './training';
 
-type ModeId = 'training' | 'competition' | 'gyms' | 'league';
+type ModeId = 'training' | 'competition' | 'gyms' | 'tower' | 'league';
 
 const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; color: string }> = {
   training: { module: trainingMode, icon: 'users', art: ['youngster', 'oak', 'lass'], color: '#4fd18b' },
   competition: { module: competitionMode, icon: 'trophy', art: ['acetrainerf', 'acetrainer'], color: '#5aa9ff' },
   gyms: { module: gymsMode, icon: 'medal', art: ['misty', 'brock', 'whitney'], color: '#f5b84b' },
+  tower: { module: towerMode, icon: 'tower', art: ['veteranf', 'acetrainer', 'veteran'], color: '#ff8a5c' },
   league: { module: leagueMode, icon: 'crown', art: ['karen', 'lance', 'blue'], color: '#c58cff' },
 };
-const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'league'];
+const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'tower', 'league'];
 
 let section: HTMLElement;
 let current: ModeId | null = null;
@@ -76,6 +78,11 @@ function onClick(event: Event) {
       toast(L().battle.hub.leagueLocked, 'warning');
       return;
     }
+    if (id === 'tower' && !towerOpen()) {
+      sfx('error');
+      toast(L().battle.hub.towerLocked, 'warning');
+      return;
+    }
     sfx('open');
     navigate(`battle/${id}`);
   }
@@ -105,7 +112,7 @@ function modeCardHTML(id: ModeId): string {
   const t = L().battle.hub;
   const m = MODES[id];
   const s = store.save;
-  const locked = id === 'league' && !leagueOpen();
+  const locked = (id === 'league' && !leagueOpen()) || (id === 'tower' && !towerOpen());
   let status = '';
   if (id === 'training') status = `<span class="mode-pill">${icon('users')} ${esc(t.friendsCount(FRIENDS.length))}</span>`;
   if (id === 'competition') {
@@ -120,6 +127,10 @@ function modeCardHTML(id: ModeId): string {
       <span class="mode-pill">${icon('medal')} ${esc(t.regionBadges(regionLabel('kanto'), regionBadges(s.gyms, 'kanto')))}</span>
       <span class="mode-pill${johtoOpen ? '' : ' locked'}">${icon(johtoOpen ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel('johto'), regionBadges(s.gyms, 'johto')))}</span>
       <span class="mode-badges">${shown.map(g => badgeSVG(g.badge, { earned: s.gyms.badges.includes(g.badge), label: false })).join('')}</span>`;
+  }
+  if (id === 'tower') {
+    status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.towerLocked)}</span>`
+      : `<span class="mode-pill">${icon('tower')} ${esc(s.tower.best ? t.towerBest(s.tower.best) : t.towerNever)}</span>`;
   }
   if (id === 'league') {
     const best = (region: LeagueRegion) => {

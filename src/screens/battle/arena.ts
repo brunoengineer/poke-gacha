@@ -49,7 +49,7 @@ export interface Opponent {
 }
 
 export interface BattleConfig {
-  mode: 'training' | 'competition' | 'gym' | 'league';
+  mode: 'training' | 'competition' | 'gym' | 'league' | 'tower';
   opponent: Opponent;
   music?: 'battle' | 'gym' | 'league' | 'champion';
   /** Small label at the top (e.g. "Quartas de final"). */
@@ -72,6 +72,7 @@ const MODE_ACCENT: Record<BattleConfig['mode'], string> = {
   competition: '#5aa9ff',
   gym: '#d3bc8e',
   league: '#c58cff',
+  tower: '#ff8a5c',
 };
 
 const EASE = 'cubic-bezier(.2,.8,.2,1)';

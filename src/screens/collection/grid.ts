@@ -67,7 +67,7 @@ function tileShell(key: CardKey) {
     <div class="dex-tile" data-key="${esc(key)}" tabindex="0" role="button">
       <div class="dex-card"></div>
       <span class="dex-team" title="${esc(t.inTeam)}">${icon('check')}</span>
-      <span class="dex-shiny-mark" title="${esc(t.shinyOwned)}">${icon('star')}</span>
+      <span class="dex-shiny-mark" title="${esc(t.shinyOwned)}">${icon('sparkle')}</span>
       <span class="dex-reg">${icon('check')}<span>${esc(t.registered)}</span></span>
       <button class="dex-evolve" type="button" tabindex="-1" aria-label="${esc(t.evolve(name))}" title="${esc(t.evolveShort)}">${icon('up')}</button>
     </div>`;

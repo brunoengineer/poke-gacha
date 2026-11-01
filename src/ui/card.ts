@@ -4,14 +4,14 @@
 //
 // API contract (used by all screens — keep it stable):
 //   cardHTML(view, options) -> HTML string with a root `.pcard` element.
-//   Root attributes: data-type (primary type), data-rarity, data-shiny ("true"/absent), data-locked.
+//   Root attributes: data-type (primary type), data-rarity, data-shiny ("true"/absent), data-foil (Lv. 100+), data-locked.
 //   Size classes: pcard-xs (team slots, history), pcard-sm (grids), pcard-md (battle), pcard-lg (details/reveals).
 //   bindTilt(el) / bindTiltGroup(root): hover tilt + light glare on pointer devices.
 
 import { animatedSpriteUrl, spriteUrl } from '../data/sprites';
 import { getSpecies } from '../data/species';
 import { TYPE_COLOR, type PokemonType } from '../data/types';
-import { cardPower, isUncapped, rarity, rarityRank, RARITY_COLOR, type Rarity } from '../game/cards';
+import { cardPower, isUncapped, MAX_LEVEL, rarity, rarityRank, RARITY_COLOR, type Rarity } from '../game/cards';
 import { fmt, L } from '../i18n';
 import { esc, reducedMotion } from './dom';
 
@@ -107,6 +107,8 @@ if (typeof document !== 'undefined') {
 // --- Card ----------------------------------------------------------------------------
 
 const SPARKLES = '<span class="pcard-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>';
+/** Lv. 100 foil: glints on the art (shinies already have their sparkles). */
+const GLINTS = '<span class="pcard-glints" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 const STAR = '<svg class="pcard-star" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 1.5 2.6 7.9H23l-6.8 4.9 2.6 8-6.8-5-6.8 5 2.6-8L1 9.4h8.4z"/></svg>';
 
 export function cardHTML(view: CardView, opts: CardOptions = {}): string {
@@ -118,13 +120,15 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
   const [primary, secondary] = s.types;
   const level = locked ? undefined : view.level;
   const uncapped = level != null && isUncapped(view.id, shiny);
+  // Reaching Lv. 100 turns the card into a foil (gold sheen sweeping over it, glints, gold level tag).
+  const foil = level != null && level >= MAX_LEVEL;
   const dex = `#${String(s.id).padStart(3, '0')}`;
   const label = locked
     ? `${t.card.dex(s.id)} · ${t.card.notCaught}`
     : `${s.name}${shiny ? ` (${t.card.shiny})` : ''}${level != null ? `, ${t.card.levelFull(level)}` : ''}`;
 
   const levelTag = level == null ? '' : `
-    <span class="pcard-level${uncapped ? ' uncapped' : ''}${level > 100 ? ' beyond' : ''}">
+    <span class="pcard-level${uncapped ? ' uncapped' : ''}${foil ? ' max' : ''}${level > MAX_LEVEL ? ' beyond' : ''}">
       <small>${esc(t.card.level)}</small>${fmt(level)}${uncapped ? `<b class="pcard-inf" title="${esc(t.card.uncapped)}">∞</b>` : ''}
     </span>`;
   const powerTag = level == null || opts.hidePower ? '' :
@@ -132,7 +136,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
 
   return `
     <div class="pcard pcard-${opts.size ?? 'sm'} ${opts.className ?? ''}" data-type="${primary}"${secondary ? ` data-type2="${secondary}"` : ''}
-      data-rarity="${r}"${shiny ? ' data-shiny="true"' : ''}${locked ? ' data-locked="true"' : ''}${level == null && !locked ? ' data-species="true"' : ''}
+      data-rarity="${r}"${shiny ? ' data-shiny="true"' : ''}${foil ? ' data-foil="true"' : ''}${locked ? ' data-locked="true"' : ''}${level == null && !locked ? ' data-species="true"' : ''}
       style="--t1:${TYPE_COLOR[primary]};--t2:${TYPE_COLOR[secondary ?? primary]};--rc:${RARITY_COLOR[r]}"
       role="img" aria-label="${esc(label)}">
       <div class="pcard-frame">
@@ -140,7 +144,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
           <div class="pcard-art">
             <span class="pcard-pattern"></span>
             ${spriteImg(view.id, shiny, { animated: opts.animated && !locked, eager: opts.eager })}
-            ${shiny ? SPARKLES : ''}
+            ${shiny ? SPARKLES : foil ? GLINTS : ''}
           </div>
           <div class="pcard-head">
             ${levelTag}
@@ -155,6 +159,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
             ${locked ? '' : `<span class="pcard-row"><span class="pcard-types">${s.types.map(typeBadge).join('')}</span>${powerTag}</span>`}
           </div>
           ${shiny ? '<span class="pcard-holo" aria-hidden="true"></span>' : ''}
+          ${foil ? '<span class="pcard-foil" aria-hidden="true"></span>' : ''}
         </div>
       </div>
       <span class="pcard-glare" aria-hidden="true"></span>

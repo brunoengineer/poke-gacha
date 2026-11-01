@@ -24,6 +24,8 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
   - a **base form that can evolve but never did** has **no cap**: a Lv. 250 Charmander outgrows a Lv. 100 Charizard;
   - **shiny cards never evolve and have no cap**: a shiny Charizard can go past Lv. 100.
 - A duplicate of a capped card turns into a Rare Candy.
+- **Lv. 100 cards become foil**: a gold sheen sweeps across the card, with glints, a shining frame and a gold level tag
+  (shiny and uncapped cards keep it past 100).
 - **Every card starts at Lv. 1**, evolved forms and legendaries included (only the starter begins at Lv. 5). A pulled
   Charizard or Mewtwo is the better long-term card, since its stats grow faster, but levels always come from duplicates,
   Rare Candy and battles. Opponent trainers use the real evolution levels.
@@ -159,6 +161,18 @@ A Kanto / Johto switch shows each region's badge case. Every first win also give
 Rematches (both regions): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×3.
 Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; the Kanto League needs the 8 Kanto badges,
 the Johto Gyms the 8 Kanto badges and the Johto League the 8 Johto badges (`UNLOCK_BADGES`, `JOHTO_UNLOCK_BADGES`).
+
+### Infinity Tower: the endless climb
+Opens with the first badge (`TOWER_UNLOCK_BADGES`). One battle per floor; there is no top floor, the point is how far
+a player gets.
+
+- Floor 1 is Lv. 15 and each floor adds **+2 levels** to the whole opposing team (floor N = Lv. 13 + 2N).
+- Progress is kept: a loss doesn't reset the climb, the same floor waits for a retry. Each floor pays **once**, on its
+  first clear, so low floors can't be farmed: **Rare Candy ×3 + ₽20 per level** (₽300 on floor 1, ₽2,000 at Lv. 100).
+- Every **10th floor is a boss floor** (Tower Master, legendaries allowed): **+₽2,000** bonus.
+- Floors are fixed: floor N always brings the same trainer and team (seeded by N), so a lost floor can be studied.
+- Pacing: a floor adds 12 levels across the opposing team, while a clear gives about 4–5 (3 candies + the post-battle
+  level), so the tower always pulls ahead and needs the other modes to keep climbing.
 
 ### Pokémon League: elimination championship
 Needs 8 badges; entry fee ₽1,000. Four duels in a row; the first loss ends the run:
