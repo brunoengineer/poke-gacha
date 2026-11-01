@@ -139,7 +139,7 @@ const battle: typeof pt = {
     coins: (amount: number) => `₽ ${n(amount)} per win`,
     gift: (pct: number) => `${pct}% gift chance`,
     noGift: 'No gifts',
-    firstWin: 'Every win gives Rare Candy (1 / 2 / 3 by difficulty), +2 on the first win of the day',
+    firstWin: 'Every win gives Rare Candy (1 / 1 / 2 by difficulty), +1 on the first win of the day',
     firstWinShort: 'Rare Candy today',
     doneToday: 'Beaten today',
     record: (wins: number, losses: number) => `${wins}W · ${losses}L`,

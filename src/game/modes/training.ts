@@ -41,8 +41,8 @@ export interface DifficultyDef {
 
 export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
   easy: { offset: [-3, -1], coinsBase: 15, coinsPerLevel: 2, candy: 1, giftChance: 0 },
-  normal: { offset: [-1, 1], coinsBase: 25, coinsPerLevel: 3, candy: 2, giftChance: 0.05 },
-  hard: { offset: [2, 5], coinsBase: 40, coinsPerLevel: 5, candy: 3, giftChance: 0.12 },
+  normal: { offset: [-1, 1], coinsBase: 25, coinsPerLevel: 3, candy: 1, giftChance: 0.05 },
+  hard: { offset: [2, 5], coinsBase: 40, coinsPerLevel: 5, candy: 2, giftChance: 0.12 },
 };
 
 /** Coins for a loss (any difficulty). Forfeits pay nothing. */
@@ -140,7 +140,7 @@ export const averageLevel = (team: TeamMember[]) => (team.length ? Math.round(te
 export const winCoins = (difficulty: Difficulty, level: number) => DIFFICULTY[difficulty].coinsBase + DIFFICULTY[difficulty].coinsPerLevel * level;
 
 /** Extra Rare Candy for the first win of the day against each friend. */
-export const FIRST_WIN_CANDY = 2;
+export const FIRST_WIN_CANDY = 1;
 
 /** True when the friend hasn't been beaten yet today (the first win of the day adds Rare Candy). */
 export function firstWinToday(record: TrainingRecord | undefined, now = Date.now()): boolean {

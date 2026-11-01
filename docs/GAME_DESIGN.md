@@ -103,10 +103,11 @@ Three difficulties:
 | Difficulty | Opponent level | Coins on win | Rare Candy on win |
 |---|---|---|---|
 | Easy | team avg −3 … −1 | 15 + 2 × level | 1 |
-| Normal | team avg −1 … +1 | 25 + 3 × level | 2 |
-| Hard | team avg +2 … +5 | 40 + 5 × level | 3 |
+| Normal | team avg −1 … +1 | 25 + 3 × level | 1 |
+| Hard | team avg +2 … +5 | 40 + 5 × level | 2 |
 
-The first win of the day against each friend adds Rare Candy ×2. Friends sometimes give gifts: Normal 5% and
+The first win of the day against each friend adds Rare Candy ×1. Every battle also trains one team Pokémon
+(see Battles), so candy is a bonus on top. Friends sometimes give gifts: Normal 5% and
 Hard 12% chance of a **Link Cable**, a random evolution stone or a Johto trade item (King's Rock, Metal Coat,
 Dragon Scale, Up-Grade): "trading with friends". A loss pays ₽10.
 
@@ -116,7 +117,7 @@ A ladder of 100 generated trainers (names, classes, portraits and teams from a p
 little reputation. Rank #1–#10 are Elite trainers with stronger, partially evolved teams.
 
 - Opponent level by rank: about `4 + (100 − rank) × 0.6` (rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63).
-- Win: `30 + 4 × level` coins and Rare Candy ×2. Loss: ₽15.
+- Win: `30 + 4 × level` coins and Rare Candy ×1. Loss: ₽15.
 - One-time milestones: Top 75 → Great Ball ×3 · Top 50 → Ultra Ball + Rare Candy ×10 · Top 25 → Ultra Ball ×3 +
   random stone · Top 10 → Ultra Ball ×5 + Rare Candy ×30 · #1 → Master Ball.
 

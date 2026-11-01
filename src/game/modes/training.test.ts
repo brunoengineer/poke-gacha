@@ -79,9 +79,9 @@ describe('training rewards', () => {
 
   it('gives Rare Candy on every win, plus extra for the first win of the day', () => {
     const first = trainingRewards({ difficulty: 'easy', result: 'win', level: 10, firstWin: true, rng: seeded(1) });
-    expect(first).toEqual([{ kind: 'coins', amount: 35 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
+    expect(first).toEqual([{ kind: 'coins', amount: 35 }, { kind: 'item', item: RARE_CANDY, amount: 2 }]);
     const hard = trainingRewards({ difficulty: 'hard', result: 'win', level: 10, firstWin: false, rng: () => 0.99 });
-    expect(hard).toEqual([{ kind: 'coins', amount: 90 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
+    expect(hard).toEqual([{ kind: 'coins', amount: 90 }, { kind: 'item', item: RARE_CANDY, amount: 2 }]);
   });
 
   it('pays a little for a loss and nothing for a forfeit', () => {

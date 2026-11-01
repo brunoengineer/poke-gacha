@@ -45,7 +45,7 @@ export const LOSS_COINS = 15;
 
 export const winCoins = (level: number) => 30 + 4 * level;
 /** Rare Candy on every ladder win. */
-export const WIN_CANDY = 2;
+export const WIN_CANDY = 1;
 /** Fixed reputation of the trainer on rank slot `rank`. */
 export const reputationAt = (rank: number) => (LADDER_SIZE + 1 - rank) * REPUTATION_STEP;
 /** Opponent level by rank: rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63. */

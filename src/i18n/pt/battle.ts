@@ -139,7 +139,7 @@ const battle = {
     coins: (amount: number) => `₽ ${n(amount)} por vitória`,
     gift: (pct: number) => `${pct}% de chance de presente`,
     noGift: 'Sem presentes',
-    firstWin: 'Toda vitória dá Doce Raro (1 / 2 / 3 pela dificuldade), +2 na primeira vitória do dia',
+    firstWin: 'Toda vitória dá Doce Raro (1 / 1 / 2 pela dificuldade), +1 na primeira vitória do dia',
     firstWinShort: 'Doce Raro hoje',
     doneToday: 'Já venceu hoje',
     record: (wins: number, losses: number) => `${wins}V · ${losses}D`,
