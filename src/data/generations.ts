@@ -15,7 +15,10 @@ export interface GenerationDef {
 
 export const GENERATIONS: GenerationDef[] = [
   { id: 1, region: 'Kanto', range: [1, 151], load: () => import('./pokedex/gen1.json') },
+  { id: 2, region: 'Johto', range: [152, 251], load: () => import('./pokedex/gen2.json') },
 ];
+
+export const regionName = (generation: number) => GENERATIONS.find(g => g.id === generation)?.region ?? '';
 
 export async function loadGenerations() {
   const files = await Promise.all(GENERATIONS.map(g => g.load()));

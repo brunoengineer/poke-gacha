@@ -2,7 +2,7 @@
 // opens the modal, wires "skip" (tap anywhere / Esc while animating), and the closing actions
 // (Close, Capture again, evolution hint link to the Collection).
 
-import { canAfford, canUseBanner, type BannerId, type Payment } from '../../game/gacha';
+import { canAfford, canUseBanner, type BannerId, type Payment, type Region } from '../../game/gacha';
 import type { CardKey } from '../../game/cards';
 import { L } from '../../i18n';
 import { store } from '../../state/store';
@@ -13,6 +13,8 @@ export interface PullContext {
   banner: BannerId;
   count: number;
   payWith: Payment;
+  /** Region the batch came from (0: every region); "Capture again" reuses it. */
+  region: Region;
   /** Cards that became evolvable with this batch. */
   evolvable: CardKey[];
 }

@@ -4,8 +4,8 @@
 import { RARE_CANDY } from '../data/items';
 import { getItem } from '../data/items';
 import { cardKey, type CardKey } from '../game/cards';
-import { DECK_SIZE, dailyGift, STARTER_LEVEL, STARTERS } from '../game/economy';
-import { pull as pullCards, type BannerId, type Payment, type PullResult } from '../game/gacha';
+import { DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
+import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
 import { addItem, evolve as evolveCard, useCandies as applyCandies, type EvolveResult } from '../game/progression';
 import { applyRewards, type AppliedReward, type Reward } from '../game/rewards';
 import { dayKey, previousDayKey } from '../game/rng';
@@ -19,9 +19,9 @@ const s = () => store.save;
 export const owned = (key: CardKey) => key in s().cards;
 export const level = (key: CardKey) => s().cards[key]?.level ?? 0;
 
-/** Pays and performs captures. Returns null when the banner is locked or unaffordable. */
-export function capture(banner: BannerId, count: number, payWith: Payment = 'coins'): PullResult[] | null {
-  const results = update(save => pullCards(save, banner, count, payWith), []);
+/** Pays and performs captures, optionally from one region (0: all). Returns null when locked or unaffordable. */
+export function capture(banner: BannerId, count: number, payWith: Payment = 'coins', region: Region = 0): PullResult[] | null {
+  const results = update(save => pullCards(save, banner, count, payWith, undefined, undefined, region), []);
   if (results) {
     // Routed copies (a Charmander leveling Charmeleon) also register the pulled species.
     emit('cards', [...new Set(results.flatMap(r => [r.key, cardKey(r.id, r.shiny)]))]);
@@ -115,7 +115,7 @@ export const items = (item: string) => s().items[item] ?? 0;
 export const candies = () => items(RARE_CANDY);
 
 /** Daily gift, if not claimed today. Returns what was given, or null. */
-export function claimDaily(now = new Date()): { coins: number; greatBall: boolean; streak: number } | null {
+export function claimDaily(now = new Date()): { coins: number; candy: number; greatBall: boolean; streak: number } | null {
   const today = dayKey(now);
   const { last, streak } = s().daily;
   if (last === today) return null;
@@ -126,6 +126,7 @@ export function claimDaily(now = new Date()): { coins: number; greatBall: boolea
     save.daily = { last: today, streak: nextStreak };
     applyRewards(save, [
       { kind: 'coins', amount: gift.coins },
+      { kind: 'item', item: RARE_CANDY, amount: gift.candy },
       ...(gift.greatBall ? [{ kind: 'item', item: 'great-ball', amount: 1 } as Reward] : []),
     ]);
   }, ['items']);
@@ -144,7 +145,8 @@ export function chooseStarter(id: number) {
     save.cards[cardKey(id)] = { level: STARTER_LEVEL, copies: 1, obtainedAt: now };
     save.caught[id] = now;
     save.deck = [cardKey(id)];
-  }, ['cards', 'deck']);
+    addItem(save, RARE_CANDY, STARTER_CANDY);
+  }, ['cards', 'deck', 'items']);
 }
 
 // --- Battles ---------------------------------------------------------------------

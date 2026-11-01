@@ -2,7 +2,8 @@
 
 import { sfx } from '../../audio';
 import { teamPower, toBattleCard } from '../../game/battle';
-import { DECK_SIZE, UNLOCK_BADGES } from '../../game/economy';
+import { DECK_SIZE } from '../../game/economy';
+import { leagueUnlocked } from '../../game/modes/league';
 import { playerTeam } from '../../game/teams';
 import { fmt, L } from '../../i18n';
 import { store } from '../../state/store';
@@ -12,7 +13,8 @@ import { esc, icon, toast } from '../../ui/dom';
 /** True when the team has all six cards (battles are blocked otherwise). */
 export const teamReady = () => playerTeam(store.save).length >= DECK_SIZE;
 
-export const leagueOpen = () => store.save.gyms.badges.length >= UNLOCK_BADGES.league;
+/** The League screen opens with the Kanto League (Johto's shows inside it, locked until its badges). */
+export const leagueOpen = () => leagueUnlocked(store.save);
 
 /** Shows the "team incomplete" warning (modes call it before starting a battle). */
 export function ensureTeam(): boolean {

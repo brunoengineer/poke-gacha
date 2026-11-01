@@ -1,8 +1,9 @@
-// Collection screen (#/collection): the Pokédex grid with search, filters and sort, plus the team dock.
+// Collection screen (#/collection): the Pokédex grid with search, filters (region included) and sort, per-region
+// progress, plus the team dock.
 // Grid tiles live in grid.ts, the dock in dock.ts, the card details modal in details.ts.
 
 import { sfx } from '../../audio';
-import { GENERATIONS } from '../../data/generations';
+import { GENERATIONS, regionName } from '../../data/generations';
 import { hasSpecies } from '../../data/species';
 import { TYPES, type PokemonType } from '../../data/types';
 import { parseKey, RARITIES, type CardKey, type Rarity } from '../../game/cards';
@@ -73,6 +74,13 @@ function render() {
       <div class="dex-progress" data-progress-box>
         <div class="dex-progress-label"><span data-region-name></span><b data-progress-count></b></div>
         <div class="progress" role="progressbar" aria-valuemin="0" data-progressbar><i data-progress></i></div>
+        ${GENERATIONS.length > 1 ? `
+          <div class="dex-regions" role="group" aria-label="${esc(t.regionProgress)}">
+            ${GENERATIONS.map(g => `
+              <button type="button" class="dex-region" data-region-pick="${g.id}" aria-pressed="false">
+                <span>${esc(g.region)}</span><b data-region-count></b><i aria-hidden="true"><i data-region-bar></i></i>
+              </button>`).join('')}
+          </div>` : ''}
       </div>
     </div>
     <div class="dex-onboard" data-onboarding hidden>
@@ -162,6 +170,17 @@ function bindToolbar() {
   type.addEventListener('change', () => { filters.type = type.value as PokemonType | ''; refresh(true); });
   sort.addEventListener('change', () => { filters.sort = sort.value as SortId; refresh(true); });
   region?.addEventListener('change', () => { filters.region = Number(region.value); refresh(true); });
+
+  // Region progress chips double as a quick region filter (pressing the active one goes back to every region).
+  view.querySelector('.dex-regions')?.addEventListener('click', event => {
+    const chip = (event.target as Element).closest<HTMLElement>('[data-region-pick]');
+    if (!chip) return;
+    const id = Number(chip.dataset.regionPick);
+    filters.region = filters.region === id ? 0 : id;
+    sfx('toggle');
+    syncControls();
+    refresh(true);
+  });
 
   view.querySelector('[data-clear-filters]')!.addEventListener('click', () => {
     Object.assign(filters, { mode: 'all', region: 0, type: '', rarities: [], query: '' });
@@ -270,6 +289,14 @@ function refresh(regrid: boolean) {
   bar.setAttribute('aria-valuenow', String(c.caught));
   bar.setAttribute('aria-label', t.caughtLabel);
   view.querySelector<HTMLElement>('[data-progress]')!.style.width = `${(c.caught / Math.max(1, c.total)) * 100}%`;
+  view.querySelectorAll<HTMLElement>('[data-region-pick]').forEach(chip => {
+    const id = Number(chip.dataset.regionPick);
+    const rc = id === filters.region ? c : counts(id);
+    chip.setAttribute('aria-pressed', String(id === filters.region));
+    chip.setAttribute('aria-label', t.regionCaught(regionName(id), fmt(rc.caught), fmt(rc.total)));
+    chip.querySelector('[data-region-count]')!.textContent = `${fmt(rc.caught)}/${fmt(rc.total)}`;
+    chip.querySelector<HTMLElement>('[data-region-bar]')!.style.width = `${(rc.caught / Math.max(1, rc.total)) * 100}%`;
+  });
   view.querySelector<HTMLElement>('[data-onboarding]')!.hidden = c.cards > 0;
   view.querySelector('[data-count="evolve"]')!.textContent = c.evolvable ? fmt(c.evolvable) : '';
   view.querySelector('[data-count="shiny"]')!.textContent = c.shinies ? fmt(c.shinies) : '';

@@ -42,6 +42,15 @@ const capture: typeof pt = {
     },
   },
 
+  region: {
+    title: 'Capture region',
+    all: 'All',
+    hintAll: (count: number) =>
+      `All ${n(count)} Pokémon can show up. Focus on one region: with fewer species in the draw, each one appears more often and duplicates level up faster.`,
+    hintOne: (region: string, count: number) =>
+      `Only the ${n(count)} Pokémon of ${region}, on every ball. Each one shows up more often, so duplicates level up faster.`,
+  },
+
   featuredToday: 'Featured today',
   showcase: 'May appear',
   shinyRate: (odds: number) => `Shiny 1/${n(odds)}`,
@@ -67,6 +76,7 @@ const capture: typeof pt = {
     pityNote: (every: number, rarity: string) => `After ${n(every - 1)} captures in a row without a ${rarity} or better, the next one is guaranteed.`,
     safariNote: '40% of captures come from today\'s featured families; the table below doesn\'t include that boost.',
     masterNote: 'Only Legendary and Mythical Pokémon.',
+    regionNote: (region: string) => `Odds with ${region} Pokémon only (the region picked above).`,
   },
 
   history: {
@@ -109,7 +119,7 @@ const capture: typeof pt = {
 
   mart: {
     title: 'Poké Mart',
-    subtitle: 'Rare Candy levels up any card; stones and the Link Cable make Pokémon evolve.',
+    subtitle: 'Rare Candy levels up any card; stones, the Link Cable and trade items make Pokémon evolve.',
     buy: 'Buy',
     buyTotal: (cost: string) => `Buy · ${cost}`,
     inBag: (count: number) => `In bag: ${n(count)}`,
@@ -146,16 +156,20 @@ const capture: typeof pt = {
     professor: 'Professor Oak',
     intro: [
       'Ah, a new face at the lab! I was hoping someone would stop by today. I study Pokémon cards, and I could use a hand.',
-      'Around here, every Poké Ball you throw could bring any of the 151 Pokémon of Kanto. But every great journey starts with a partner.',
+      'Around here, every Poké Ball you throw could bring any of the 251 Pokémon of Kanto and Johto. But every great journey starts with a partner.',
     ],
     next: 'Continue',
     back: 'Back',
     chooseTitle: 'Choose your first Pokémon',
-    chooseSub: 'It starts at level 5 and becomes the first member of your team.',
+    chooseSub: 'Three partners from Kanto and three from Johto. It starts at level 5 and becomes the first member of your team.',
+    chooseHint: 'Tap a Pokémon to get to know it.',
     starters: {
       1: 'Calm and sturdy. The seed on its back grows along with your friendship.',
       4: 'Brave and full of energy. The flame on its tail shows everything it feels.',
       7: 'Clever and playful. It hides in its shell and answers with jets of water.',
+      152: 'Gentle and cheerful. It loves sunbathing and waves the leaf on its head when it\'s happy.',
+      155: 'Shy at first, but once it gets excited, the flames on its back flare up all at once.',
+      158: 'Restless and fearless. It nibbles everything out of curiosity, your cap included.',
     },
     choose: (name: string) => `Choose ${name}`,
     picked: (name: string) => `${name} joined your team!`,

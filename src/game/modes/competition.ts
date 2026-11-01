@@ -43,7 +43,9 @@ export const REPUTATION_STEP = 20;
 export const LOSS_REPUTATION = 10;
 export const LOSS_COINS = 15;
 
-export const winCoins = (level: number) => 60 + 8 * level;
+export const winCoins = (level: number) => 30 + 4 * level;
+/** Rare Candy on every ladder win. */
+export const WIN_CANDY = 2;
 /** Fixed reputation of the trainer on rank slot `rank`. */
 export const reputationAt = (rank: number) => (LADDER_SIZE + 1 - rank) * REPUTATION_STEP;
 /** Opponent level by rank: rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63. */
@@ -314,7 +316,8 @@ export function applyLadderBattle(ladder: LadderSave, rank: number, result: 'win
   if (peak <= LADDER_SIZE) ladder.best = Math.min(ladder.best ?? peak, peak);
 
   const claimed = claimMilestones(ladder, rng);
-  const rewards: Reward[] = coins ? [{ kind: 'coins', amount: coins }, ...claimed.rewards] : claimed.rewards;
+  const won: Reward[] = result === 'win' ? [{ kind: 'item', item: 'rare-candy', amount: WIN_CANDY }] : [];
+  const rewards: Reward[] = [...(coins ? [{ kind: 'coins', amount: coins } as Reward] : []), ...won, ...claimed.rewards];
   return { before, after, ratingBefore, ratingAfter: ladder.rating, coins, milestones: claimed.milestones, rewards };
 }
 

@@ -78,7 +78,8 @@ export function requiredItem(evo: Evolution): string | null {
 /** Level at which this species naturally appears: its evolution level (Charizard 36), 1 for base forms. */
 export function evolutionLevel(id: number): number {
   const from = preEvolution(id);
-  if (from == null) return 1;
+  // Coming out of a baby form (Pichu -> Pikachu) counts as a base form, like stage().
+  if (from == null || getSpecies(from).baby) return 1;
   const evo = evolutionsOf(from).find(e => e.to === id)!;
   return requiredLevel(evo) ?? evolutionLevel(from) + 15;
 }

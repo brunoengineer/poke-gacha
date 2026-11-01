@@ -27,6 +27,15 @@ const stone = (id: string, pt: string, en: string, ptType: string, enType: strin
   price: 2500,
 });
 
+/** Items held during a trade (Johto): the trade itself is simulated, so they work alone, like the Link Cable. */
+const heldTradeItem = (id: string, pt: string, en: string, ptWho: string, enWho: string): ItemDef => ({
+  id,
+  category: 'evolution',
+  name: { pt, en },
+  description: { pt: `Faz ${ptWho} evoluírem numa troca simulada.`, en: `Makes ${enWho} evolve in a simulated trade.` },
+  price: 3500,
+});
+
 export const ITEMS: ItemDef[] = [
   {
     id: RARE_CANDY,
@@ -52,6 +61,10 @@ export const ITEMS: ItemDef[] = [
     price: 3000,
     sprite: 'linking-cord',
   },
+  heldTradeItem('kings-rock', "Pedra do Rei", "King's Rock", 'Poliwhirl e Slowpoke', 'Poliwhirl and Slowpoke'),
+  heldTradeItem('metal-coat', 'Revestimento Metálico', 'Metal Coat', 'Onix e Scyther', 'Onix and Scyther'),
+  heldTradeItem('dragon-scale', 'Escama de Dragão', 'Dragon Scale', 'Seadra', 'Seadra'),
+  heldTradeItem('up-grade', 'Melhoria', 'Up-Grade', 'Porygon', 'Porygon'),
   {
     id: 'great-ball',
     category: 'ball',

@@ -4,7 +4,8 @@
 
 import { sfx } from '../../audio';
 import { playerRank } from '../../game/modes/competition';
-import { BADGES } from '../../game/modes/gyms';
+import { johtoGymsOpen, REGION_GYMS, regionBadges } from '../../game/modes/gyms';
+import { leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
 import { FRIENDS } from '../../game/modes/training';
 import { trainerSpriteUrl } from '../../data/sprites';
 import { L } from '../../i18n';
@@ -13,6 +14,7 @@ import { $, esc, icon, toast } from '../../ui/dom';
 import { navigate } from '../../ui/shell';
 import type { ModeModule, ViewModule } from '../types';
 import { badgeSVG } from './badges';
+import { regionLabel } from './regions';
 import { competitionMode } from './competition';
 import { gymsMode } from './gyms';
 import { leagueMode } from './league';
@@ -24,8 +26,8 @@ type ModeId = 'training' | 'competition' | 'gyms' | 'league';
 const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; color: string }> = {
   training: { module: trainingMode, icon: 'users', art: ['youngster', 'oak', 'lass'], color: '#4fd18b' },
   competition: { module: competitionMode, icon: 'trophy', art: ['acetrainerf', 'acetrainer'], color: '#5aa9ff' },
-  gyms: { module: gymsMode, icon: 'medal', art: ['misty', 'brock', 'ltsurge'], color: '#f5b84b' },
-  league: { module: leagueMode, icon: 'crown', art: ['lance', 'blue'], color: '#c58cff' },
+  gyms: { module: gymsMode, icon: 'medal', art: ['misty', 'brock', 'whitney'], color: '#f5b84b' },
+  league: { module: leagueMode, icon: 'crown', art: ['karen', 'lance', 'blue'], color: '#c58cff' },
 };
 const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'league'];
 
@@ -111,14 +113,26 @@ function modeCardHTML(id: ModeId): string {
     status = `<span class="mode-pill">${icon('trophy')} ${esc(rank == null ? t.unranked : t.rank(rank))}</span>`;
   }
   if (id === 'gyms') {
+    // Badge row of the region in progress: Kanto until its gyms are done, then Johto.
+    const johtoOpen = johtoGymsOpen(s.gyms);
+    const shown = REGION_GYMS[johtoOpen ? 'johto' : 'kanto'];
     status = `
-      <span class="mode-pill">${icon('medal')} ${esc(t.badges(s.gyms.badges.length))}</span>
-      <span class="mode-badges">${BADGES.map(b => badgeSVG(b, { earned: s.gyms.badges.includes(b), label: false })).join('')}</span>`;
+      <span class="mode-pill">${icon('medal')} ${esc(t.regionBadges(regionLabel('kanto'), regionBadges(s.gyms, 'kanto')))}</span>
+      <span class="mode-pill${johtoOpen ? '' : ' locked'}">${icon(johtoOpen ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel('johto'), regionBadges(s.gyms, 'johto')))}</span>
+      <span class="mode-badges">${shown.map(g => badgeSVG(g.badge, { earned: s.gyms.badges.includes(g.badge), label: false })).join('')}</span>`;
   }
   if (id === 'league') {
+    const best = (region: LeagueRegion) => {
+      const league = leagueRecord(s, region);
+      return league.best >= 0 ? t.placements[league.best] ?? '' : t.leagueNever;
+    };
+    const johto = leagueUnlocked(s, 'johto')
+      ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel('johto'), best('johto')))}</span>`
+      : `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel('johto'), t.johtoLocked))}</span>`;
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.leagueLocked)}</span>`
-      : `<span class="mode-pill">${icon('crown')} ${esc(s.league.best >= 0 ? t.leagueBest(t.placements[s.league.best] ?? '') : t.leagueNever)}</span>`;
+      : `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel('kanto'), best('kanto')))}</span>${johto}`;
   }
+
   return `
     <button class="mode-card ${locked ? 'locked' : ''}" type="button" data-mode="${id}" style="--mc:${m.color}" ${locked ? 'aria-disabled="true"' : ''}>
       <span class="mode-art" aria-hidden="true">

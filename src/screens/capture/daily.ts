@@ -35,6 +35,7 @@ function rewardChips(day: number) {
   const gift = dailyGift(day);
   return `
     <span class="daily-chip">${icon('coin', 'i-coin')}${fmt(gift.coins)}</span>
+    <span class="daily-chip"><img src="${esc(itemSprite('rare-candy'))}" alt="" width="22" height="22">${esc(itemName('rare-candy'))} ×${gift.candy}</span>
     ${gift.greatBall ? `<span class="daily-chip"><img src="${esc(itemSprite('great-ball'))}" alt="" width="22" height="22">${esc(itemName('great-ball'))}</span>` : ''}`;
 }
 

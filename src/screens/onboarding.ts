@@ -1,8 +1,9 @@
-// First-run onboarding: the professor's welcome, the starter choice (Bulbasaur, Charmander or Squirtle),
-// a small celebration, then four quick tips that end on the Capture screen.
+// First-run onboarding: the professor's welcome, the starter choice (the grass, fire and water starters of every
+// loaded region, grouped by region), a small celebration, then four quick tips that end on the Capture screen.
 // API contract: maybeOnboard() resolves once the player has a starter (immediately if they already do).
 
 import { playCry, playMusic, sfx } from '../audio';
+import { regionName } from '../data/generations';
 import { animatedSpriteUrl, spriteUrl, trainerSpriteUrl } from '../data/sprites';
 import { evolutionsOf, getSpecies } from '../data/species';
 import { TYPE_COLOR } from '../data/types';
@@ -17,6 +18,18 @@ import { burst } from '../ui/fx';
 import { ballHTML } from './capture/common';
 
 type Scene = 'intro' | 'choose' | 'picked' | 'tips';
+
+/** Starters grouped by region (one row each), in STARTERS order. */
+function starterGroups(): { generation: number; ids: number[] }[] {
+  const groups: { generation: number; ids: number[] }[] = [];
+  for (const id of STARTERS) {
+    const generation = getSpecies(id).generation;
+    const group = groups.find(g => g.generation === generation);
+    if (group) group.ids.push(id);
+    else groups.push({ generation, ids: [id] });
+  }
+  return groups;
+}
 
 export function maybeOnboard(): Promise<void> {
   if (store.save.starter != null) return Promise.resolve();
@@ -86,25 +99,44 @@ class Onboarding {
       <h2 class="fx-title">${esc(t.chooseTitle)}</h2>
       <p class="onb-sub">${esc(t.chooseSub)}</p>
       <div class="onb-starters" role="radiogroup" aria-label="${esc(t.chooseTitle)}">
-        ${STARTERS.map((id, i) => {
-          const s = getSpecies(id);
-          const color = TYPE_COLOR[s.types[0]];
-          return `
-            <button class="onb-starter" type="button" role="radio" aria-checked="${this.picked === id}" tabindex="${(this.picked ?? STARTERS[0]) === id ? 0 : -1}"
-              data-starter="${id}" style="--tc:${color};--i:${i}" ${i === 0 && this.picked == null ? 'data-focus' : this.picked === id ? 'data-focus' : ''}>
-              <span class="onb-starter-stage" aria-hidden="true">
-                <img src="${esc(animatedSpriteUrl(id) ?? spriteUrl(id))}" alt="" width="96" height="96">
-              </span>
-              <b class="onb-starter-name">${esc(s.name)}</b>
-              <span class="onb-starter-types">${s.types.map(typeBadge).join('')}</span>
-              <span class="onb-starter-line">${esc(t.starters[id] ?? '')}</span>
-              <span class="onb-check" aria-hidden="true">${icon('check')}</span>
-            </button>`;
-        }).join('')}
+        ${starterGroups().map(group => `
+          <div class="onb-group" role="group" aria-label="${esc(regionName(group.generation))}">
+            <p class="onb-region" aria-hidden="true"><span>${esc(regionName(group.generation))}</span></p>
+            <div class="onb-row">${group.ids.map(id => this.starterHTML(id)).join('')}</div>
+          </div>`).join('')}
       </div>
+      <p class="onb-pick" data-pick-info aria-live="polite">${this.pickInfoHTML()}</p>
       <button class="btn btn-primary btn-lg onb-confirm" type="button" data-confirm ${this.picked == null ? 'disabled' : ''}>
         ${this.picked == null ? esc(t.next) : esc(t.choose(getSpecies(this.picked).name))}
       </button>`;
+  }
+
+  private starterHTML(id: number) {
+    const t = L().capture.onboarding;
+    const s = getSpecies(id);
+    const i = STARTERS.indexOf(id);
+    const focus = this.picked == null ? i === 0 : this.picked === id;
+    return `
+      <button class="onb-starter" type="button" role="radio" aria-checked="${this.picked === id}" tabindex="${(this.picked ?? STARTERS[0]) === id ? 0 : -1}"
+        data-starter="${id}" style="--tc:${TYPE_COLOR[s.types[0]]};--i:${i}" ${focus ? 'data-focus' : ''}>
+        <span class="onb-starter-stage" aria-hidden="true">
+          <img src="${esc(animatedSpriteUrl(id) ?? spriteUrl(id))}" alt="" width="96" height="96">
+        </span>
+        <b class="onb-starter-name">${esc(s.name)}</b>
+        <span class="onb-starter-types">${s.types.map(typeBadge).join('')}</span>
+        <span class="onb-starter-line">${esc(t.starters[id] ?? '')}</span>
+        <span class="onb-check" aria-hidden="true">${icon('check')}</span>
+      </button>`;
+  }
+
+  /** On small screens the cards only show sprite and name: the picked starter's types and line go below the grid. */
+  private pickInfoHTML() {
+    const t = L().capture.onboarding;
+    if (this.picked == null) return `<span class="onb-pick-hint">${esc(t.chooseHint)}</span>`;
+    const s = getSpecies(this.picked);
+    return `
+      <span class="onb-pick-head"><b>${esc(s.name)}</b>${s.types.map(typeBadge).join('')}</span>
+      <span class="onb-pick-line">${esc(t.starters[this.picked] ?? '')}</span>`;
   }
 
   private pickedHTML() {
@@ -245,6 +277,7 @@ class Onboarding {
     const confirm = this.host.querySelector<HTMLButtonElement>('[data-confirm]')!;
     confirm.disabled = false;
     confirm.textContent = t.choose(getSpecies(id).name);
+    this.host.querySelector('[data-pick-info]')!.innerHTML = this.pickInfoHTML();
   }
 
   private celebrate() {
@@ -297,14 +330,23 @@ class Onboarding {
     }
   }
 
+  /** Arrow keys on the starter grid: left/right walk through every starter, up/down switch region rows. */
   private onKey(event: KeyboardEvent) {
-    if (this.scene === 'choose' && (event.key.startsWith('Arrow'))) {
-      const current = STARTERS.indexOf(this.picked ?? STARTERS[0]);
-      const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
-      const next = STARTERS[(current + step + STARTERS.length) % STARTERS.length];
-      event.preventDefault();
-      this.select(next);
-      this.host.querySelector<HTMLElement>(`[data-starter="${next}"]`)?.focus();
+    if (this.scene !== 'choose' || !event.key.startsWith('Arrow')) return;
+    const currentId = this.picked ?? STARTERS[0];
+    let next: number;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      const step = event.key === 'ArrowRight' ? 1 : -1;
+      next = STARTERS[(STARTERS.indexOf(currentId) + step + STARTERS.length) % STARTERS.length];
+    } else {
+      const groups = starterGroups();
+      const row = groups.findIndex(g => g.ids.includes(currentId));
+      const col = groups[row].ids.indexOf(currentId);
+      const target = groups[(row + (event.key === 'ArrowDown' ? 1 : -1) + groups.length) % groups.length].ids;
+      next = target[Math.min(col, target.length - 1)];
     }
+    event.preventDefault();
+    this.select(next);
+    this.host.querySelector<HTMLElement>(`[data-starter="${next}"]`)?.focus();
   }
 }

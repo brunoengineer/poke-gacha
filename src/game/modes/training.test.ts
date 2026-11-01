@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RARE_CANDY } from '../../data/items';
 import { getSpecies } from '../../data/species';
+import enBattle from '../../i18n/en/battle';
+import ptBattle from '../../i18n/pt/battle';
 import { seeded } from '../rng';
 import {
   averageLevel, defaultTrainingSave, DIFFICULTY, firstWinToday, FRIENDS, friendSpecies, getFriend, GIFTS, levelRange,
@@ -27,6 +29,25 @@ describe('training roster', () => {
     expect(rivalStarter(7)).toBe(1);
     expect(friendSpecies(getFriend('blue')!, seeded(3), 7)).toContain(1);
   });
+
+  it("counters all six starters by type, with a starter of the rival's own region", () => {
+    // Grass -> fire, fire -> water, water -> grass.
+    expect([1, 4, 7, 152, 155, 158].map(s => rivalStarter(s))).toEqual([4, 7, 1, 4, 7, 1]);
+    expect([1, 4, 7, 152, 155, 158].map(s => rivalStarter(s, 'johto'))).toEqual([155, 158, 152, 155, 158, 152]);
+    expect(rivalStarter(null)).toBe(4);
+    expect(rivalStarter(null, 'johto')).toBe(155);
+    expect(friendSpecies(getFriend('blue')!, seeded(3), 158)).toContain(1);
+    expect(friendSpecies(getFriend('silver')!, seeded(3), 7)).toContain(152);
+    expect(friendSpecies(getFriend('silver')!, seeded(4), 152)).toContain(155);
+  });
+
+  it('adds the Johto friends, each with texts in both languages', () => {
+    const johto = FRIENDS.filter(f => f.region === 'johto').map(f => f.id);
+    expect(johto).toEqual(expect.arrayContaining(['silver', 'lyra', 'ethan', 'kurt', 'elm', 'bill', 'kimonogirl', 'youngster2']));
+    for (const friend of FRIENDS) {
+      for (const bundle of [ptBattle, enBattle]) expect(bundle.friends[friend.id]?.intro).toBeTruthy();
+    }
+  });
 });
 
 describe('training scaling', () => {
@@ -51,14 +72,16 @@ describe('training scaling', () => {
 
 describe('training rewards', () => {
   it('pays coins by difficulty and opponent level', () => {
-    expect(winCoins('easy', 10)).toBe(70);
-    expect(winCoins('normal', 10)).toBe(110);
-    expect(winCoins('hard', 10)).toBe(170);
+    expect(winCoins('easy', 10)).toBe(35);
+    expect(winCoins('normal', 10)).toBe(55);
+    expect(winCoins('hard', 10)).toBe(90);
   });
 
-  it('adds a Rare Candy for the first win of the day', () => {
-    const rewards = trainingRewards({ difficulty: 'easy', result: 'win', level: 10, firstWin: true, rng: seeded(1) });
-    expect(rewards).toEqual([{ kind: 'coins', amount: 70 }, { kind: 'item', item: RARE_CANDY, amount: 1 }]);
+  it('gives Rare Candy on every win, plus extra for the first win of the day', () => {
+    const first = trainingRewards({ difficulty: 'easy', result: 'win', level: 10, firstWin: true, rng: seeded(1) });
+    expect(first).toEqual([{ kind: 'coins', amount: 35 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
+    const hard = trainingRewards({ difficulty: 'hard', result: 'win', level: 10, firstWin: false, rng: () => 0.99 });
+    expect(hard).toEqual([{ kind: 'coins', amount: 90 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
   });
 
   it('pays a little for a loss and nothing for a forfeit', () => {
@@ -66,13 +89,18 @@ describe('training rewards', () => {
     expect(trainingRewards({ difficulty: 'hard', result: 'forfeit', level: 50, firstWin: true })).toEqual([]);
   });
 
+  it('includes the Johto trade items among the gifts', () => {
+    expect(GIFTS).toEqual(expect.arrayContaining(['link-cable', 'kings-rock', 'metal-coat', 'dragon-scale', 'up-grade']));
+  });
+
   it('gives gifts at the documented rate (never on easy)', () => {
+
     const rng = seeded(42);
     const count = (difficulty: 'easy' | 'normal' | 'hard') => {
       let gifts = 0;
       for (let i = 0; i < 4000; i++) {
         const rewards = trainingRewards({ difficulty, result: 'win', level: 20, firstWin: false, rng });
-        const gift = rewards.find(r => r.kind === 'item');
+        const gift = rewards.find(r => r.kind === 'item' && r.item !== RARE_CANDY);
         if (gift && gift.kind === 'item') {
           expect(GIFTS).toContain(gift.item);
           gifts++;

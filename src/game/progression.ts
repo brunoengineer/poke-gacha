@@ -1,8 +1,9 @@
 // Card progression rules, as pure functions over SaveData (they mutate the save they are given).
 //
 //   - New species -> new card (evolved species start at half their evolution level: a pulled Charizard is Lv. 18).
-//   - Duplicate -> +1 level. If the player already evolved past it (pulls a Charmander while owning only a
-//     Charmeleon from that line), the copy goes to that evolved card instead.
+//   - Duplicate -> +1 level. If the player evolved this species away (their Charmander became a Charmeleon), later
+//     copies go to that evolved card instead, so evolving never stalls a line. Owning an evolved form obtained directly
+//     (a pulled Arbok) doesn't count: the next Ekans becomes an Ekans card of its own.
 //   - Duplicate of a capped card -> Rare Candy.
 //   - Evolving is optional; it keeps the level (clamped to the new form's cap) and consumes any required item.
 
@@ -49,7 +50,7 @@ export function addCopy(save: SaveData, id: number, shiny = false, now = Date.no
   if (shiny) save.stats.shinies += 1;
 
   let key = cardKey(id, shiny);
-  if (!owns(save, key) && !shiny) {
+  if (!owns(save, key) && !shiny && save.evolved[id]) {
     const evolved = descendants(id).map(d => cardKey(d)).find(k => owns(save, k));
     if (evolved) key = evolved;
   }
@@ -166,6 +167,7 @@ export function evolve(save: SaveData, key: CardKey, to: number, now = Date.now(
   }
 
   const newSpecies = registerCaught(save, to, now);
+  save.evolved[id] = now;
   save.stats.evolutions += 1;
   return { from: id, to, fromKey: key, toKey, levelBefore: card.level, level, merged, item: option.item, newSpecies };
 }

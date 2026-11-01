@@ -23,6 +23,32 @@
     background: linear-gradient(90deg, var(--poke-red), #ff9f6b 45%, var(--gold-hi));
     box-shadow: 0 0 14px rgba(239, 74, 74, 0.45);
 }
+/* Per-region progress (also a quick region filter). */
+.dex-regions { display: flex; gap: 6px; }
+.dex-region {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    padding: 5px 10px 8px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    transition: border-color .2s, background-color .2s, color .2s;
+}
+.dex-region:hover { color: var(--text); border-color: var(--line-2); }
+.dex-region[aria-pressed="true"] { color: var(--text); border-color: var(--gold); background: rgba(211, 188, 142, 0.1); }
+.dex-region b { color: var(--dim); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.dex-region[aria-pressed="true"] b { color: var(--gold-hi); }
+.dex-region > i { position: absolute; left: 10px; right: 10px; bottom: 4px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); }
+.dex-region > i > i { display: block; height: 100%; border-radius: inherit; background: var(--gold-hi); }
 
 .dex-onboard {
     display: flex;
@@ -651,6 +677,8 @@
     scrollbar-width: thin;
 }
 .dx-fam-col { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Branching evolutions (Eevee, Tyrogue): an even grid instead of one long row. */
+.dx-fam-col.is-branch { display: grid; grid-template-columns: repeat(3, 96px); grid-auto-rows: 1fr; }
 .dx-fam-arrow { color: var(--dim); flex-shrink: 0; }
 .dx-fam {
     position: relative;
@@ -676,7 +704,22 @@
     background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--tc) 45%, transparent), transparent 70%);
 }
 .dx-fam-sprite img { width: 72px; height: 72px; max-width: none; image-rendering: pixelated; }
-.dx-fam b { font-size: 12.5px; line-height: 1.2; text-align: center; }
+.dx-fam b { max-width: 100%; font-size: 12.5px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
+.dx-fam-baby {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(244, 220, 163, 0.14);
+    border: 1px solid rgba(244, 220, 163, 0.3);
+    color: var(--gold-hi);
+    font-size: 9.5px;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
 .dx-fam small { color: var(--gold-hi); font-family: var(--font-pixel); font-size: 12px; line-height: 1.2; }
 .dx-fam small .i { width: 13px; height: 13px; color: var(--muted); }
 .dx-fam.registered .dx-fam-sprite img { filter: saturate(.4) brightness(.75); }
@@ -873,8 +916,8 @@
     .dex-seg .seg { flex: 1; justify-content: center; padding: 0 8px; }
     .dex-rarity { flex: 1 1 100%; justify-content: space-between; }
     .rarity-chip { flex: 1; padding: 0 4px; }
-    .dex-selects { flex: 1 1 100%; }
-    .dex-selects .select { flex: 1; min-width: 0; }
+    .dex-selects { flex: 1 1 100%; flex-wrap: wrap; }
+    .dex-selects .select { flex: 1 1 40%; min-width: 0; }
     .dex-selects .select select { width: 100%; }
     .dex-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 14px 10px; }
     .dex-evolve { width: 28px; height: 28px; right: 6px; }
@@ -897,6 +940,8 @@
     .modal-dex .nav-arrow.next { right: -8px; }
     .dx-art .pcard { width: min(260px, 64vw); }
     .dx-match { grid-template-columns: 1fr; gap: 6px; }
+    .dx-fam-col { flex-direction: column; flex-wrap: nowrap; }
+    .dx-fam-col.is-branch { grid-template-columns: repeat(2, 96px); }
     .dx-level-main b { font-size: 34px; }
 }
 
@@ -909,6 +954,11 @@
     .dx-evo-opt { grid-template-columns: 44px 1fr; }
     .dx-evo-opt img { width: 44px; height: 44px; }
     .dx-evo-opt .btn { grid-column: 1 / -1; }
+    .dx-family { gap: 2px; }
+    .dx-fam { width: 80px; }
+    .dx-fam-sprite { width: 56px; height: 56px; }
+    .dx-fam-sprite img { width: 64px; height: 64px; }
+    .dx-fam-col.is-branch { grid-template-columns: repeat(2, 80px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

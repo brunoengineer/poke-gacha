@@ -9,6 +9,7 @@ describe('actions', () => {
   it('reports the pulled species too when its copy levels an evolved card', () => {
     store.save = defaultSave();
     store.save.cards[cardKey(5)] = { level: 20, copies: 1, obtainedAt: 0 };
+    store.save.evolved[4] = 1; // the player's Charmander evolved into this Charmeleon
     let changed: unknown;
     const off = on('cards', keys => { changed = keys; });
     grant([{ kind: 'card', id: 4 }]);

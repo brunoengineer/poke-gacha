@@ -8,7 +8,7 @@
 
 import { L } from '../i18n';
 import { firebaseEnabled, loadCloudSave, signInWithGoogle, signOutUser, watchAuth, writeCloudSave } from './firebase';
-import { chooseAccountSave, defaultSave, normalizeSave, type SaveData } from './save';
+import { chooseAccountSave, defaultSave, isFromNewerApp, normalizeSave, type SaveData } from './save';
 
 export interface Player {
   uid: string;
@@ -172,7 +172,20 @@ if (typeof document !== 'undefined') {
 
 // --- Auth ----------------------------------------------------------------
 
+const OUTDATED_FLAG = 'pg-reloaded-for-newer-save';
+
 function enterGame(player: Player, s: SaveData) {
+  // A save written by a newer release: this tab runs an old cached app. Reload once to get the new one (unknown
+  // fields are preserved either way, so nothing is lost if the reload still serves the old app).
+  if (isFromNewerApp(s)) {
+    try {
+      if (!sessionStorage.getItem(OUTDATED_FLAG)) {
+        sessionStorage.setItem(OUTDATED_FLAG, '1');
+        location.reload();
+        return;
+      }
+    } catch { /* storage blocked: just continue */ }
+  }
   store.player = player;
   store.save = s;
   emit('player', player);

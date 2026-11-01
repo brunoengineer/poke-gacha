@@ -59,13 +59,22 @@ describe('copies and levels', () => {
     expect(save.caught[CHARMANDER]).toBeTruthy();
   });
 
-  it('routes copies of an evolved-past species to the evolved card', () => {
+  it('routes copies of an evolved-away species to the evolved card', () => {
     const save = defaultSave();
-    save.cards[cardKey(CHARMELEON)] = { level: 20, copies: 1, obtainedAt: 0 };
+    save.cards[cardKey(CHARMANDER)] = { level: 20, copies: 20, obtainedAt: 0 };
+    evolve(save, cardKey(CHARMANDER), CHARMELEON);
     const result = addCopy(save, CHARMANDER);
     expect(result.key).toBe(cardKey(CHARMELEON));
     expect(save.cards[cardKey(CHARMELEON)].level).toBe(21);
     expect(save.cards[cardKey(CHARMANDER)]).toBeUndefined();
+  });
+
+  it('still gives a base card when the evolved form was obtained directly', () => {
+    const save = defaultSave();
+    addCopy(save, 24); // Arbok first
+    const result = addCopy(save, 23); // then Ekans
+    expect(result).toMatchObject({ kind: 'new', key: cardKey(23) });
+    expect(save.cards[cardKey(24)].level).toBe(startLevel(24));
   });
 
   it('keeps shinies separate and never routes them', () => {
@@ -130,8 +139,10 @@ describe('evolution', () => {
     const save = defaultSave();
     save.cards[cardKey(133)] = { level: 1, copies: 1, obtainedAt: 0 }; // Eevee
     const options = evolutionOptions(save, cardKey(133));
-    expect(options.map(o => o.to).sort()).toEqual([134, 135, 136]);
-    expect(options.every(o => o.missing.item)).toBe(true);
+    // Vaporeon/Jolteon/Flareon need stones; Espeon/Umbreon (Johto) need friendship, i.e. a level here.
+    expect(options.map(o => o.to).sort()).toEqual([134, 135, 136, 196, 197]);
+    expect(options.filter(o => o.to <= 151).every(o => o.missing.item)).toBe(true);
+    expect(options.filter(o => o.to > 151).every(o => o.missing.level && !o.item)).toBe(true);
     save.items['fire-stone'] = 1;
     expect(evolve(save, cardKey(133), 136)).toBeTruthy();
     expect(save.items['fire-stone']).toBeUndefined();
@@ -247,5 +258,52 @@ describe('trainer evolutions', () => {
     expect(evolveForLevel(63, 20)).toBe(64); // Abra -> Kadabra by level
     expect(evolveForLevel(63, 30)).toBe(64); // Alakazam (trade) needs more
     expect(evolveForLevel(63, 31)).toBe(65);
+  });
+});
+
+describe('baby Pokémon (Johto)', () => {
+  it('keeps the base form as stage 1, uncapped and starting at Lv. 1', () => {
+    expect(stage(172)).toBe(1); // Pichu
+    expect(stage(25)).toBe(1); // Pikachu
+    expect(stage(26)).toBe(2); // Raichu
+    expect(isUncapped(25, false)).toBe(true);
+    expect(startLevel(25)).toBe(1);
+    expect(evolveForLevel(25, 22)).toBe(26); // Lt. Surge still has his Raichu
+  });
+
+  it('feeds copies of a baby to the card it evolved into', () => {
+    const save = defaultSave();
+    save.cards[cardKey(172)] = { level: 25, copies: 25, obtainedAt: 0 };
+    evolve(save, cardKey(172), 25);
+    expect(addCopy(save, 172).key).toBe(cardKey(25));
+  });
+
+  it('gives a Pichu card to a player who only has a Pikachu', () => {
+    const save = defaultSave();
+    save.cards[cardKey(25)] = { level: 10, copies: 10, obtainedAt: 0 };
+    expect(addCopy(save, 172)).toMatchObject({ kind: 'new', key: cardKey(172) });
+  });
+});
+
+describe('regions', () => {
+  it('limits captures to one region', () => {
+    const save = defaultSave();
+    save.coins = 1000;
+    const kanto = pull(save, 'poke', 100, 'coins', seeded(11), Date.now(), 1)!;
+    expect(kanto.every(r => r.id <= 151)).toBe(true);
+    const johto = pull(save, 'poke', 100, 'coins', seeded(12), Date.now(), 2)!;
+    expect(johto.every(r => r.id >= 152 && r.id <= 251)).toBe(true);
+  });
+
+  it('features families from the chosen region on Safari days', () => {
+    const johto = safariFeatured('2026-11-01', 2);
+    expect(johto.every(id => getSpecies(id).generation === 2)).toBe(true);
+    expect(safariFeatured('2026-11-01')).toEqual(safariFeatured('2026-11-01', 0));
+  });
+
+  it('gives Johto legendaries with a Johto Master Ball', () => {
+    const rng = seeded(4);
+    for (let i = 0; i < 30; i++) expect([243, 244, 245, 249, 250, 251]).toContain(roll('master', rng, { region: 2 }).id);
+    expect(rarityOdds('poke', 2).common).toBeGreaterThan(0.5);
   });
 });

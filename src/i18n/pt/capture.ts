@@ -41,6 +41,15 @@ const capture = {
     },
   },
 
+  region: {
+    title: 'Região das capturas',
+    all: 'Todas',
+    hintAll: (count: number) =>
+      `Os ${n(count)} Pokémon podem aparecer. Foque em uma região: com menos espécies na roleta, cada uma aparece mais vezes e os repetidos sobem de nível mais rápido.`,
+    hintOne: (region: string, count: number) =>
+      `Só os ${n(count)} Pokémon de ${region}, em todas as Poké Balls. Cada um aparece mais vezes, então os repetidos sobem de nível mais rápido.`,
+  },
+
   featuredToday: 'Em destaque hoje',
   showcase: 'Pode aparecer',
   shinyRate: (odds: number) => `Shiny 1/${n(odds)}`,
@@ -66,6 +75,7 @@ const capture = {
     pityNote: (every: number, rarity: string) => `Depois de ${n(every - 1)} capturas seguidas sem um ${rarity} ou melhor, a próxima é garantida.`,
     safariNote: '40% das capturas vêm das famílias em destaque do dia; a tabela abaixo não inclui esse bônus.',
     masterNote: 'Só Pokémon Lendários e Míticos.',
+    regionNote: (region: string) => `Chances só com Pokémon de ${region} (a região escolhida acima).`,
   },
 
   history: {
@@ -108,7 +118,7 @@ const capture = {
 
   mart: {
     title: 'Poké Mart',
-    subtitle: 'Doces Raros sobem o nível de qualquer carta; pedras e o Cabo de Troca fazem Pokémon evoluir.',
+    subtitle: 'Doces Raros sobem o nível de qualquer carta; pedras, o Cabo de Troca e itens de troca fazem Pokémon evoluir.',
     buy: 'Comprar',
     buyTotal: (cost: string) => `Comprar · ${cost}`,
     inBag: (count: number) => `Na mochila: ${n(count)}`,
@@ -145,16 +155,20 @@ const capture = {
     professor: 'Professor Carvalho',
     intro: [
       'Ah, um rosto novo no laboratório! Eu estava torcendo para alguém aparecer hoje. Estudo cartas Pokémon, e uma ajudinha cairia muito bem.',
-      'Por aqui, cada Poké Ball arremessada pode trazer qualquer um dos 151 Pokémon de Kanto. Mas toda grande jornada começa com um parceiro.',
+      'Por aqui, cada Poké Ball arremessada pode trazer qualquer um dos 251 Pokémon de Kanto e Johto. Mas toda grande jornada começa com um parceiro.',
     ],
     next: 'Continuar',
     back: 'Voltar',
     chooseTitle: 'Escolha seu primeiro Pokémon',
-    chooseSub: 'Ele começa no nível 5 e será o primeiro da sua equipe.',
+    chooseSub: 'Três parceiros de Kanto e três de Johto. Ele começa no nível 5 e será o primeiro da sua equipe.',
+    chooseHint: 'Toque em um Pokémon para conhecê-lo melhor.',
     starters: {
       1: 'Tranquilo e resistente. A semente nas costas cresce junto com a amizade de vocês.',
       4: 'Corajoso e cheio de energia. A chama da cauda mostra tudo o que ele sente.',
       7: 'Esperto e brincalhão. Se esconde no casco e responde com jatos de água.',
+      152: 'Gentil e otimista. Adora tomar sol e balança a folha da cabeça quando está feliz.',
+      155: 'Tímido no começo, mas quando se anima, as chamas das costas acendem de uma vez.',
+      158: 'Agitado e destemido. Morde tudo por curiosidade, inclusive o seu boné.',
     } as Record<number, string>,
     choose: (name: string) => `Escolher ${name}`,
     picked: (name: string) => `${name} entrou para a sua equipe!`,

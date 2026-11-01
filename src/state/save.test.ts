@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { chooseAccountSave, defaultSave, normalizeSave } from './save';
+import { chooseAccountSave, defaultSave, normalizeSave, SAVE_VERSION } from './save';
 
 describe('normalizeSave', () => {
   it('returns a fresh save for garbage', () => {
-    expect(normalizeSave(null)).toMatchObject({ v: 1, cards: {}, deck: [] });
+    expect(normalizeSave(null)).toMatchObject({ v: SAVE_VERSION, cards: {}, deck: [] });
     expect(normalizeSave('nope').coins).toBe(defaultSave().coins);
   });
 

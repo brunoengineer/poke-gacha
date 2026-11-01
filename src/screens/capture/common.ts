@@ -1,11 +1,12 @@
 // Shared pieces of the Capture screen: the CSS Poké Ball, cost chips, result tags, reveal sounds,
-// the "can evolve now" check and the recent-captures history (kept per browser, outside the save).
+// the "can evolve now" check, the region preference and the recent-captures history (kept per browser, outside the save).
 
 import { sfx, type SfxName } from '../../audio';
 import { itemSprite } from '../../data/items';
 import { getSpecies } from '../../data/species';
 import { cardKey, parseKey, rarityRank, type CardKey, type Rarity } from '../../game/cards';
-import { BANNERS, batchCost, type BannerId, type Payment, type PullResult } from '../../game/gacha';
+import { GENERATIONS, regionName } from '../../data/generations';
+import { BANNERS, batchCost, type BannerId, type Payment, type PullResult, type Region } from '../../game/gacha';
 import { canEvolveNow } from '../../game/progression';
 import { fmt, itemName, L } from '../../i18n';
 import { store } from '../../state/store';
@@ -115,6 +116,31 @@ export function evolveHintHTML(keys: CardKey[]) {
       <a class="btn btn-evolve btn-sm" href="#/collection" data-close-go>${esc(t.seeCollection)}</a>
     </div>`;
 }
+
+// --- Region filter (a UI preference, kept per player in this browser) -------------
+
+const REGION_KEY = 'pg-capture-region';
+const regionKey = () => `${REGION_KEY}-${store.player?.uid ?? 'guest'}`;
+
+/** Saved capture region (generation id), or 0 (every region) when unset or no longer loaded. */
+export function readRegion(): Region {
+  try {
+    const value = Number(localStorage.getItem(regionKey()));
+    return GENERATIONS.some(g => g.id === value) ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function saveRegion(region: Region) {
+  try {
+    localStorage.setItem(regionKey(), String(region));
+  } catch { /* storage blocked: the choice lasts until reload */ }
+}
+
+/** Small region tag for the result screens (nothing when captures came from every region). */
+export const regionChipHTML = (region: Region) =>
+  region ? `<span class="cap-region-chip">${icon('globe')}${esc(regionName(region))}</span>` : '';
 
 // --- Recent captures (local to this browser) ------------------------------------
 

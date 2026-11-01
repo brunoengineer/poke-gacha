@@ -93,10 +93,17 @@ export const BANNER_ORDER: BannerId[] = ['poke', 'safari', 'great', 'ultra', 'ma
 export const SAFARI_FEATURED_CHANCE = 0.4;
 export const SAFARI_FAMILIES = 3;
 
+/**
+ * Region filter for captures: a generation id (1 = Kanto, 2 = Johto…), or 0 for every region.
+ * A species belongs to the generation that introduced it (Pikachu is Kanto, Pichu is Johto).
+ */
+export type Region = number;
+const inRegion = (s: Species, region: Region) => !region || s.generation === region;
+
 /** Today's featured families for the Safari banner (same for every player on the same day). Base species ids. */
-export function safariFeatured(day = dayKey()): number[] {
-  const rng = seeded(hashString(`safari:${day}`));
-  const bases = speciesList.filter(s => stage(s.id) === 1 && !s.legendary && !s.mythical);
+export function safariFeatured(day = dayKey(), region: Region = 0): number[] {
+  const rng = seeded(hashString(region ? `safari:${day}:${region}` : `safari:${day}`));
+  const bases = speciesList.filter(s => stage(s.id) === 1 && !s.legendary && !s.mythical && inRegion(s, region));
   const out: number[] = [];
   const families = new Set<number>();
   for (const s of shuffle(bases, rng)) {
@@ -110,11 +117,11 @@ export function safariFeatured(day = dayKey()): number[] {
 
 const tables = new Map<string, [number, number][]>();
 
-function table(banner: BannerDef, filter?: (s: Species) => boolean): [number, number][] {
-  const id = `${banner.id}:${filter ? 'f' : ''}:${speciesList.length}`;
+function table(banner: BannerDef, region: Region = 0, filter?: (s: Species) => boolean): [number, number][] {
+  const id = `${banner.id}:${region}:${speciesList.length}`;
   if (!filter && tables.has(id)) return tables.get(id)!;
   const entries = speciesList
-    .filter(s => !filter || filter(s))
+    .filter(s => inRegion(s, region) && (!filter || filter(s)))
     .map(s => [s.id, banner.weight(s)] as [number, number])
     .filter(([, w]) => w > 0);
   if (!filter) tables.set(id, entries);
@@ -122,16 +129,16 @@ function table(banner: BannerDef, filter?: (s: Species) => boolean): [number, nu
 }
 
 /** Probability of each species on a banner (for the odds screen). */
-export function bannerOdds(id: BannerId): { id: number; chance: number }[] {
-  const entries = table(BANNERS[id]);
+export function bannerOdds(id: BannerId, region: Region = 0): { id: number; chance: number }[] {
+  const entries = table(BANNERS[id], region);
   const total = entries.reduce((sum, [, w]) => sum + w, 0);
   return entries.map(([species, w]) => ({ id: species, chance: w / total })).sort((a, b) => b.chance - a.chance);
 }
 
 /** Chance of each rarity on a banner (ignores Safari's featured boost and pity). */
-export function rarityOdds(id: BannerId): Record<Rarity, number> {
+export function rarityOdds(id: BannerId, region: Region = 0): Record<Rarity, number> {
   const out = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0, mythical: 0 } as Record<Rarity, number>;
-  for (const { id: species, chance } of bannerOdds(id)) out[rarity(species)] += chance;
+  for (const { id: species, chance } of bannerOdds(id, region)) out[rarity(species)] += chance;
   return out;
 }
 
@@ -140,20 +147,22 @@ export interface Roll {
   shiny: boolean;
 }
 
-export function roll(bannerId: BannerId, rng: Rng = defaultRng, opts: { minRarity?: Rarity; featured?: number[] } = {}): Roll {
+export function roll(bannerId: BannerId, rng: Rng = defaultRng, opts: { minRarity?: Rarity; featured?: number[]; region?: Region } = {}): Roll {
   const banner = BANNERS[bannerId];
+  const region = opts.region ?? 0;
   let entries: [number, number][];
   if (opts.minRarity) {
     const min = rarityRank(opts.minRarity);
-    entries = table(banner, s => rarityRank(rarity(s.id)) >= min);
+    entries = table(banner, region, s => rarityRank(rarity(s.id)) >= min);
   } else if (bannerId === 'safari' && rng() < SAFARI_FEATURED_CHANCE) {
-    const families = new Set((opts.featured ?? safariFeatured()).map(id => getSpecies(id).family));
+    const families = new Set((opts.featured ?? safariFeatured(dayKey(), region)).map(id => getSpecies(id).family));
     entries = speciesList
-      .filter(s => families.has(s.family))
+      .filter(s => families.has(s.family) && inRegion(s, region))
       .map(s => [s.id, stageMult(STAGE_POKE, s)] as [number, number]);
   } else {
-    entries = table(banner);
+    entries = table(banner, region);
   }
+  if (!entries.length) entries = table(banner, region);
   if (!entries.length) entries = table(banner);
   return { id: weightedPick(entries, rng), shiny: rng() < banner.shinyRate };
 }
@@ -185,21 +194,23 @@ export function canAfford(save: SaveData, id: BannerId, count: number, payWith: 
 
 /**
  * Pays for and performs `count` captures, applying every copy to the save.
- * Returns null when the banner is locked or the player can't pay.
+ * Returns null when the banner is locked or the player can't pay. `region` limits captures to one region (0: all).
  */
-export function pull(save: SaveData, id: BannerId, count: number, payWith: Payment, rng: Rng = defaultRng, now = Date.now()): PullResult[] | null {
+export function pull(
+  save: SaveData, id: BannerId, count: number, payWith: Payment, rng: Rng = defaultRng, now = Date.now(), region: Region = 0,
+): PullResult[] | null {
   if (!canUseBanner(save, id) || !canAfford(save, id, count, payWith)) return null;
   const banner = BANNERS[id];
   const cost = batchCost(id, count, payWith)!;
   save.coins -= cost.coins;
   if (cost.tickets) addItem(save, banner.ticket!, -cost.tickets);
 
-  const featured = id === 'safari' ? safariFeatured(dayKey(new Date(now))) : undefined;
+  const featured = id === 'safari' ? safariFeatured(dayKey(new Date(now)), region) : undefined;
   const results: PullResult[] = [];
   for (let i = 0; i < count; i++) {
     let minRarity: Rarity | undefined;
     if (banner.pity && (save.pity[id] ?? 0) + 1 >= banner.pity.every) minRarity = banner.pity.min;
-    const { id: species, shiny } = roll(id, rng, { minRarity, featured });
+    const { id: species, shiny } = roll(id, rng, { minRarity, featured, region });
     const r = rarity(species);
     if (banner.pity) save.pity[id] = rarityRank(r) >= rarityRank(banner.pity.min) ? 0 : (save.pity[id] ?? 0) + 1;
     results.push({ ...addCopy(save, species, shiny, now), banner: id, rarity: r });

@@ -1,12 +1,13 @@
-// Banner cards (one per ball) and the odds panel. Banners are rendered once; refreshBanner() updates the parts
-// that change (affordability, owned balls, pity, lock state) in place, so focus and hover states survive.
+// Banner cards (one per ball) and the odds panel. Banners are rendered once per region; refreshBanner() updates the
+// parts that change (affordability, owned balls, pity, lock state) in place, so focus and hover states survive.
 
 import { spriteImg } from '../../ui/card';
+import { regionName } from '../../data/generations';
 import { getSpecies } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { rarity, rarityRank, RARITIES, RARITY_COLOR, type Rarity } from '../../game/cards';
 import {
-  BANNERS, bannerOdds, canAfford, canUseBanner, rarityOdds, safariFeatured, type BannerId, type Payment,
+  BANNERS, bannerOdds, canAfford, canUseBanner, rarityOdds, safariFeatured, type BannerId, type Payment, type Region,
 } from '../../game/gacha';
 import { itemCount } from '../../game/progression';
 import { dayKey, hashString, seeded, shuffle } from '../../game/rng';
@@ -23,12 +24,12 @@ const SHOWCASE: Record<Exclude<BannerId, 'safari'>, Rarity[]> = {
   master: ['legendary', 'mythical'],
 };
 
-export function showcase(id: BannerId): number[] {
-  if (id === 'safari') return safariFeatured();
+export function showcase(id: BannerId, region: Region = 0): number[] {
+  if (id === 'safari') return safariFeatured(dayKey(), region);
   const wanted = SHOWCASE[id];
-  const odds = bannerOdds(id);
+  const odds = bannerOdds(id, region);
   const pool = odds.filter(o => wanted.includes(rarity(o.id))).map(o => o.id);
-  const rng = seeded(hashString(`showcase:${id}:${dayKey()}`));
+  const rng = seeded(hashString(`showcase:${id}:${dayKey()}${region ? `:${region}` : ''}`));
   return shuffle(pool.length >= 3 ? pool : odds.map(o => o.id), rng).slice(0, 3);
 }
 
@@ -74,11 +75,11 @@ function lockHTML(id: BannerId) {
     </div>`;
 }
 
-export function bannerHTML(id: BannerId) {
+export function bannerHTML(id: BannerId, region: Region = 0) {
   const t = L().capture;
   const text = t.banners[id];
   const banner = BANNERS[id];
-  const ids = showcase(id);
+  const ids = showcase(id, region);
   const locked = !canUseBanner(store.save, id);
   return `
     <article class="banner" data-banner="${id}" ${locked ? 'data-locked="true"' : ''} aria-labelledby="banner-${id}-title">
@@ -166,12 +167,14 @@ export function oddsHTML() {
     </details>`;
 }
 
-export function renderOdds(panel: HTMLElement, id: BannerId) {
+export function renderOdds(panel: HTMLElement, id: BannerId, region: Region = 0) {
   const t = L().capture;
   const banner = BANNERS[id];
-  const byRarity = rarityOdds(id);
-  const species = bannerOdds(id);
+  const byRarity = rarityOdds(id, region);
+  const species = bannerOdds(id, region);
+  panel.dataset.banner = id;
   const notes = [
+    region ? t.odds.regionNote(regionName(region)) : '',
     banner.pity ? t.odds.pityNote(banner.pity.every, rarityName(banner.pity.min)) : '',
     id === 'safari' ? t.odds.safariNote : '',
     id === 'master' ? t.odds.masterNote : '',
@@ -200,7 +203,7 @@ export function renderOdds(panel: HTMLElement, id: BannerId) {
       <ol class="odds-list" data-species-list></ol>
     </details>`;
   const list = panel.querySelector<HTMLElement>('[data-species-list]')!;
-  // The full list (151+ rows) is only built when opened.
+  // The full list (up to every loaded species) is only built when opened.
   panel.querySelector('.odds-species')!.addEventListener('toggle', () => {
     if (list.childElementCount) return;
     list.innerHTML = species.map(({ id: mon, chance }) => {

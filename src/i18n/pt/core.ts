@@ -3,7 +3,7 @@ const plural = (n: number, one: string, many: string) => `${n.toLocaleString('pt
 
 const core = {
   appName: 'Poké Gacha',
-  tagline: 'Capture, evolua e batalhe com os 151 Pokémon de Kanto.',
+  tagline: 'Capture, evolua e batalhe com os 251 Pokémon de Kanto e Johto.',
   loading: 'Carregando…',
   loadError: 'Não foi possível carregar o jogo. Verifique sua conexão e recarregue a página.',
 

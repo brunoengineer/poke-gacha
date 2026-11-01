@@ -1,12 +1,12 @@
-// Training lobby: pick a difficulty and a friend, battle, collect coins (plus the daily Rare Candy and the odd gift).
-// Rules and roster live in src/game/modes/training.ts.
+// Training lobby: pick a difficulty and a friend (grouped by region), battle, collect coins (plus the daily
+// Rare Candy and the odd gift). Rules and roster live in src/game/modes/training.ts.
 
 import { sfx } from '../../audio';
 import { spriteUrl, trainerSpriteUrl } from '../../data/sprites';
 import { RARE_CANDY, itemSprite } from '../../data/items';
 import {
-  averageLevel, DIFFICULTIES, DIFFICULTY, firstWinToday, FRIENDS, getFriend, levelRange, recordTraining, trainingRewards,
-  trainingTeam, winCoins, type Difficulty, type Friend,
+  averageLevel, DIFFICULTIES, DIFFICULTY, firstWinToday, FRIENDS, getFriend, levelRange, recordTraining, rivalStarter, trainingRewards,
+  trainingTeam, winCoins, type Difficulty, type Friend, type FriendRegion,
 } from '../../game/modes/training';
 import { playerLevels } from '../../game/teams';
 import { itemName, L } from '../../i18n';
@@ -17,6 +17,7 @@ import { $, esc, icon } from '../../ui/dom';
 import { showRewards } from '../../ui/rewards';
 import type { ModeModule } from '../types';
 import { battleActive, runBattle } from './arena';
+import { regionLabel } from './regions';
 import { ensureTeam, teamSummaryHTML } from './team';
 
 let host: HTMLElement | null = null;
@@ -68,7 +69,14 @@ function render() {
         <span><img src="${esc(itemSprite(RARE_CANDY))}" alt="" width="24" height="24"> ${esc(t.firstWin)}</span>
       </div>
     </div>
-    <div class="friend-grid">${FRIENDS.map(friendHTML).join('')}</div>`;
+    ${(['kanto', 'johto'] as FriendRegion[]).map(region => {
+      const friends = FRIENDS.filter(f => f.region === region);
+      return `
+        <section class="friend-group" aria-label="${esc(t.group(regionLabel(region)))}">
+          <h2 class="section-title">${esc(t.group(regionLabel(region)))} <small>${friends.length}</small></h2>
+          <div class="friend-grid">${friends.map(friendHTML).join('')}</div>
+        </section>`;
+    }).join('')}`;
 }
 
 function friendHTML(friend: Friend): string {
@@ -76,7 +84,8 @@ function friendHTML(friend: Friend): string {
   const tx = L().battle.friends[friend.id];
   const record = store.save.training.records[friend.id];
   const candy = firstWinToday(record);
-  const preview = [...(friend.signature ?? []), ...friend.pool].slice(0, 4);
+  const signature = friend.rival ? [rivalStarter(store.save.starter, friend.region)] : friend.signature ?? [];
+  const preview = [...signature, ...friend.pool].slice(0, 4);
   return `
     <button class="friend-card" type="button" data-friend="${friend.id}" style="--fc:${friend.color}" aria-label="${esc(t.challenge(friend.name))}">
       <span class="friend-portrait"><img src="${esc(trainerSpriteUrl(friend.sprite))}" alt="" loading="lazy" draggable="false"></span>

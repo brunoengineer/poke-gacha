@@ -140,6 +140,18 @@ const modes: typeof pt = {
     bracket: 'Bracket',
     tbd: 'TBD',
     path: 'Your path',
+    region: 'Region',
+    johto: {
+      title: 'Johto League',
+      subtitle: "Johto's Elite Four and Champion Lance. Four duels in a row; the first loss ends your run.",
+      plateau: 'Indigo Plateau · Johto',
+      heroText: 'Will, Koga, Bruno and Karen guard the way to Lance, the dragon master. Much higher levels and double prizes.',
+      lockedTitle: 'The Johto League is still closed',
+      lockedText: (badges: number) => `Earn all 8 Johto badges to challenge Johto's Elite Four. You have ${badges} of 8.`,
+      prizeFirstTitle: "First title: a shiny starter from the other region, matching your starter's type",
+      firstTitle: 'First Johto title! A shiny starter from the other region has joined your collection.',
+      championTitle: 'Johto League Champion!',
+    },
     lines: {
       lorelei: {
         intro: 'Welcome to the League. My ice Pokémon will freeze your ambition.',
@@ -166,6 +178,32 @@ const modes: typeof pt = {
         win: 'Hah! I knew I was the best!',
         lose: 'I can\'t believe it... You are the new Champion. Congratulations, really.',
       },
+      will: {
+        intro: 'I traveled the world training my Psychic Pokémon. Is your mind ready for this?',
+        win: 'I read every move of yours before you even thought of it.',
+        lose: 'I did not foresee this defeat… Go on, you earned it.',
+      },
+      'koga-johto': {
+        intro: 'I left my gym to my daughter and came to guard the League. My ninja arts have only grown sharper.',
+        win: 'The poison was working from the very first turn.',
+        lose: 'Fwahahah! You slipped through the shadows again. You may pass.',
+      },
+      'bruno-johto': {
+        intro: 'I trained in the mountains of Johto until my fists turned to stone. Brace for impact!',
+        win: 'Muscles do not lie! Train harder!',
+        lose: 'Hah! Your team hits hard. Go on ahead!',
+      },
+      karen: {
+        intro: 'Strong Pokémon, weak Pokémon… that is selfish thinking. Real trainers fight with their favorites.',
+        win: 'You still have a lot to understand about your Pokémon.',
+        lose: 'Good. You trust your Pokémon. Go, the Champion is waiting.',
+      },
+      'lance-johto': {
+        intro: 'I have been waiting for you. As Johto\'s Champion, I accept your challenge with all my dragons!',
+        win: 'It is not your time yet. Dragons only acknowledge the strongest.',
+        lose: 'Incredible! Today, a new Champion was born in Johto. Congratulations, from the heart.',
+      },
+
     },
   },
 };

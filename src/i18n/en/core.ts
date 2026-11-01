@@ -5,7 +5,7 @@ const plural = (n: number, one: string, many: string) => `${n.toLocaleString('en
 
 const core: typeof pt = {
   appName: 'Poké Gacha',
-  tagline: 'Catch, evolve and battle with all 151 Kanto Pokémon.',
+  tagline: 'Catch, evolve and battle with all 251 Pokémon of Kanto and Johto.',
   loading: 'Loading…',
   loadError: 'Could not load the game. Check your connection and reload the page.',
 

@@ -139,6 +139,19 @@ const modes = {
     bracket: 'Chaveamento',
     tbd: 'A definir',
     path: 'Seu caminho',
+    region: 'Região',
+    /** Textos da Liga de Johto (os da Liga de Kanto são as chaves acima). */
+    johto: {
+      title: 'Liga de Johto',
+      subtitle: 'A Elite dos Quatro de Johto e o Campeão Lance. Quatro duelos seguidos; a primeira derrota encerra a campanha.',
+      plateau: 'Planalto Indigo · Johto',
+      heroText: 'Will, Koga, Bruno e Karen guardam o caminho até Lance, o mestre dos dragões. Níveis bem mais altos e prêmios em dobro.',
+      lockedTitle: 'A Liga de Johto ainda está fechada',
+      lockedText: (badges: number) => `Conquiste as 8 insígnias de Johto para desafiar a Elite dos Quatro de Johto. Você tem ${badges} de 8.`,
+      prizeFirstTitle: 'Primeiro título: o inicial da outra região, shiny e do mesmo tipo do seu',
+      firstTitle: 'Primeiro título em Johto! Um inicial shiny da outra região chegou para o seu time.',
+      championTitle: 'Campeão da Liga de Johto!',
+    },
     lines: {
       lorelei: {
         intro: 'Bem-vindo à Liga. Meus Pokémon de gelo vão congelar a sua ambição.',
@@ -165,6 +178,32 @@ const modes = {
         win: 'Hah! Eu sabia que era o melhor!',
         lose: 'Não acredito... Você é o novo Campeão. Parabéns, de verdade.',
       },
+      will: {
+        intro: 'Viajei o mundo treinando meus Pokémon psíquicos. Sua mente está pronta para isto?',
+        win: 'Eu li cada movimento seu antes de você pensar nele.',
+        lose: 'Não previ esta derrota… Siga em frente, você conquistou isso.',
+      },
+      'koga-johto': {
+        intro: 'Deixei o ginásio para minha filha e vim guardar a Liga. Minhas técnicas ninja só ficaram mais afiadas.',
+        win: 'O veneno já estava agindo desde o primeiro turno.',
+        lose: 'Fahahah! Você atravessou as sombras de novo. Pode passar.',
+      },
+      'bruno-johto': {
+        intro: 'Treinei nas montanhas de Johto até os punhos endurecerem. Prepare-se para o impacto!',
+        win: 'Músculos não mentem! Treine mais!',
+        lose: 'Hah! Seu time bate forte. Vá em frente!',
+      },
+      karen: {
+        intro: 'Pokémon fortes, Pokémon fracos… isso é egoísmo. Treinadores de verdade lutam com os seus favoritos.',
+        win: 'Você ainda tem muito o que entender sobre os seus Pokémon.',
+        lose: 'Bom. Você confia nos seus Pokémon. Vá, o Campeão espera.',
+      },
+      'lance-johto': {
+        intro: 'Eu esperava por você. Como Campeão de Johto, aceito o seu desafio com todos os meus dragões!',
+        win: 'Ainda não é o seu momento. Os dragões reconhecem apenas os mais fortes.',
+        lose: 'Incrível! Hoje, um novo Campeão nasceu em Johto. Parabéns, de coração.',
+      },
+
     } as Record<string, { intro: string; win: string; lose: string }>,
   },
 };

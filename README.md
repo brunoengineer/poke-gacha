@@ -1,7 +1,7 @@
 # Poké Gacha
 
-A Pokémon gacha card game in the browser: catch all 151 Kanto Pokémon as pixel-art cards, level them up with
-duplicates, evolve them (or don't), and battle friends, a ranked ladder, the eight gym leaders and the Pokémon League.
+A Pokémon gacha card game in the browser: catch all 251 Pokémon of Kanto and Johto as pixel-art cards, level them up
+with duplicates, evolve them (or don't), and battle friends, a ranked ladder, 16 gym leaders and two Pokémon Leagues.
 
 Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 
@@ -9,6 +9,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 
 - **One card per Pokémon, plus its shiny**: Black/White (Gen 5) pixel sprites in type-themed, rarity-framed cards.
 - **Cheap captures, slow mastery**: Poké, Safari, Great, Ultra and Master Balls; every duplicate is +1 level.
+  Captures can focus on one region, so its Pokémon show up more often.
 - **Optional evolution** with real evolution levels, stones and a Link Cable for trade evolutions.
 - **The easter egg**: unevolved base forms and shiny cards have no level cap. A Lv. 250 Charmander outgrows a Lv. 100 Charizard.
 - **Battles**: 6 rounds, pick a card and a stat, type advantage matters.
@@ -65,11 +66,31 @@ scripts/
 ### Adding a generation
 
 ```bash
-npm run pokedex 2     # writes src/data/pokedex/gen2.json
+npm run pokedex 3     # writes src/data/pokedex/gen3.json
 ```
 
-Then add the generation to `src/data/generations.ts`. Rarity, capture odds, evolutions, card art, sprites, cries and
-opponent teams are all derived from the data.
+Then add the generation to `src/data/generations.ts`. Rarity, capture odds, evolutions, card art, sprites, cries,
+opponent teams and the region filters are all derived from the data. Region content (gym leaders, league, friends)
+lives in `src/game/modes/`. Notes from adding Johto:
+
+- New evolution items need an entry in `src/data/items.ts` (name, description, Mart price), or they get a generic one.
+- Baby Pokémon don't count as a stage, so a new baby form (Pichu) doesn't change its base form's card (Pikachu).
+- Gen 6+ has no Black/White sprites: `src/data/sprites.ts` falls back to the newest pixel sprites.
+
+### Save compatibility (players have real progress)
+
+Every release must load every save from earlier releases, unchanged. The rules (also at the top of
+[src/state/save.ts](src/state/save.ts)):
+
+- Never rename or remove save fields or ids: card keys (`"25"`, `"25s"` for shiny), badge, gym and item ids.
+- New fields get a default in `defaultSave()`; `normalizeSave()` fills them in for older saves.
+- Anything that isn't "a new field with a default" is a migration: bump `SAVE_VERSION` and add a step to `MIGRATIONS`.
+  Also bump it when a release adds content older apps can't show (a new generation): an outdated cached app that
+  meets a newer save reloads itself once.
+- Unknown fields (written by a newer app) are kept, never dropped, so an old tab can't delete new progress.
+- Game-rule changes must not lower existing levels or remove cards.
+- **When you release, add one of its saves to `src/state/fixtures/`** (never edit the old ones).
+  [src/state/compat.test.ts](src/state/compat.test.ts) loads every fixture and checks nothing was lost.
 
 ## Credits
 

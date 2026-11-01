@@ -1,7 +1,7 @@
 // Service worker: caches sprites, trainer portraits and cries so the collection opens instantly on later visits
 // (GitHub only lets browsers cache them for 5 minutes). Game files use network-first, so updates show up right away.
 
-const APP_CACHE = 'pg-app-v1';
+const APP_CACHE = 'pg-app-v2';
 const IMAGE_CACHE = 'pg-assets-v1';
 const ASSET_HOSTS = ['raw.githubusercontent.com', 'play.pokemonshowdown.com'];
 
@@ -47,7 +47,8 @@ async function staleWhileRevalidate(event, request) {
 async function networkFirst(request) {
     const cache = await caches.open(APP_CACHE);
     try {
-        const response = await fetch(request);
+        // The page itself skips the HTTP cache, so a new release (new asset hashes) is picked up on the next load.
+        const response = await fetch(request, request.mode === 'navigate' ? { cache: 'no-cache' } : undefined);
         if (response.ok) cache.put(request, response.clone());
         return response;
     } catch (error) {

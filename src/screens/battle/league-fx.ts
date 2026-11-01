@@ -30,21 +30,22 @@ export const TROPHY_SVG = `
     <circle cx="60" cy="40" r="3" fill="#f4f4f6" stroke="#1b1b24" stroke-width="1.6"/>
   </svg>`;
 
-export function celebrateChampion(team: TeamMember[], rival: string): Promise<void> {
+/** `title` and `league` default to the Kanto League's texts. */
+export function celebrateChampion(team: TeamMember[], rival: string, title = L().modes.league.championTitle, league = L().modes.league.title): Promise<void> {
   const t = L().modes.league;
   const seq = new Sequence();
   sfx('champion');
   return new Promise(resolve => {
     const modal = openModal({
       className: 'fx-overlay champ-overlay',
-      label: t.championTitle,
+      label: title,
       onClose: () => { seq.skip(); resolve(); },
       html: `
         <div class="champ">
           <span class="champ-rays" aria-hidden="true"></span>
           <div class="champ-trophy">${TROPHY_SVG}</div>
-          <p class="label champ-kicker">${esc(t.title)} · ${esc(t.hall)}</p>
-          <h2 class="fx-title champ-title">${esc(t.championTitle)}</h2>
+          <p class="label champ-kicker">${esc(league)} · ${esc(t.hall)}</p>
+          <h2 class="fx-title champ-title">${esc(title)}</h2>
           <p class="champ-sub">${esc(t.championSub(rival))}</p>
           <div class="champ-team">${team.map(m => `<span class="champ-card">${cardHTML({ id: m.id, level: m.level, shiny: m.shiny }, { size: 'sm', eager: true, animated: true })}</span>`).join('')}</div>
           <button class="btn btn-primary btn-lg" type="button" data-close autofocus>${esc(L().core.actions.continue)}</button>

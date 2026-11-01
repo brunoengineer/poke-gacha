@@ -1,5 +1,22 @@
 // Save format. Everything the player owns lives in one JSON object, stored locally and (when signed in) in Firestore.
-// New fields must get a default in defaultSave(); normalizeSave() fills them in for older saves.
+//
+// Compatibility rules (players have real progress, so every release must load every older save):
+//   - Never rename or remove fields or ids (card keys "<id>"/"<id>s", badge, gym and item ids).
+//   - New fields get a default in defaultSave(); normalizeSave() fills them in for older saves.
+//   - A change that can't be expressed as "new field with a default" is a migration: bump SAVE_VERSION and add a
+//     step to MIGRATIONS. Bump SAVE_VERSION too when a release adds content older apps can't show (a new
+//     generation), so an outdated app knows to reload.
+//   - Every release adds its save to src/state/fixtures/; the tests load all of them.
+//   - Unknown fields (written by a newer version of the app) are kept as they are, never dropped.
+
+/** Current save format version (2 = the Johto release). */
+export const SAVE_VERSION = 2;
+
+/** Upgrades a raw save from version `n` to `n + 1`, keyed by `n`. Steps run in order. */
+const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
+  // 1 -> 2: Johto. `evolved` is new and defaults to {} (see normalizeSave); nothing to rewrite.
+  1: raw => raw,
+};
 
 import type { CardKey } from '../game/cards';
 import { STARTING_COINS } from '../game/economy';
@@ -28,11 +45,17 @@ export interface Settings {
 }
 
 export interface SaveData {
-  v: 1;
+  /** Format version (SAVE_VERSION when written by this app; higher when written by a newer one). */
+  v: number;
   coins: number;
   cards: Record<CardKey, CardState>;
   /** Pokédex: species id -> when it was first obtained (pulled, rewarded or evolved into). */
   caught: Record<string, number>;
+  /**
+   * Species the player evolved away (species id -> when). Only these route later copies to the evolved card;
+   * pulling an Arbok first never stops you from getting an Ekans card of your own.
+   */
+  evolved: Record<string, number>;
   /** Team of up to DECK_SIZE card keys, in slot order. */
   deck: CardKey[];
   items: Record<string, number>;
@@ -64,10 +87,11 @@ export interface SaveData {
 
 export function defaultSave(): SaveData {
   return {
-    v: 1,
+    v: SAVE_VERSION,
     coins: STARTING_COINS,
     cards: {},
     caught: {},
+    evolved: {},
     deck: [],
     items: {},
     starter: null,
@@ -86,17 +110,31 @@ export function defaultSave(): SaveData {
 
 const isObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 
-/** Fills missing fields so older saves keep working as the game grows. */
+/** Runs the migrations a save needs, from its version up to SAVE_VERSION. */
+export function migrateSave(raw: Record<string, unknown>): Record<string, unknown> {
+  let save = raw;
+  for (let v = Number(raw.v) || 1; v < SAVE_VERSION; v++) save = { ...MIGRATIONS[v]?.(save) ?? save, v: v + 1 };
+  return save;
+}
+
+/** True when the save was written by a newer version of the app than this one. */
+export const isFromNewerApp = (s: Pick<SaveData, 'v'>) => s.v > SAVE_VERSION;
+
+/** Fills missing fields so older saves keep working as the game grows (after running their migrations). */
 export function normalizeSave(raw: unknown): SaveData {
   const d = defaultSave();
   if (!isObject(raw)) return d;
-  const s = raw as Partial<SaveData>;
+  const s = migrateSave(raw) as Partial<SaveData>;
   const merge = <T extends object>(base: T, value: unknown): T => (isObject(value) ? { ...base, ...value } : base);
   return {
+    // Fields this version doesn't know (from a newer app) ride along untouched, so saving here never deletes them.
+    ...(s as object),
     ...d,
     coins: Number.isFinite(s.coins) ? Math.max(0, Math.floor(s.coins!)) : d.coins,
     cards: isObject(s.cards) ? (s.cards as SaveData['cards']) : {},
     caught: isObject(s.caught) ? (s.caught as SaveData['caught']) : {},
+    // Older saves didn't track this: their next copy of a species they no longer own simply becomes a new card.
+    evolved: isObject(s.evolved) ? (s.evolved as SaveData['evolved']) : {},
     deck: Array.isArray(s.deck) ? s.deck.filter(key => typeof key === 'string' && isObject(s.cards) && key in s.cards) : [],
     items: isObject(s.items) ? (s.items as SaveData['items']) : {},
     starter: typeof s.starter === 'number' ? s.starter : null,
@@ -110,7 +148,7 @@ export function normalizeSave(raw: unknown): SaveData {
     settings: merge(d.settings, s.settings),
     seen: isObject(s.seen) ? (s.seen as SaveData['seen']) : {},
     updatedAt: Number.isFinite(s.updatedAt) ? s.updatedAt! : 0,
-    v: 1,
+    v: Math.max(SAVE_VERSION, Number(s.v) || SAVE_VERSION),
   };
 }
 

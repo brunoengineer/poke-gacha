@@ -3,7 +3,7 @@
 // Arrows (buttons or keyboard) move through the list the modal was opened from.
 
 import { sfx } from '../../audio';
-import { descendants, evolutionsOf, familyOf, getSpecies, preEvolution, stage, type Species } from '../../data/species';
+import { descendants, evolutionsOf, familyOf, getSpecies, preEvolution, type Species } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { effectiveness, TYPE_COLOR, TYPES, type PokemonType } from '../../data/types';
 import {
@@ -254,14 +254,20 @@ function actionsHTML(key: CardKey) {
     </section>`;
 }
 
+/** Steps from the family's root, babies included (Pichu 0, Pikachu 1, Raichu 2), unlike stage(). */
+const familyDepth = (id: number): number => {
+  const from = preEvolution(id);
+  return from == null ? 0 : familyDepth(from) + 1;
+};
+
 function familyHTML(sp: Species, key: CardKey) {
   const t = L().collection.details;
   const family = familyOf(sp.id);
   if (family.length < 2) return '';
   const columns = new Map<number, Species[]>();
   for (const member of family) {
-    const st = stage(member.id);
-    columns.set(st, [...(columns.get(st) ?? []), member]);
+    const depth = familyDepth(member.id);
+    columns.set(depth, [...(columns.get(depth) ?? []), member]);
   }
   const currentId = parseKey(key).id;
 
@@ -277,6 +283,7 @@ function familyHTML(sp: Species, key: CardKey) {
         style="--tc:${TYPE_COLOR[m.types[0]]}" aria-label="${esc(`${name}${level != null ? `, ${L().core.card.levelFull(level)}` : ''}`)}"
         ${m.id === currentId ? 'aria-current="true"' : ''}>
         <span class="dx-fam-sprite"><img src="${esc(spriteUrl(m.id))}" alt="" width="96" height="96" loading="lazy"></span>
+        ${m.baby ? `<i class="dx-fam-baby" title="${esc(t.babyHint)}">${esc(t.baby)}</i>` : ''}
         <b>${esc(name)}</b>
         <small>${level != null ? esc(`${L().core.card.level} ${fmt(level)}`) : state === 'registered' ? icon('check') : '&nbsp;'}</small>
         ${req ? `<span class="dx-fam-req">${req}</span>` : ''}
@@ -289,7 +296,7 @@ function familyHTML(sp: Species, key: CardKey) {
       <div class="dx-family">
         ${[...columns.entries()].sort(([a], [b]) => a - b).map(([, members], i) => `
           ${i ? `<span class="dx-fam-arrow" aria-hidden="true">${icon('right')}</span>` : ''}
-          <div class="dx-fam-col">${members.map(member).join('')}</div>`).join('')}
+          <div class="dx-fam-col ${members.length > 2 ? 'is-branch' : ''}" style="--n:${members.length}">${members.map(member).join('')}</div>`).join('')}
       </div>
     </section>`;
 }

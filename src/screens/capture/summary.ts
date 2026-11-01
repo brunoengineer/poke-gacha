@@ -12,7 +12,7 @@ import { cardHTML } from '../../ui/card';
 import { animateNumber, esc, icon } from '../../ui/dom';
 import { burst, Sequence } from '../../ui/fx';
 import {
-  ballHTML, ballSprite, bannerName, bestResult, isRarePlus, isRouted, rarityName, revealSound, revealWeight, SHINY_COLOR,
+  ballHTML, ballSprite, bannerName, bestResult, isRarePlus, isRouted, rarityName, regionChipHTML, revealSound, revealWeight, SHINY_COLOR,
 } from './common';
 import { actionsHTML, openPullOverlay, type PullContext, type PullExit } from './overlay';
 
@@ -127,7 +127,7 @@ export function playSummary(results: PullResult[], ctx: PullContext): Promise<Pu
         </div>
         <div class="sum">
           <header class="sum-head">
-            <p class="sum-kicker">${ballSprite(ctx.banner, 22)}<span>${esc(t.subtitle(bannerName(ctx.banner)))}</span></p>
+            <p class="sum-kicker">${ballSprite(ctx.banner, 22)}<span>${esc(t.subtitle(bannerName(ctx.banner)))}</span>${regionChipHTML(ctx.region)}</p>
             <h2 class="fx-title">${esc(t.title(results.length))}</h2>
           </header>
           <div class="sum-stats">

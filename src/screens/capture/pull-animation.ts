@@ -12,7 +12,7 @@ import { cardBackHTML, cardHTML } from '../../ui/card';
 import { esc } from '../../ui/dom';
 import { burst, Sequence } from '../../ui/fx';
 import {
-  ballHTML, bannerName, bestResult, isLegendaryPlus, isRarePlus, isRouted, rarityName, revealSound, revealWeight,
+  ballHTML, bannerName, bestResult, isLegendaryPlus, isRarePlus, isRouted, rarityName, regionChipHTML, revealSound, revealWeight,
   SHINY_COLOR, tagHTML,
 } from './common';
 import { actionsHTML, openPullOverlay, type PullContext, type PullExit } from './overlay';
@@ -218,7 +218,7 @@ export function playMulti(results: PullResult[], ctx: PullContext): Promise<Pull
         flipAll();
       },
       html: `
-        <h2 class="fx-title cap-multi-title">${esc(bannerName(ctx.banner))} ×${results.length}</h2>
+        <h2 class="fx-title cap-multi-title">${esc(bannerName(ctx.banner))} ×${results.length}${regionChipHTML(ctx.region)}</h2>
         <div class="cap-grid" data-n="${results.length}">
           ${results.map((r, i) => `
             <div class="slot" data-i="${i}" data-rarity="${r.rarity}" ${r.shiny ? 'data-shiny="true"' : ''} style="--rc:${lightOf(r)}">

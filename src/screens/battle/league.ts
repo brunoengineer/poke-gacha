@@ -1,14 +1,17 @@
 // Pokémon League (#/battle/league): locked panel until 8 badges, then the lobby (entry, prizes, Hall of Fame)
 // or the run in progress (next duel card, your path and the 16-slot bracket). It applies each duel's result,
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
+// A Kanto / Johto switch picks the league; each keeps its own run, titles and Hall of Fame.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
 import { trainerSpriteUrl } from '../../data/sprites';
-import { UNLOCK_BADGES } from '../../game/economy';
+import { JOHTO_UNLOCK_BADGES, UNLOCK_BADGES } from '../../game/economy';
+import { regionBadges } from '../../game/modes/gyms';
 import {
-  abandonRun, buildBracket, canEnter, CHAMPION, championBoss, duelInfo, ELITE_FOUR, LEAGUE_DUELS, LEAGUE_FEE,
-  PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, duelLevels, type Bracket, type Entrant,
+  abandonRun, buildBracket, canEnter, CHAMPION, championBoss, duelInfo, eliteFour, LEAGUE_DUELS, leagueFee, leagueRecord,
+  leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, duelLevels, type Bracket, type Entrant,
+  type LeagueRegion,
 } from '../../game/modes/league';
 import type { Reward } from '../../game/rewards';
 import { hashString } from '../../game/rng';
@@ -22,14 +25,34 @@ import { runBattle } from './arena';
 import { modeHead, myTeam, portrait, teamReady, teamStrip, typeBadges } from './competition-ui';
 import { bracketHTML, entrantName, entrantTitle } from './league-bracket';
 import { celebrateChampion, TROPHY_SVG } from './league-fx';
+import { clickedRegion, regionSwitchHTML } from './regions';
 
 let root: HTMLElement | null = null;
 let offs: (() => void)[] = [];
 let busy = false;
 /** Round revealed by the last win (animated once). */
 let fresh = -1;
+/** League on screen (null: pick the one with a run in progress, else the newest unlocked). */
+let region: LeagueRegion | null = null;
 
 const t = () => L().modes.league;
+
+function shownRegion(): LeagueRegion {
+  if (region) return region;
+  const save = store.save;
+  if (leagueRecord(save, 'johto').run) return 'johto';
+  if (save.league.run) return 'kanto';
+  return leagueUnlocked(save, 'johto') ? 'johto' : 'kanto';
+}
+
+/** The shown league's progress. */
+const rec = () => leagueRecord(store.save, shownRegion());
+
+type RegionText = keyof ReturnType<typeof t>['johto'];
+/** Text that differs per league: Johto has its own copy, Kanto uses the base keys. */
+function rt<K extends RegionText>(key: K): ReturnType<typeof t>['johto'][K] {
+  return shownRegion() === 'johto' ? t().johto[key] : (t()[key] as ReturnType<typeof t>['johto'][K]);
+}
 
 /** Display name of a placement index (0 = Top 16 … 4 = Champion). */
 export const placementName = (index: number) => t().placements[PLACEMENTS[Math.max(0, Math.min(CHAMPION, index))]];
@@ -47,22 +70,40 @@ export const leagueMode: ModeModule = {
     offs.forEach(off => off());
     offs = [];
     root = null;
+    region = null;
   },
 };
 
 function currentBracket(): Bracket | null {
-  const run = store.save.league.run;
-  return run ? buildBracket(store.save.ladder.seed, run.seed, store.save.starter) : null;
+  const run = rec().run;
+  return run ? buildBracket(store.save.ladder.seed, run.seed, store.save.starter, shownRegion()) : null;
+}
+
+function regionTabs() {
+  const note = (r: LeagueRegion) => {
+    const league = leagueRecord(store.save, r);
+    if (league.run) return t().duelOf(league.run.duel + 1, LEAGUE_DUELS);
+    return league.best >= 0 ? placementName(league.best) : t().never;
+  };
+  const johtoOpen = leagueUnlocked(store.save, 'johto');
+  return regionSwitchHTML(shownRegion(), [
+    { region: 'kanto', note: note('kanto'), done: store.save.league.titles > 0 },
+    {
+      region: 'johto', locked: !johtoOpen, done: leagueRecord(store.save, 'johto').titles > 0,
+      note: johtoOpen ? note('johto') : `${regionBadges(store.save.gyms, 'johto')}/${JOHTO_UNLOCK_BADGES.league}`,
+    },
+  ], t().region);
 }
 
 // --- Rendering ---------------------------------------------------------------------
 
 function render() {
   if (!root) return;
-  const check = canEnter(store.save);
-  const body = check === 'locked' ? lockedHTML() : store.save.league.run ? runHTML() : lobbyHTML(check);
-  root.innerHTML = `<div class="mode league">${modeHead(t().title, t().subtitle)}${body}</div>`;
-  if (store.save.league.run) {
+  const shown = shownRegion();
+  const check = canEnter(store.save, shown);
+  const body = check === 'locked' ? lockedHTML() : rec().run ? runHTML() : lobbyHTML(check);
+  root.innerHTML = `<div class="mode league league-${shown}">${modeHead(rt('title'), rt('subtitle'), regionTabs())}${body}</div>`;
+  if (rec().run) {
     const next = root.querySelector<HTMLElement>('.bk-match.is-next');
     const scroller = root.querySelector<HTMLElement>('.bracket-scroll');
     if (next && scroller && scroller.scrollWidth > scroller.clientWidth) {
@@ -76,14 +117,16 @@ function render() {
 }
 
 function lockedHTML() {
-  const badges = store.save.gyms.badges.length;
+  const johto = shownRegion() === 'johto';
+  const badges = regionBadges(store.save.gyms, shownRegion());
+  const needed = johto ? JOHTO_UNLOCK_BADGES.league : UNLOCK_BADGES.league;
   return `
     <section class="league-locked">
       <div class="league-emblem is-locked">${TROPHY_SVG}<span class="league-lock">${icon('lock')}</span></div>
-      <h2 class="league-locked-title">${esc(t().lockedTitle)}</h2>
-      <p class="view-sub">${esc(t().lockedText(badges))}</p>
+      <h2 class="league-locked-title">${esc(rt('lockedTitle'))}</h2>
+      <p class="view-sub">${esc(rt('lockedText')(badges))}</p>
       <ol class="badge-slots" aria-hidden="true">
-        ${Array.from({ length: UNLOCK_BADGES.league }, (_, i) => `<li class="${i < badges ? 'is-earned' : ''}">${icon(i < badges ? 'check' : 'medal')}</li>`).join('')}
+        ${Array.from({ length: needed }, (_, i) => `<li class="${i < badges ? 'is-earned' : ''}">${icon(i < badges ? 'check' : 'medal')}</li>`).join('')}
       </ol>
       <a class="btn btn-primary" href="#/battle/gyms">${icon('medal')} ${esc(t().goGyms)}</a>
       ${bossesHTML()}
@@ -91,7 +134,7 @@ function lockedHTML() {
 }
 
 function bossesHTML() {
-  const bosses = [...ELITE_FOUR, championBoss(store.save.starter)];
+  const bosses = [...eliteFour(shownRegion()), championBoss(store.save.starter, shownRegion())];
   return `
     <ul class="league-bosses">
       ${bosses.map((b, i) => `
@@ -112,24 +155,26 @@ function rewardChips(rewards: Reward[]) {
 }
 
 function lobbyHTML(check: ReturnType<typeof canEnter>) {
-  const league = store.save.league;
+  const shown = shownRegion();
+  const league = rec();
+  const fee = leagueFee(shown);
   const bonus = titleBonus(league.titles);
-  const [min] = duelLevels(0, bonus);
-  const [, max] = duelLevels(LEAGUE_DUELS - 1, bonus);
+  const [min] = duelLevels(0, bonus, shown);
+  const [, max] = duelLevels(LEAGUE_DUELS - 1, bonus, shown);
   return `
     <section class="league-hero">
       <div class="league-emblem">${TROPHY_SVG}</div>
       <div class="league-hero-text">
-        <span class="label">${esc(t().plateau)}</span>
-        <h2 class="league-hero-title">${esc(t().title)}</h2>
-        <p>${esc(t().heroText)}</p>
+        <span class="label">${esc(rt('plateau'))}</span>
+        <h2 class="league-hero-title">${esc(rt('title'))}</h2>
+        <p>${esc(rt('heroText'))}</p>
         <div class="league-pills">
-          <span class="pill">${icon('coin', 'i-coin')} ${esc(t().fee)}: <b>₽ ${fmt(LEAGUE_FEE)}</b></span>
+          <span class="pill">${icon('coin', 'i-coin')} ${esc(t().fee)}: <b>₽ ${fmt(fee)}</b></span>
           <span class="pill">${icon('bolt')} ${esc(t().levels)}: <b>${esc(L().modes.levelRange(min, max))}</b>${bonus ? ` <small>(${esc(t().bonus(bonus))})</small>` : ''}</span>
           ${league.titles ? `<span class="pill is-gold">${icon('crown')} ${esc(t().titles)}: <b>${fmt(league.titles)}</b></span>` : ''}
         </div>
-        <button class="btn btn-primary btn-lg" type="button" data-act="enter">${icon('flag')} ${esc(t().enter)} <small class="btn-price">₽ ${fmt(LEAGUE_FEE)}</small></button>
-        ${check === 'coins' ? `<p class="league-warn">${esc(L().core.notEnoughCoins(LEAGUE_FEE))}</p>` : ''}
+        <button class="btn btn-primary btn-lg" type="button" data-act="enter">${icon('flag')} ${esc(t().enter)} <small class="btn-price">₽ ${fmt(fee)}</small></button>
+        ${check === 'coins' ? `<p class="league-warn">${esc(L().core.notEnoughCoins(fee))}</p>` : ''}
       </div>
       ${bossesHTML()}
     </section>
@@ -140,8 +185,8 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
           ${[...PLACEMENTS.keys()].reverse().map(i => `
             <li class="prize${i === CHAMPION ? ' is-champion' : ''}${league.best === i ? ' is-best' : ''}">
               <b class="prize-name">${i === CHAMPION ? icon('crown') : ''}${esc(placementName(i))}</b>
-              <span class="prize-chips">${rewardChips(placementRewards(i))}</span>
-              ${i === CHAMPION && league.titles === 0 ? `<small class="prize-extra">${icon('sparkle')} ${esc(t().prizeFirstTitle)}</small>` : ''}
+              <span class="prize-chips">${rewardChips(placementRewards(i, shown))}</span>
+              ${i === CHAMPION && league.titles === 0 ? `<small class="prize-extra">${icon('sparkle')} ${esc(rt('prizeFirstTitle'))}</small>` : ''}
             </li>`).join('')}
         </ol>
       </section>
@@ -150,7 +195,7 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
 }
 
 function hallHTML() {
-  const league = store.save.league;
+  const league = rec();
   const hall = league.hall ?? [];
   const date = (at: number) => new Date(at).toLocaleDateString(locale(), { day: '2-digit', month: 'short', year: 'numeric' });
   return `
@@ -174,9 +219,9 @@ function hallHTML() {
 }
 
 function runHTML() {
-  const run = store.save.league.run!;
+  const run = rec().run!;
   const bracket = currentBracket()!;
-  const info = duelInfo(bracket, run, run.duel, store.save.starter);
+  const info = duelInfo(bracket, run, run.duel, store.save.starter, shownRegion());
   const opp = info.opponent;
   const kind = opp.kind;
   return `
@@ -225,6 +270,16 @@ function pathHTML(bracket: Bracket, won: number) {
 // --- Actions -------------------------------------------------------------------------
 
 function onClick(event: Event) {
+  const picked = clickedRegion(event);
+  if (picked && !busy) {
+    if (picked !== shownRegion()) {
+      sfx('toggle');
+      region = picked;
+      render();
+      root?.querySelector<HTMLElement>(`.region-tab[data-region="${picked}"]`)?.focus();
+    }
+    return;
+  }
   const button = (event.target as Element).closest<HTMLElement>('[data-act]');
   if (!button || busy) return;
   const act = button.dataset.act;
@@ -234,26 +289,30 @@ function onClick(event: Event) {
 }
 
 async function enter() {
-  const check = canEnter(store.save);
+  const shown = shownRegion();
+  const fee = leagueFee(shown);
+  const check = canEnter(store.save, shown);
   if (check === 'coins') {
     shakeCoins();
-    toast(L().core.notEnoughCoins(LEAGUE_FEE), 'warning');
+    toast(L().core.notEnoughCoins(fee), 'warning');
     return;
   }
   if (check !== 'ok' || !teamReady()) return;
   sfx('open');
-  const ok = await confirmDialog({ title: t().enterTitle, message: t().enterText(LEAGUE_FEE), confirmText: t().enterConfirm });
+  const ok = await confirmDialog({ title: t().enterTitle, message: t().enterText(fee), confirmText: t().enterConfirm });
   if (!ok) return;
-  if (update(save => startRun(save), ['progress'])) sfx('buy');
+  region = shown;
+  if (update(save => startRun(save, undefined, undefined, shown), ['progress'])) sfx('buy');
 }
 
 async function abandon() {
-  const run = store.save.league.run;
+  const shown = shownRegion();
+  const run = rec().run;
   if (!run) return;
   const ok = await confirmDialog({ title: t().abandonTitle, message: t().abandonText(placementName(run.duel)), confirmText: t().abandon, danger: true });
-  if (!ok || !store.save.league.run) return;
+  if (!ok || !leagueRecord(store.save, shown).run) return;
   const stage = t().stages[run.duel];
-  const result = update(save => abandonRun(save), ['progress']);
+  const result = update(save => abandonRun(save, shown), ['progress']);
   if (!result) return;
   const applied = grant(result.rewards);
   await showRewards(applied, { title: t().outTitle(placementName(result.placement)), subtitle: t().abandonSub(stage), crest: 'medal', tone: 'lose' });
@@ -270,11 +329,12 @@ function opponentLines(e: Entrant) {
 }
 
 async function fight() {
-  const run = store.save.league.run;
+  const shown = shownRegion();
+  const run = rec().run;
   if (!run || busy || !teamReady()) return;
   const bracket = currentBracket()!;
   const duel = run.duel;
-  const info = duelInfo(bracket, run, duel, store.save.starter);
+  const info = duelInfo(bracket, run, duel, store.save.starter, shown);
   const opp = info.opponent;
   busy = true;
   sfx('click');
@@ -291,11 +351,12 @@ async function fight() {
       },
       reveal: info.final ? 'type' : 'card',
       music: info.final ? 'champion' : 'league',
-      stage: `${t().title} · ${t().stages[duel]}`,
+      stage: `${rt('title')} · ${t().stages[duel]}`,
     });
     const won = outcome.result === 'win';
     const team = myTeam();
-    const result = update(save => recordDuel(save, won, team), ['progress']);
+    region = shown;
+    const result = update(save => recordDuel(save, won, team, undefined, shown), ['progress']);
     recordBattle(outcome.forfeit ? 'forfeit' : outcome.result);
     if (!result) return;
 
@@ -309,10 +370,11 @@ async function fight() {
     render();
     const applied = grant(result.rewards);
     if (result.kind === 'champion') {
-      await celebrateChampion(team, entrantName(opp));
+      await celebrateChampion(team, entrantName(opp), rt('championTitle'), rt('title'));
       await showRewards(applied, {
         title: t().championRewards,
-        subtitle: result.firstTitle ? t().firstTitle : t().championSub(opp.name),
+        subtitle: result.firstTitle ? rt('firstTitle') : t().championSub(opp.name),
+
         tone: 'champion',
       });
     } else {

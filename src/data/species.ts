@@ -86,12 +86,15 @@ export const canEverEvolve = (id: number) => evolutionsOf(id).length > 0;
 
 const stageCache = new Map<number, number>();
 
-/** 1 for base forms, 2 for the first evolution, 3 for the second. */
+/**
+ * 1 for base forms, 2 for the first evolution, 3 for the second. Baby Pokémon (Pichu, Cleffa…) don't count as a stage:
+ * they are bonus forms before the base, so adding a generation with babies doesn't demote Pikachu to stage 2.
+ */
 export function stage(id: number): number {
   let cached = stageCache.get(id);
   if (cached == null) {
     const from = preEvolution(id);
-    cached = from == null ? 1 : stage(from) + 1;
+    cached = from == null || getSpecies(from).baby ? 1 : stage(from) + 1;
     stageCache.set(id, cached);
   }
   return cached;
