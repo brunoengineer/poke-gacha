@@ -252,6 +252,10 @@
     color: var(--gold);
 }
 .region-locked-icon .i { width: 20px; height: 20px; }
+/* Hoenn and Sinnoh: their leaders go past Lv. 100, a hint toward the Shiny Hunt. */
+.shiny-note { border-color: rgba(255, 226, 154, 0.35); background: linear-gradient(160deg, rgba(255, 226, 154, 0.08), var(--surface)); }
+.shiny-note .region-locked-icon { color: #ffe29a; }
+.shiny-note p { color: var(--text); }
 
 /* --- Training ------------------------------------------------------------------------ */
 

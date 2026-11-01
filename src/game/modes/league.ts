@@ -87,8 +87,9 @@ export const CHAMPION = 4;
 const DUEL_LEVELS: Record<LeagueRegion, [number, number][]> = {
   kanto: [[60, 63], [62, 66], [64, 68], [66, 70]],
   johto: [[88, 91], [90, 94], [92, 96], [94, 98]],
-  hoenn: [[94, 96], [95, 97], [96, 98], [97, 100]],
-  sinnoh: [[96, 98], [97, 99], [98, 100], [100, 100]],
+  // Past Johto the levels go beyond the Lv. 100 cap of normal cards: Hoenn reaches 120, Sinnoh 140 (shinies only).
+  hoenn: [[114, 116], [115, 118], [117, 119], [118, 120]],
+  sinnoh: [[134, 136], [135, 138], [137, 139], [138, 140]],
 };
 
 export const titleBonus = (titles: number) => Math.min(MAX_BONUS, titles * TITLE_BONUS);

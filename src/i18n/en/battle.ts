@@ -364,6 +364,8 @@ const battle: typeof pt = {
       `Earn all 8 ${before} badges to challenge the ${region} leaders. You have ${count} of 8.`,
     lockedRegion: (before: string) => `Earn all 8 ${before} badges`,
     goRegion: (region: string) => `See the ${region} Gyms`,
+    shinyNote: (max: number) => `These leaders reach Lv. ${max}. Normal cards stop at Lv. 100: only shiny cards grow past it. Hunt shinies to keep up!`,
+    goHunt: 'Shiny Hunt',
     badges: (count: number) => `${count}/8 badges`,
     gymNumber: (num: number) => `Gym ${num}`,
     leaderOf: (city: string) => `${city} Gym Leader`,

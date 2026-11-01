@@ -7,22 +7,22 @@ import type { LeagueBoss } from './league';
 import type { Friend } from './training';
 
 export const SINNOH_GYMS: Gym[] = [
-  { id: 'roark', leader: 'Roark', sprite: 'roark', type: 'rock', badge: 'coal', levels: [94, 96],
+  { id: 'roark', leader: 'Roark', sprite: 'roark', type: 'rock', badge: 'coal', levels: [120, 123],
     roster: [74, 438, 142, 111, 246, 408], coins: 7500, items: [{ item: RARE_CANDY, amount: 15 }, { item: 'ultra-ball', amount: 3 }] },
-  { id: 'gardenia', leader: 'Gardenia', sprite: 'gardenia', type: 'grass', badge: 'forest', levels: [94, 97],
+  { id: 'gardenia', leader: 'Gardenia', sprite: 'gardenia', type: 'grass', badge: 'forest', levels: [122, 125],
     roster: [420, 455, 459, 357, 387, 406], coins: 7750, items: [{ item: 'shiny-stone', amount: 1 }, { item: RARE_CANDY, amount: 15 }] },
-  { id: 'maylene', leader: 'Maylene', sprite: 'maylene', type: 'fighting', badge: 'cobble', levels: [95, 97],
+  { id: 'maylene', leader: 'Maylene', sprite: 'maylene', type: 'fighting', badge: 'cobble', levels: [124, 127],
     roster: [56, 107, 453, 236, 307, 447], coins: 8000, items: [{ item: 'dawn-stone', amount: 1 }, { item: RARE_CANDY, amount: 20 }] },
-  { id: 'wake', leader: 'Crasher Wake', sprite: 'crasherwake', type: 'water', badge: 'fen', levels: [95, 98],
+  { id: 'wake', leader: 'Crasher Wake', sprite: 'crasherwake', type: 'water', badge: 'fen', levels: [126, 129],
     roster: [456, 422, 194, 129, 60, 418], coins: 8250, items: [{ item: RARE_CANDY, amount: 20 }, { item: 'ultra-ball', amount: 4 }] },
-  { id: 'fantina', leader: 'Fantina', sprite: 'fantina', type: 'ghost', badge: 'relic', levels: [96, 98],
+  { id: 'fantina', leader: 'Fantina', sprite: 'fantina', type: 'ghost', badge: 'relic', levels: [128, 131],
     roster: [425, 353, 92, 355, 442, 200], coins: 8500, items: [{ item: 'reaper-cloth', amount: 1 }, { item: 'dusk-stone', amount: 1 }] },
-  { id: 'byron', leader: 'Byron', sprite: 'byron', type: 'steel', badge: 'mine', levels: [96, 99],
+  { id: 'byron', leader: 'Byron', sprite: 'byron', type: 'steel', badge: 'mine', levels: [130, 133],
     roster: [436, 81, 227, 95, 304, 410], coins: 8750, items: [{ item: 'protector', amount: 1 }, { item: RARE_CANDY, amount: 20 }] },
   // Froslass written as is: Snorunt could grow into Glalie instead.
-  { id: 'candice', leader: 'Candice', sprite: 'candice', type: 'ice', badge: 'icicle', levels: [97, 99],
+  { id: 'candice', leader: 'Candice', sprite: 'candice', type: 'ice', badge: 'icicle', levels: [132, 135],
     roster: [459, 215, 220, 363, 238, 478], coins: 9000, items: [{ item: 'razor-claw', amount: 1 }, { item: RARE_CANDY, amount: 20 }] },
-  { id: 'volkner', leader: 'Volkner', sprite: 'volkner', type: 'electric', badge: 'beacon', levels: [98, 100],
+  { id: 'volkner', leader: 'Volkner', sprite: 'volkner', type: 'electric', badge: 'beacon', levels: [134, 137],
     roster: [25, 190, 135, 479, 125, 403], coins: 10000,
     items: [{ item: 'electirizer', amount: 1 }, { item: RARE_CANDY, amount: 25 }, { item: 'ultra-ball', amount: 5 }] },
 ];

@@ -7,22 +7,22 @@ import type { LeagueBoss } from './league';
 import type { Friend } from './training';
 
 export const HOENN_GYMS: Gym[] = [
-  { id: 'roxanne', leader: 'Roxanne', sprite: 'roxanne', type: 'rock', badge: 'stone', levels: [86, 89],
+  { id: 'roxanne', leader: 'Roxanne', sprite: 'roxanne', type: 'rock', badge: 'stone', levels: [100, 103],
     roster: [74, 345, 347, 304, 337, 299], coins: 5000, items: [{ item: 'protector', amount: 1 }, { item: RARE_CANDY, amount: 15 }] },
-  { id: 'brawly', leader: 'Brawly', sprite: 'brawly', type: 'fighting', badge: 'knuckle', levels: [87, 90],
+  { id: 'brawly', leader: 'Brawly', sprite: 'brawly', type: 'fighting', badge: 'knuckle', levels: [102, 105],
     roster: [66, 285, 214, 106, 237, 296], coins: 5250, items: [{ item: RARE_CANDY, amount: 15 }, { item: 'ultra-ball', amount: 3 }] },
-  { id: 'wattson', leader: 'Wattson', sprite: 'wattson', type: 'electric', badge: 'dynamo', levels: [88, 91],
+  { id: 'wattson', leader: 'Wattson', sprite: 'wattson', type: 'electric', badge: 'dynamo', levels: [104, 107],
     roster: [100, 311, 312, 81, 179, 309], coins: 5500, items: [{ item: 'dubious-disc', amount: 1 }, { item: RARE_CANDY, amount: 15 }] },
-  { id: 'flannery', leader: 'Flannery', sprite: 'flannery', type: 'fire', badge: 'heat', levels: [89, 92],
+  { id: 'flannery', leader: 'Flannery', sprite: 'flannery', type: 'fire', badge: 'heat', levels: [106, 109],
     roster: [218, 322, 37, 126, 77, 324], coins: 5750, items: [{ item: 'magmarizer', amount: 1 }] },
-  { id: 'norman', leader: 'Norman', sprite: 'norman', type: 'normal', badge: 'balance', levels: [90, 93],
+  { id: 'norman', leader: 'Norman', sprite: 'norman', type: 'normal', badge: 'balance', levels: [108, 111],
     roster: [263, 327, 352, 300, 335, 287], coins: 6000, items: [{ item: 'oval-stone', amount: 1 }, { item: RARE_CANDY, amount: 20 }] },
-  { id: 'winona', leader: 'Winona', sprite: 'winona', type: 'flying', badge: 'feather', levels: [91, 94],
+  { id: 'winona', leader: 'Winona', sprite: 'winona', type: 'flying', badge: 'feather', levels: [110, 113],
     roster: [276, 278, 357, 227, 198, 333], coins: 6250, items: [{ item: 'razor-fang', amount: 1 }, { item: 'ultra-ball', amount: 3 }] },
   // Ralts may grow into Gardevoir or Gallade; Lunatone and Solrock close the team as a pair.
-  { id: 'tate-liza', leader: 'Tate & Liza', sprite: 'tateandliza-gen3', type: 'psychic', badge: 'mind', levels: [92, 95],
+  { id: 'tate-liza', leader: 'Tate & Liza', sprite: 'tateandliza-gen3', type: 'psychic', badge: 'mind', levels: [112, 115],
     roster: [177, 358, 343, 280, 337, 338], coins: 6500, items: [{ item: 'dawn-stone', amount: 1 }, { item: RARE_CANDY, amount: 20 }] },
-  { id: 'juan', leader: 'Juan', sprite: 'juan', type: 'water', badge: 'rain', levels: [94, 97],
+  { id: 'juan', leader: 'Juan', sprite: 'juan', type: 'water', badge: 'rain', levels: [114, 117],
     roster: [370, 339, 363, 341, 116, 349], coins: 7500,
     items: [{ item: 'deep-sea-tooth', amount: 1 }, { item: 'deep-sea-scale', amount: 1 }, { item: 'ultra-ball', amount: 5 }] },
 ];

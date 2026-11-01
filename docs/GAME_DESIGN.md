@@ -171,31 +171,32 @@ A region switch shows each region's badge case. Every first win also gives Rare 
 | 7 | Pryce | Ice | 78–82 | Glacier Badge, ₽4,000, Up-Grade |
 | 8 | Clair | Dragon | 81–86 | Rising Badge, ₽5,000, Dragon Scale + Ultra Ball ×5 |
 
-**Hoenn** opens once all 8 Johto badges are earned, **Sinnoh** once all 8 Hoenn badges are. Player cards stop at
-Lv. 100 (only shinies go beyond), so these two regions climb slowly toward 100: from here, species, types and shinies
-decide battles more than levels.
+**Hoenn** opens once all 8 Johto badges are earned, **Sinnoh** once all 8 Hoenn badges are. They are the endgame and
+go past the Lv. 100 cap of normal cards: Hoenn climbs from 100 to 120 (its League), Sinnoh from 120 to 140. Only shiny
+cards grow past 100, so progressing here **requires shinies** (Shiny Hunt) leveled with Rare Candy and training; the
+Gyms screen says so on both regions, with a link to the Hunt. Their big candy rewards feed that leveling.
 
 | # | Hoenn | Type | Levels | First-win reward (+ Rare Candy ×5) |
 |---|---|---|---|---|
-| 1 | Roxanne | Rock | 86–89 | Stone Badge, ₽5,000, Protector + Rare Candy ×15 |
-| 2 | Brawly | Fighting | 87–90 | Knuckle Badge, ₽5,250, Rare Candy ×15 + Ultra Ball ×3 |
-| 3 | Wattson | Electric | 88–91 | Dynamo Badge, ₽5,500, Dubious Disc + Rare Candy ×15 |
-| 4 | Flannery | Fire | 89–92 | Heat Badge, ₽5,750, Magmarizer |
-| 5 | Norman | Normal | 90–93 | Balance Badge, ₽6,000, Oval Stone + Rare Candy ×20 |
-| 6 | Winona | Flying | 91–94 | Feather Badge, ₽6,250, Razor Fang + Ultra Ball ×3 |
-| 7 | Tate & Liza | Psychic | 92–95 | Mind Badge, ₽6,500, Dawn Stone + Rare Candy ×20 |
-| 8 | Juan | Water | 94–97 | Rain Badge, ₽7,500, Deep Sea Tooth + Deep Sea Scale + Ultra Ball ×5 |
+| 1 | Roxanne | Rock | 100–103 | Stone Badge, ₽5,000, Protector + Rare Candy ×15 |
+| 2 | Brawly | Fighting | 102–105 | Knuckle Badge, ₽5,250, Rare Candy ×15 + Ultra Ball ×3 |
+| 3 | Wattson | Electric | 104–107 | Dynamo Badge, ₽5,500, Dubious Disc + Rare Candy ×15 |
+| 4 | Flannery | Fire | 106–109 | Heat Badge, ₽5,750, Magmarizer |
+| 5 | Norman | Normal | 108–111 | Balance Badge, ₽6,000, Oval Stone + Rare Candy ×20 |
+| 6 | Winona | Flying | 110–113 | Feather Badge, ₽6,250, Razor Fang + Ultra Ball ×3 |
+| 7 | Tate & Liza | Psychic | 112–115 | Mind Badge, ₽6,500, Dawn Stone + Rare Candy ×20 |
+| 8 | Juan | Water | 114–117 | Rain Badge, ₽7,500, Deep Sea Tooth + Deep Sea Scale + Ultra Ball ×5 |
 
 | # | Sinnoh | Type | Levels | First-win reward (+ Rare Candy ×5) |
 |---|---|---|---|---|
-| 1 | Roark | Rock | 94–96 | Coal Badge, ₽7,500, Rare Candy ×15 + Ultra Ball ×3 |
-| 2 | Gardenia | Grass | 94–97 | Forest Badge, ₽7,750, Shiny Stone + Rare Candy ×15 |
-| 3 | Maylene | Fighting | 95–97 | Cobble Badge, ₽8,000, Dawn Stone + Rare Candy ×20 |
-| 4 | Crasher Wake | Water | 95–98 | Fen Badge, ₽8,250, Rare Candy ×20 + Ultra Ball ×4 |
-| 5 | Fantina | Ghost | 96–98 | Relic Badge, ₽8,500, Reaper Cloth + Dusk Stone |
-| 6 | Byron | Steel | 96–99 | Mine Badge, ₽8,750, Protector + Rare Candy ×20 |
-| 7 | Candice | Ice | 97–99 | Icicle Badge, ₽9,000, Razor Claw + Rare Candy ×20 |
-| 8 | Volkner | Electric | 98–100 | Beacon Badge, ₽10,000, Electirizer + Rare Candy ×25 + Ultra Ball ×5 |
+| 1 | Roark | Rock | 120–123 | Coal Badge, ₽7,500, Rare Candy ×15 + Ultra Ball ×3 |
+| 2 | Gardenia | Grass | 122–125 | Forest Badge, ₽7,750, Shiny Stone + Rare Candy ×15 |
+| 3 | Maylene | Fighting | 124–127 | Cobble Badge, ₽8,000, Dawn Stone + Rare Candy ×20 |
+| 4 | Crasher Wake | Water | 126–129 | Fen Badge, ₽8,250, Rare Candy ×20 + Ultra Ball ×4 |
+| 5 | Fantina | Ghost | 128–131 | Relic Badge, ₽8,500, Reaper Cloth + Dusk Stone |
+| 6 | Byron | Steel | 130–133 | Mine Badge, ₽8,750, Protector + Rare Candy ×20 |
+| 7 | Candice | Ice | 132–135 | Icicle Badge, ₽9,000, Razor Claw + Rare Candy ×20 |
+| 8 | Volkner | Electric | 134–137 | Beacon Badge, ₽10,000, Electirizer + Rare Candy ×25 + Ultra Ball ×5 |
 
 Rematches (every region): +10 levels per rematch (up to +40), half the coins plus Rare Candy ×3.
 Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; each League needs its region's 8 badges,
@@ -256,14 +257,14 @@ the Kanto table, except the Champion's:
 Charmander → Cyndaquil, Squirtle → Totodile, and back to Kanto for a Johto starter).
 
 **Hoenn League** (8 Hoenn badges, fee ₽4,000): Elite Four Sidney (Dark), Phoebe (Ghost), Glacia (Ice), Drake
-(Dragon); Champion Steven (Steel). Levels 94–100. Prizes triple the Kanto table; Champion: ₽15,000 + Master Ball +
+(Dragon); Champion Steven (Steel). Levels 114–120. Prizes triple the Kanto table; Champion: ₽15,000 + Master Ball +
 Rare Candy ×100.
 
 **Sinnoh League** (8 Sinnoh badges, fee ₽6,000): Elite Four Aaron (Bug), Bertha (Ground), Flint (Fire), Lucian
-(Psychic); Champion Cynthia (Garchomp last). Levels 96–100. Prizes quadruple the Kanto table; Champion: ₽20,000 +
+(Psychic); Champion Cynthia (Garchomp last). Levels 134–140. Prizes quadruple the Kanto table; Champion: ₽20,000 +
 Master Ball ×2 + Rare Candy ×120.
 
-Every league adds +5 levels per title (up to +40), past Lv. 100 for the later ones: only shinies keep up there.
+Every league adds +5 levels per title (up to +40), so rematch titles go well past 140.
 **First Hoenn / Sinnoh title**: a shiny copy of that region's starter of your starter's type (Charmander → Torchic,
 Chimchar); if that's your own starter (already given by the Kanto title), Kanto's of the same type instead
 (`firstTitleStarter`).

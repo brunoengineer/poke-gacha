@@ -364,6 +364,8 @@ const battle = {
       `Conquiste as 8 insígnias de ${before} para desafiar os líderes de ${region}. Você tem ${count} de 8.`,
     lockedRegion: (before: string) => `Conquiste as 8 insígnias de ${before}`,
     goRegion: (region: string) => `Ver os Ginásios de ${region}`,
+    shinyNote: (max: number) => `Estes líderes chegam ao Nv. ${max}. Cartas normais param no Nv. 100: só cartas shiny crescem além disso. Cace shinies para acompanhar!`,
+    goHunt: 'Caça Shiny',
     badges: (count: number) => `${count}/8 insígnias`,
     gymNumber: (num: number) => `Ginásio ${num}`,
     leaderOf: (city: string) => `Líder do Ginásio de ${city}`,

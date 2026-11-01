@@ -13,6 +13,7 @@ import {
 import type { Reward } from '../../game/rewards';
 import { seeded } from '../../game/rng';
 import { previousRegion, REGION_IDS } from '../../game/regions';
+import { MAX_LEVEL } from '../../game/cards';
 import { evolveForLevel } from '../../game/teams';
 import { fmt, itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
@@ -85,6 +86,7 @@ function render() {
         </div>
         <button class="btn btn-secondary btn-sm" type="button" data-region="${before}">${icon('medal')} ${esc(t.goRegion(regionLabel(before)))}</button>
       </section>` : ''}
+    ${shinyNoteHTML(shown)}
     <section class="badge-case badge-case-${shown}" aria-label="${esc(t.badgeCaseOf(regionLabel(shown)))}">
       <header class="badge-case-head">
         <span class="label">${esc(t.badgeCaseOf(regionLabel(shown)))}</span>
@@ -100,6 +102,19 @@ function render() {
       ${done ? `<p class="badge-case-done">${icon('crown')} ${esc(t.allDone(regionLabel(shown), next && regionLabel(next)))}</p>` : ''}
     </section>
     <ol class="gym-list">${list.map((g, i) => gymHTML(g, i, shown)).join('')}</ol>`;
+}
+
+/** Regions whose leaders go past the Lv. 100 cap of normal cards say so, pointing at the Shiny Hunt. */
+function shinyNoteHTML(shown: GymRegion): string {
+  const max = Math.max(...REGION_GYMS[shown].map(g => g.levels[1]));
+  if (max <= MAX_LEVEL) return '';
+  const t = L().battle.gyms;
+  return `
+    <section class="region-locked shiny-note">
+      <span class="region-locked-icon">${icon('sparkle')}</span>
+      <div><p>${esc(t.shinyNote(max))}</p></div>
+      <a class="btn btn-secondary btn-sm" href="#/battle/hunt">${icon('search')} ${esc(t.goHunt)}</a>
+    </section>`;
 }
 
 function rewardChips(rewards: Reward[]): string {
