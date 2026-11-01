@@ -148,6 +148,7 @@ function initMenu() {
         <span class="menu-avatar">${avatarHTML()}</span>
         <span class="menu-who">
           <b>${esc(player?.guest ? t.guest : player?.name ?? '')}</b>
+          ${player && !player.guest ? `<small class="sync-label">${icon('google')} Google</small>` : ''}
           <small class="sync-label" data-sync="${player?.guest ? 'local' : store.sync}">${icon('cloud')} ${esc(t.sync[player?.guest ? 'local' : store.sync])}</small>
         </span>
       </div>

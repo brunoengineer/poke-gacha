@@ -14,6 +14,7 @@ import { L } from './i18n';
 import { maybeOnboard } from './screens/onboarding';
 import { bootAuth, on, store } from './state/store';
 import { hideLogin, showLogin } from './ui/login';
+import { toast } from './ui/dom';
 import { startShell } from './ui/shell';
 
 /** Player the game screens were started for (null until the game starts). */
@@ -29,6 +30,14 @@ async function boot() {
   }
 
   on('phase', () => {
+    if (started) {
+      // Signing in from the game menu: the login screen isn't visible, so report progress and errors here.
+      if (store.phase === 'loading') toast(L().core.login.connecting, 'info', 15_000);
+      if (store.authError) {
+        toast(store.authError, 'error', 12_000);
+        store.authError = null;
+      }
+    }
     if (store.phase === 'game') {
       // A guest who signs in gets another save: screens were built for the old one, so start over.
       if (started) {

@@ -74,12 +74,19 @@ export async function signOutUser() {
   if (s) await s.authLib.signOut(s.auth);
 }
 
+/** How long sign-in waits for the cloud save before giving up (a blocked connection would hang much longer). */
+const LOAD_TIMEOUT_MS = 12_000;
+
 /** Saves are stored as a JSON string: avoids Firestore limits on nested maps and undefined values. */
 export async function loadCloudSave(uid: string): Promise<unknown | null> {
   const s = await init();
   if (!s) return null;
   const { doc, getDoc } = s.storeLib;
-  const snap = await getDoc(doc(s.db, SAVES, uid));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(Object.assign(new Error('Cloud save load timed out'), { code: 'deadline-exceeded' })), LOAD_TIMEOUT_MS);
+  });
+  const snap = await Promise.race([getDoc(doc(s.db, SAVES, uid)), timeout]).finally(() => clearTimeout(timer));
   if (!snap.exists()) return null;
   const data = snap.data() as { json?: string };
   return data.json ? JSON.parse(data.json) : null;

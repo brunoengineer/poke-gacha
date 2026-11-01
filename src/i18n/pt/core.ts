@@ -22,6 +22,11 @@ const core = {
     notConfigured: 'Login com Google não configurado neste site.',
     failed: 'Não foi possível entrar. Tente de novo.',
     cloudLoad: 'Não conseguimos carregar seu save da nuvem. Verifique a conexão e tente de novo.',
+    cloudDenied: 'O Firestore recusou o acesso ao save (permission-denied). Confira se a regra de pokegacha_saves foi publicada no projeto certo.',
+    cloudUnreachable: 'O Firestore não respondeu. Pode ser a conexão, um bloqueador de anúncios ou escudo de privacidade: libere este site e tente de novo.',
+    cloudCode: (code: string) => `Código do erro: ${code}`,
+    connecting: 'Conectando à sua conta Google…',
+    signedIn: (name: string) => `Conectado com Google como ${name}.`,
   },
 
   account: {

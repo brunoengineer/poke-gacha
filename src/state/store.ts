@@ -188,18 +188,20 @@ async function loadAccount(user: { uid: string; displayName: string | null; phot
   const local = readLocal(user.uid);
   let cloud: SaveData | null = null;
   let cloudOk = true;
+  let loadError: unknown = null;
   try {
     const raw = await loadCloudSave(user.uid);
     cloud = raw ? normalizeSave(raw) : null;
   } catch (error) {
     console.error('Cloud load failed', error);
     cloudOk = false;
+    loadError = error;
   }
   const choice = chooseAccountSave(local, cloud, cloudOk, readLocal('guest'));
   if (choice.kind === 'abort') {
     await signOutUser();
     store.player = previous;
-    store.authError = L().core.login.cloudLoad;
+    store.authError = cloudLoadMessage(loadError);
     setPhase(previous ? 'game' : 'login');
     return;
   }
@@ -212,6 +214,16 @@ async function loadAccount(user: { uid: string; displayName: string | null; phot
     writeLocal(player.uid, choice.save);
     void flushCloud();
   }
+}
+
+/** Explains why the cloud save couldn't load, with the Firebase error code for troubleshooting. */
+function cloudLoadMessage(error: unknown): string {
+  const t = L().core.login;
+  const code = String((error as { code?: string } | null)?.code ?? 'unknown').replace(/^firestore\//, '');
+  const reason = code === 'permission-denied' ? t.cloudDenied
+    : ['unavailable', 'deadline-exceeded', 'failed-precondition'].includes(code) ? t.cloudUnreachable
+      : t.cloudLoad;
+  return `${reason} ${t.cloudCode(code)}`;
 }
 
 /** Starts listening to Firebase auth (or falls back to guest/login). Call once at startup. */

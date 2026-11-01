@@ -24,6 +24,11 @@ const core: typeof pt = {
     notConfigured: 'Google sign-in is not configured on this site.',
     failed: 'Could not sign in. Please try again.',
     cloudLoad: "We couldn't load your cloud save. Check your connection and try again.",
+    cloudDenied: 'Firestore denied access to the save (permission-denied). Check that the pokegacha_saves rule is published in the right project.',
+    cloudUnreachable: 'Firestore did not respond. It may be the connection, an ad blocker or a privacy shield: allow this site and try again.',
+    cloudCode: (code: string) => `Error code: ${code}`,
+    connecting: 'Connecting to your Google account…',
+    signedIn: (name: string) => `Signed in with Google as ${name}.`,
   },
 
   account: {
