@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toBattleCard } from './battle';
-import { battleWinner, createBattle, firstStriker, fightDuel, playDuel, sendIn, strike, summarizeBattle } from './duel';
+import { battleWinner, createBattle, firstStriker, fightDuel, hpFractions, playDuel, sendIn, strike, summarizeBattle } from './duel';
 
 const card = (id: number, level: number) => toBattleCard({ id, level });
 
@@ -64,5 +64,24 @@ describe('battles', () => {
     expect(state.youActive).toBeNull();
     expect(sendIn(state, 0)).toBe(false);
     expect(sendIn(state, 1)).toBe(true);
+  });
+
+  it('starts hurt or fainted Pokémon as given (League runs) and only counts new faints against a perfect win', () => {
+    const state = createBattle([card(6, 60), card(9, 60), card(3, 60)], [card(19, 5)], [0.5, 0, 1]);
+    expect(state.you[0].hp).toBe(Math.round(card(6, 60).stats.hp * 0.5));
+    expect(state.you[1].hp).toBe(0);
+    expect(sendIn(state, 1)).toBe(false); // fainted from the start
+    sendIn(state, 0);
+    playDuel(state);
+    expect(summarizeBattle(state)).toMatchObject({ result: 'win', perfect: true, score: { you: 1, opp: 0 } });
+    const left = hpFractions(state);
+    expect(left[1]).toBe(0);
+    expect(left[2]).toBe(1);
+    expect(left[0]).toBeGreaterThan(0);
+    expect(left[0]).toBeLessThan(0.51); // rounded to whole HP
+  });
+
+  it('keeps at least 1 HP for a sliver above zero', () => {
+    expect(createBattle([card(6, 60)], [card(19, 5)], [0.0001]).you[0].hp).toBe(1);
   });
 });

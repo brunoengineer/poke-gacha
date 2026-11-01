@@ -14,7 +14,7 @@ import { playCry, playMusic, sfx } from '../../audio';
 import { getSpecies } from '../../data/species';
 import { matchup, toBattleCard, type BattleCard, type TeamMember } from '../../game/battle';
 import {
-  battleWinner, createBattle, playDuel, sendIn, standing, strike, summarizeBattle,
+  battleWinner, createBattle, hpFractions, playDuel, sendIn, standing, strike, summarizeBattle,
   type BattleState, type DuelLog, type Hit, type HpBattleSummary, type Side,
 } from '../../game/duel';
 import { DECK_SIZE } from '../../game/economy';
@@ -56,6 +56,10 @@ export interface BattleConfig {
   stage?: string;
   /** Accent color for the field and intro (defaults per mode; gyms pass their type color). */
   accent?: string;
+  /** The player's side, instead of the current team (League runs fight with the team they registered). */
+  team?: BattleCard[];
+  /** Starting HP of each of the player's Pokémon, as fractions of max HP (League runs carry it over). */
+  startHp?: number[];
 }
 
 export interface BattleOutcome extends HpBattleSummary {
@@ -63,6 +67,8 @@ export interface BattleOutcome extends HpBattleSummary {
   duels: DuelLog[];
   /** The team member that trained after the battle (null on forfeits). */
   training: BattleTraining | null;
+  /** The player's HP when the battle ended, as fractions of max HP, in team order. */
+  hpLeft: number[];
 }
 
 type Phase = 'intro' | 'choose' | 'switch' | 'duel' | 'end';
@@ -137,12 +143,12 @@ function loadFast() {
 
 export function runBattle(config: BattleConfig): Promise<BattleOutcome> {
   if (battle) return Promise.reject(new Error('A battle is already running'));
-  const hand = playerBattleTeam();
+  const hand = config.team ?? playerBattleTeam();
   if (hand.length < DECK_SIZE) {
     toast(L().battle.hub.blocked, 'warning');
     return Promise.resolve({
       result: 'lose', score: { you: 0, opp: 0 }, perfect: false, totals: { you: 0, opp: 0 }, tiebreak: false,
-      forfeit: true, duels: [], training: null,
+      forfeit: true, duels: [], training: null, hpLeft: config.startHp ?? [],
     });
   }
 
@@ -154,7 +160,7 @@ export function runBattle(config: BattleConfig): Promise<BattleOutcome> {
 
     battle = {
       config, hand, opp, layer, resolve,
-      state: createBattle(hand, opp),
+      state: createBattle(hand, opp, config.startHp),
       phase: 'intro', candidate: null, pick: null, fieldYou: null, fieldOpp: null, seen: 0, fast: loadFast(),
       seq: new Sequence(), inerted: [], outcome: null,
     };
@@ -556,7 +562,7 @@ async function forfeit(b: Battle) {
   const ok = await confirmDialog({ title: t.forfeitTitle, message: t.forfeitText, confirmText: t.forfeitConfirm, cancelText: t.keepPlaying, danger: true });
   if (!ok || battle !== b || (b.phase as Phase) === 'end') return;
   sfx('defeat');
-  close(b, { ...summarizeBattle(b.state), result: 'lose', perfect: false, forfeit: true, duels: [...b.state.duels], training: null });
+  close(b, { ...summarizeBattle(b.state), result: 'lose', perfect: false, forfeit: true, duels: [...b.state.duels], training: null, hpLeft: hpFractions(b.state) });
 }
 
 // --- Rendering -------------------------------------------------------------------------
@@ -753,9 +759,10 @@ async function showEnd(b: Battle) {
   // A loss trains a random team member right away; after a win the player picks who trains (when the whole team is
   // at its level cap there is nothing to pick: the levels become Rare Candy right away).
   const choice = summary.result === 'win' ? trainChoice(b, summary.perfect) : '';
-  const training = summary.result === 'lose' ? trainTeamAfterBattle('lose', false)
-    : choice ? null : trainTeamAfterBattle('win', summary.perfect);
-  b.outcome = { ...summary, forfeit: false, duels: [...s.duels], training };
+  const keys = teamKeys(b);
+  const training = summary.result === 'lose' ? trainTeamAfterBattle('lose', false, null, keys)
+    : choice ? null : trainTeamAfterBattle('win', summary.perfect, null, keys);
+  b.outcome = { ...summary, forfeit: false, duels: [...s.duels], training, hpLeft: hpFractions(s) };
   const o = b.config.opponent;
   const line = summary.result === 'win' ? o.loseLine : o.winLine;
   playMusic(null);
@@ -788,6 +795,9 @@ async function showEnd(b: Battle) {
   if (training && battle === b) celebrateTraining(panel);
 }
 
+/** Card keys of the team that fought (the post-battle training goes to one of them, not to the current team). */
+const teamKeys = (b: Battle) => b.hand.flatMap(c => (c.key ? [c.key] : []));
+
 /** The team at its current levels, for the post-win training choice (cards at their level cap can't be picked). */
 function trainChoice(b: Battle, perfect: boolean): string {
   const team = b.state.you.flatMap(f => (f.card.key && store.save.cards[f.card.key]
@@ -802,7 +812,7 @@ function pickTraining(b: Battle, key: string) {
   const outcome = b.outcome;
   if (b.phase !== 'end' || !outcome || outcome.result !== 'win' || outcome.training) return;
   if (candyRoom(store.save, key) <= 0) return;
-  const training = trainTeamAfterBattle('win', outcome.perfect, key);
+  const training = trainTeamAfterBattle('win', outcome.perfect, key, teamKeys(b));
   if (!training) return;
   outcome.training = training;
   const panel = $(b.layer, '.arena-end');

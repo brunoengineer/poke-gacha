@@ -178,8 +178,8 @@ export function chooseStarter(id: number) {
  * A Pokémon of the team trains after a battle (not for forfeits): after a win, the one the player picked (+1 level,
  * +2 for a perfect win); after a loss, a random one (+1).
  */
-export function trainTeamAfterBattle(result: 'win' | 'lose', perfect: boolean, chosen: CardKey | null = null): BattleTraining | null {
-  const trained = update(save => trainAfterBattle(save, save.deck, result, perfect, chosen), ['items']);
+export function trainTeamAfterBattle(result: 'win' | 'lose', perfect: boolean, chosen: CardKey | null = null, team?: CardKey[]): BattleTraining | null {
+  const trained = update(save => trainAfterBattle(save, team ?? save.deck, result, perfect, chosen), ['items']);
   if (trained) emit('cards', [trained.key]);
   return trained;
 }

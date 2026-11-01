@@ -5,7 +5,8 @@
 //   - The winner stays in with the HP it has left; the losing side sends its next Pokémon. The player chooses
 //     who goes in (at the start, after a faint, and optionally when a new opponent enters); the opponent sends
 //     its team in order.
-//   - The side with Pokémon still standing wins. Perfect: none of the player's Pokémon fainted.
+//   - The side with Pokémon still standing wins. Perfect: none of the player's Pokémon fainted in this battle.
+//   - The player's team may start hurt (League runs carry HP over between duels): createBattle takes HP fractions.
 
 import { bestEffectiveness } from '../data/types';
 import { typeMultiplier, type BattleCard } from './battle';
@@ -89,14 +90,30 @@ export interface BattleState {
   /** Index of the opponent's Pokémon on the field (-1 when all fainted). */
   oppActive: number;
   duels: DuelLog[];
+  /** Player's Pokémon already fainted when the battle started (they don't count against a perfect win). */
+  startFainted: number;
 }
 
-const fresh = (card: BattleCard): Fighter => ({ card, hp: card.stats.hp });
+/** A fighter at a fraction of its max HP (1 = full; anything above 0 keeps at least 1 HP). */
+const fighter = (card: BattleCard, fraction = 1): Fighter => {
+  const f = Math.max(0, Math.min(1, fraction));
+  return { card, hp: f <= 0 ? 0 : Math.max(1, Math.round(card.stats.hp * f)) };
+};
 
-/** Starts a battle. The opponent sends its team in the given order; the player picks with sendIn(). */
-export function createBattle(you: BattleCard[], opp: BattleCard[]): BattleState {
-  return { you: you.map(fresh), opp: opp.map(fresh), youActive: null, oppActive: 0, duels: [] };
+/**
+ * Starts a battle. The opponent sends its team in the given order; the player picks with sendIn().
+ * `youHp` gives the player's Pokémon their starting HP as fractions of max (default: full).
+ */
+export function createBattle(you: BattleCard[], opp: BattleCard[], youHp: number[] = []): BattleState {
+  const team = you.map((card, i) => fighter(card, youHp[i] ?? 1));
+  return {
+    you: team, opp: opp.map(card => fighter(card)), youActive: null, oppActive: 0, duels: [],
+    startFainted: team.filter(f => f.hp <= 0).length,
+  };
 }
+
+/** The player's HP after the battle, as fractions of max HP (for carrying it over). */
+export const hpFractions = (state: BattleState) => state.you.map(f => f.hp / f.card.stats.hp);
 
 export const standing = (fighters: Fighter[]) => fighters.flatMap((f, i) => (f.hp > 0 ? [i] : []));
 
@@ -137,7 +154,7 @@ export interface HpBattleSummary {
 export function summarizeBattle(state: BattleState): HpBattleSummary {
   const fainted = (fighters: Fighter[]) => fighters.filter(f => f.hp <= 0).length;
   const dealt = (side: Side) => state.duels.reduce((sum, d) => sum + d.hits.filter(h => h.attacker === side).reduce((s, h) => s + h.damage, 0), 0);
-  const youFainted = fainted(state.you);
+  const youFainted = fainted(state.you) - (state.startFainted ?? 0);
   return {
     result: battleWinner(state) === 'you' ? 'win' : 'lose',
     score: { you: fainted(state.opp), opp: youFainted },

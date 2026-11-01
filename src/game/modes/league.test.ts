@@ -6,7 +6,10 @@ import { JOHTO_BADGES } from './gyms';
 import {
   type DuelResult, abandonRun, buildBracket, canEnter, championBoss, duelInfo, firstTitleStarter, JOHTO_CHAMPION, JOHTO_ELITE_FOUR,
   JOHTO_LEAGUE_FEE, LEAGUE_FEE, leagueRecord, MAX_BONUS, placementRewards, recordDuel, startRun, titleBonus,
+  applyHeal, healPending, healTargets, runTeam, setRunHp,
 } from './league';
+
+const TEAM = ['6', '9', '3', '25', '143', '130'];
 
 const rewardsOf = (r: DuelResult | null) => (r && 'rewards' in r ? r.rewards : []);
 
@@ -15,6 +18,9 @@ function leagueSave() {
   save.gyms.badges = ['boulder', 'cascade', 'thunder', 'rainbow', 'soul', 'marsh', 'volcano', 'earth'];
   save.coins = 5000;
   save.starter = 4;
+  // A full team (the run registers it).
+  for (const key of TEAM) save.cards[key] = { level: 70, copies: 1, obtainedAt: 0 };
+  save.deck = [...TEAM];
   return save;
 }
 
@@ -211,6 +217,76 @@ describe('johto league', () => {
     for (const bundle of [ptModes, enModes]) {
       for (const boss of [...JOHTO_ELITE_FOUR, JOHTO_CHAMPION]) expect(bundle.league.lines[boss.id]?.intro).toBeTruthy();
     }
+  });
+});
+
+describe('league attrition', () => {
+  const started = () => {
+    const save = leagueSave();
+    startRun(save, 7);
+    return save;
+  };
+
+  it('registers the team at entry and needs a full one', () => {
+    const save = leagueSave();
+    save.deck = TEAM.slice(0, 5);
+    expect(canEnter(save)).toBe('team');
+    const ok = started();
+    expect(ok.league.run!.team).toEqual(TEAM);
+    ok.deck = ['6']; // changing the team afterwards doesn't change the run's
+    expect(runTeam(ok, ok.league.run!).map(m => m.key)).toEqual(TEAM);
+  });
+
+  it('carries HP and faints over between duels', () => {
+    const save = started();
+    setRunHp(save, [1, 0.4, 0, 1, 1, 0.9]);
+    recordDuel(save, true);
+    expect(runTeam(save, save.league.run!).map(m => m.hp)).toEqual([1, 0.4, 0, 1, 1, 0.9]);
+    expect(healPending(save, save.league.run!)).toBe(true);
+  });
+
+  it('allows exactly one heal choice before each duel: Potion, Revive or Rest', () => {
+    const save = started();
+    setRunHp(save, [1, 0.4, 0, 1, 1, 0.9]);
+    recordDuel(save, true);
+    const run = save.league.run!;
+    expect(healTargets(save, run)).toEqual({ potion: ['9', '130'], revive: ['3'], rest: ['9', '130'] });
+    expect(applyHeal(save, 'potion', '3')).toBe(false); // a fainted one needs a Revive
+    expect(applyHeal(save, 'revive', '3')).toBe(true);
+    expect(run.hp!['3']).toBe(0.5);
+    expect(applyHeal(save, 'rest')).toBe(false); // one choice per duel
+    expect(healPending(save, run)).toBe(false);
+    // Next round: Rest heals the living by 20%, fainted ones stay down.
+    setRunHp(save, [0.5, 0, 1, 1, 1, 0.95]);
+    recordDuel(save, true);
+    expect(applyHeal(save, 'rest')).toBe(true);
+    expect(runTeam(save, run).map(m => m.hp)).toEqual([0.7, 0, 1, 1, 1, 1]);
+  });
+
+  it('skips the heal choice when nobody is hurt', () => {
+    const save = started();
+    setRunHp(save, [1, 1, 1, 1, 1, 1]);
+    recordDuel(save, true);
+    expect(healPending(save, save.league.run!)).toBe(false);
+  });
+
+  it('follows a registered card that evolves during the run, keeping its HP', () => {
+    const save = started();
+    save.cards['133'] = { level: 70, copies: 1, obtainedAt: 0 }; // an Eevee instead of Snorlax
+    save.league.run!.team = ['6', '9', '3', '25', '133', '130'];
+    setRunHp(save, [1, 1, 1, 1, 0.3, 1]);
+    delete save.cards['133'];
+    save.cards['136'] = { level: 70, copies: 1, obtainedAt: 0 }; // it became Flareon
+    const team = runTeam(save, save.league.run!);
+    expect(team[4]).toMatchObject({ registered: '133', key: '136', hp: 0.3 });
+  });
+
+  it('lets runs from before the update use the current team at full HP', () => {
+    const save = started();
+    const run = save.league.run!;
+    delete run.team;
+    delete run.hp;
+    expect(runTeam(save, run).map(m => [m.key, m.hp])).toEqual(TEAM.map(k => [k, 1]));
   });
 });
 

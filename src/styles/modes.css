@@ -975,3 +975,48 @@ button.lrow-team:hover { background: rgba(255, 255, 255, 0.06); }
     .rankup-rays, .champ-rays, .rewards-rays { animation: none; }
     .rewards.is-staged .reward { opacity: 1; transform: none; }
 }
+
+/* --- League run: registered team with HP, heal choice between duels --------------------------- */
+
+.run-team { display: grid; gap: 12px; }
+.run-team.is-healing { border-color: rgba(127, 220, 255, 0.45); background: linear-gradient(160deg, rgba(127, 220, 255, 0.08), rgba(255, 255, 255, 0.02) 60%); }
+.run-team-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.run-team-head .label { display: inline-flex; align-items: center; gap: 6px; }
+.run-team-head .label .i { width: 14px; height: 14px; }
+.run-team-head small { color: var(--dim); font-size: 12.5px; }
+.heal-choice { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
+.heal-choice p { flex: 1 1 280px; color: var(--muted); font-size: 14px; }
+.heal-choice p b { color: #bdeeff; }
+.heal-first { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: rgba(127, 220, 255, 0.1); color: #bdeeff; font-weight: 650; }
+.heal-first .i { width: 16px; height: 16px; }
+.run-mons { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; list-style: none; }
+.run-mon {
+    --tc: #a8a77a;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 3px;
+    padding: 8px 6px 10px;
+    border-radius: 14px;
+    background:
+        radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--tc) 22%, transparent), transparent 70%),
+        rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--line);
+    text-align: center;
+}
+.run-mon img { width: 64px; height: 64px; image-rendering: pixelated; }
+.run-mon b { font-size: 13px; line-height: 1.2; }
+.run-mon > small { color: var(--dim); font-size: 11.5px; }
+.run-hp { width: 100%; height: 7px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.run-hp i { display: block; height: 100%; border-radius: inherit; background: var(--success); transition: width .5s var(--ease); }
+.run-mon.is-hurt .run-hp i { background: var(--warning); }
+.run-mon.is-low .run-hp i { background: var(--danger); }
+.run-mon .run-hp-text { color: var(--muted); font-variant-numeric: tabular-nums; }
+.run-mon.is-fainted img { filter: grayscale(1) brightness(.55); }
+.run-mon.is-fainted .run-hp-text { color: var(--danger); font-weight: 700; }
+.heal-btn { margin-top: 4px; min-height: 30px; padding: 0 10px; font-size: 12.5px; background: rgba(79, 209, 139, 0.16); color: #9ff0c2; border: 1px solid rgba(79, 209, 139, 0.4); }
+.heal-btn.is-revive { background: rgba(255, 226, 154, 0.14); color: #ffe29a; border-color: rgba(255, 226, 154, 0.45); }
+.heal-btn .i { width: 13px; height: 13px; }
+@media (max-width: 720px) {
+    .run-mons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

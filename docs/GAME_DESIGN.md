@@ -241,7 +241,14 @@ a player gets.
   level), so the tower always pulls ahead and needs the other modes to keep climbing.
 
 ### Pokémon League: elimination championship
-Needs 8 badges; entry fee ₽1,000. Four duels in a row; the first loss ends the run:
+Needs 8 badges and a full team; entry fee ₽1,000. Four duels in a row; the first loss ends the run.
+
+**Attrition** (every region's League): the team is **registered at entry** and locked for the whole run (changing the
+team in the Collection doesn't affect it; a registered card that evolves mid-run is followed). **HP and faints carry
+over** between duels, stored as a fraction of max HP. Before each duel after the first, the player makes **one heal
+choice**: a **Potion** (one Pokémon back to full), a **Revive** (one fainted Pokémon back at 50%) or a **Rest** (the
+whole team +20%; fainted ones stay down). No choice is asked when nobody is hurt. "Perfect" only counts faints in that
+duel. The post-battle level-up goes to the registered team. Prizes didn't change:
 
 | Lost at | Placement | Reward |
 |---|---|---|

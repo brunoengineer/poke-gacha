@@ -4,6 +4,9 @@
 // The player's path is fixed by design: an elite trainer, two Elite Four members (in Elite Four order), then
 // the Champion in the final. The other matches are decided by strength, so the people you meet next really
 // did win their way to you. The run lives in the save, so leaving and coming back continues it.
+// Attrition: the team is registered (locked) when the run starts, and HP and faints carry over between duels.
+// Between duels the player makes one heal choice: a Potion (one Pokémon to full), a Revive (one fainted Pokémon
+// back at half HP) or a Rest (the whole team recovers 20%; fainted ones stay down).
 // Every region has a league in the same format: Kanto (Blue), Johto (Lance), Hoenn (Steven), Sinnoh (Cynthia), each
 // stronger and pricier than the last. Functions take the region last and default to Kanto; the other regions' progress
 // lives in `league.johto`, `league.hoenn`, `league.sinnoh`.
@@ -11,11 +14,13 @@
 import type { PokemonType } from '../../data/types';
 import type { SaveData } from '../../state/save';
 import type { TeamMember } from '../battle';
-import { STARTERS, UNLOCK_BADGES } from '../economy';
+import type { CardKey } from '../cards';
+import { DECK_SIZE, STARTERS, UNLOCK_BADGES } from '../economy';
 import { REGION_IDS, type RegionId } from '../regions';
 import type { Reward } from '../rewards';
 import { generateTeam } from '../teams';
 import { hashString, randInt, seeded, shuffle } from '../rng';
+import { resolveKey } from '../saved-teams';
 import { generateLadder, trainerTeam, ELITE_RANKS } from './competition';
 import { regionBadges } from './gyms';
 import { HOENN_CHAMPION, HOENN_ELITE_FOUR } from './hoenn';
@@ -28,6 +33,12 @@ export interface LeagueRun {
   /** Level bonus fixed when the run started (+5 per title). */
   bonus: number;
   startedAt: number;
+  /** The registered team (locked for the whole run). Absent in runs started before attrition: they use the current team. */
+  team?: CardKey[];
+  /** HP of each registered card as a fraction of max HP, by registered key (missing = full). */
+  hp?: Record<CardKey, number>;
+  /** Duel index whose heal choice was already used (one choice before each duel after the first). */
+  healed?: number;
 }
 
 export interface HallEntry {
@@ -298,13 +309,76 @@ export function duelInfo(bracket: Bracket, run: LeagueRun, duel: number, starter
 
 // --- Runs ------------------------------------------------------------------------------
 
-export type EntryCheck = 'ok' | 'locked' | 'coins' | 'running';
+export type EntryCheck = 'ok' | 'locked' | 'coins' | 'running' | 'team';
 
-export function canEnter(save: Pick<SaveData, 'gyms' | 'coins' | 'league'>, region: LeagueRegion = 'kanto'): EntryCheck {
+export function canEnter(save: Pick<SaveData, 'gyms' | 'coins' | 'league' | 'deck'>, region: LeagueRegion = 'kanto'): EntryCheck {
   if (!leagueUnlocked(save, region)) return 'locked';
   if (leagueRecord(save, region).run) return 'running';
   if (save.coins < leagueFee(region)) return 'coins';
+  if (save.deck.length < DECK_SIZE) return 'team';
   return 'ok';
+}
+
+// --- Registered team, HP and heals --------------------------------------------------------
+
+export interface RunMember {
+  /** Key the card was registered with (HP is stored under it). */
+  registered: CardKey;
+  /** The card now (the registered one, or what it evolved into during the run). */
+  key: CardKey;
+  /** HP as a fraction of max (0 = fainted). */
+  hp: number;
+}
+
+/** The run's team: registered cards (followed through evolutions) with their HP. Older runs use the current team. */
+export function runTeam(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun): RunMember[] {
+  const registered = run.team ?? save.deck;
+  return registered.flatMap(reg => {
+    const key = resolveKey(save, reg);
+    return key ? [{ registered: reg, key, hp: Math.max(0, Math.min(1, run.hp?.[reg] ?? 1)) }] : [];
+  });
+}
+
+/** Stores the team's HP after a duel (fractions in team order, as the battle reports them). */
+export function setRunHp(save: SaveData, hpLeft: number[], region: LeagueRegion = 'kanto') {
+  const run = leagueRecord(save, region).run;
+  if (!run) return;
+  const team = runTeam(save, run);
+  run.hp = Object.fromEntries(team.map((m, i) => [m.registered, Math.max(0, Math.min(1, hpLeft[i] ?? m.hp))]));
+}
+
+export type HealKind = 'potion' | 'revive' | 'rest';
+export const REVIVE_HP = 0.5;
+export const REST_HP = 0.2;
+
+/** True when the next duel still has its heal choice to make (and there is anything to heal). */
+export function healPending(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun): boolean {
+  return run.duel > 0 && run.healed !== run.duel && runTeam(save, run).some(m => m.hp < 1);
+}
+
+/** Which heals can be used now, and on whom. */
+export function healTargets(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun): Record<HealKind, CardKey[]> {
+  const team = runTeam(save, run);
+  return {
+    potion: team.filter(m => m.hp > 0 && m.hp < 1).map(m => m.registered),
+    revive: team.filter(m => m.hp <= 0).map(m => m.registered),
+    rest: team.some(m => m.hp > 0 && m.hp < 1) ? team.filter(m => m.hp > 0 && m.hp < 1).map(m => m.registered) : [],
+  };
+}
+
+/** Uses the heal choice before the next duel (mutates the save). `target` is a registered key (Potion, Revive). */
+export function applyHeal(save: SaveData, kind: HealKind, target: CardKey | null = null, region: LeagueRegion = 'kanto'): boolean {
+  const run = leagueRecord(save, region).run;
+  if (!run || !healPending(save, run)) return false;
+  const targets = healTargets(save, run)[kind];
+  if (!targets.length || (kind !== 'rest' && (!target || !targets.includes(target)))) return false;
+  const hp = { ...run.hp };
+  if (kind === 'potion') hp[target!] = 1;
+  else if (kind === 'revive') hp[target!] = REVIVE_HP;
+  else for (const m of runTeam(save, run)) if (m.hp > 0) hp[m.registered] = Math.min(1, m.hp + REST_HP);
+  run.hp = hp;
+  run.healed = run.duel;
+  return true;
 }
 
 /** Pays the fee and starts a run (mutates the save). Returns false when not allowed. */
@@ -313,7 +387,7 @@ export function startRun(save: SaveData, seed = Math.floor(Math.random() * 2 ** 
   const league = writable(save, region);
   save.coins -= leagueFee(region);
   league.runs++;
-  league.run = { seed, duel: 0, bonus: titleBonus(league.titles), startedAt: now };
+  league.run = { seed, duel: 0, bonus: titleBonus(league.titles), startedAt: now, team: save.deck.slice(0, DECK_SIZE), hp: {} };
   return true;
 }
 
