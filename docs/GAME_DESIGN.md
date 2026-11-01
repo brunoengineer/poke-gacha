@@ -232,13 +232,14 @@ time. Legendary and mythical Pokémon can't be hunted; neither can species never
 Opens with the first badge (`TOWER_UNLOCK_BADGES`). One battle per floor; there is no top floor, the point is how far
 a player gets.
 
-- Floor 1 is Lv. 15 and each floor adds **+2 levels** to the whole opposing team (floor N = Lv. 13 + 2N).
+- Floor 1 is Lv. 15 and each floor adds **+5 levels** to the whole opposing team (floor N = Lv. 10 + 5N): floor 18
+  is Lv. 100, floor 22 Lv. 120 (legendary cap), floor 26 Lv. 140 (mythical cap); past that only shinies keep up.
 - Progress is kept: a loss doesn't reset the climb, the same floor waits for a retry. Each floor pays **once**, on its
   first clear, so low floors can't be farmed: **Rare Candy ×3 + ₽20 per level** (₽300 on floor 1, ₽2,000 at Lv. 100).
 - Every **10th floor is a boss floor** (Tower Master, legendaries allowed): **+₽2,000** bonus.
 - Floors are fixed: floor N always brings the same trainer and team (seeded by N), so a lost floor can be studied.
-- Pacing: a floor adds 12 levels across the opposing team, while a clear gives about 4–5 (3 candies + the post-battle
-  level), so the tower always pulls ahead and needs the other modes to keep climbing.
+- Pacing: a floor adds 30 levels across the opposing team, while a clear gives about 4–5 (3 candies + the post-battle
+  level), so the tower pulls ahead fast and needs the other modes to keep climbing.
 
 ### Pokémon League: elimination championship
 Needs 8 badges and a full team; entry fee ₽1,000. Four duels in a row; the first loss ends the run.

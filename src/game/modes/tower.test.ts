@@ -7,12 +7,12 @@ import {
 } from './tower';
 
 describe('infinity tower', () => {
-  it('starts at Lv. 15 and adds 2 levels per floor, with no top floor', () => {
+  it('starts at Lv. 15 and adds 5 levels per floor, with no top floor', () => {
     expect(floorLevel(1)).toBe(15);
-    expect(floorLevel(2)).toBe(17);
-    expect(floorLevel(43)).toBe(99);
-    expect(floorLevel(500)).toBe(1013);
-    expect(towerFloor(500).team.every(m => m.level === 1013)).toBe(true);
+    expect(floorLevel(2)).toBe(20);
+    expect(floorLevel(18)).toBe(100);
+    expect(floorLevel(500)).toBe(2510);
+    expect(towerFloor(500).team.every(m => m.level === 2510)).toBe(true);
   });
 
   it('opens after the first badge', () => {
@@ -36,7 +36,7 @@ describe('infinity tower', () => {
 
   it('pays 3 Rare Candy and 20 coins per level, plus 2,000 on boss floors', () => {
     expect(floorRewards(1)).toEqual([{ kind: 'coins', amount: 300 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
-    expect(floorRewards(10)).toEqual([{ kind: 'coins', amount: 20 * 33 + 2000 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
+    expect(floorRewards(10)).toEqual([{ kind: 'coins', amount: 20 * 60 + 2000 }, { kind: 'item', item: RARE_CANDY, amount: 3 }]);
   });
 
   it('keeps progress after a loss and climbs one floor per win', () => {

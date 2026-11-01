@@ -27,7 +27,7 @@ const battle: typeof pt = {
       competition: { name: 'Competition', desc: 'Challenge 100 trainers and climb the ladder.' },
       gyms: { name: 'Gyms', desc: 'Take on the Gym Leaders of Kanto, Johto, Hoenn and Sinnoh, in order.' },
       hunt: { name: 'Shiny Hunt', desc: 'Pick a Pokémon and battle hordes of it. Every win in a row raises the shiny chance.' },
-      tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is 2 levels stronger. How far can you go?' },
+      tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is 5 levels stronger. How far can you go?' },
       league: { name: 'Pokémon League', desc: 'Four knockout duels for the Champion title, in Kanto, Johto, Hoenn and Sinnoh.' },
     },
     friendsCount: (count: number) => `${count} friends`,
@@ -91,7 +91,7 @@ const battle: typeof pt = {
 
   tower: {
     title: 'Infinity Tower',
-    sub: 'Every floor you clear brings a trainer 2 levels higher. There is no top: the challenge is how far you get.',
+    sub: 'Every floor you clear brings a trainer 5 levels higher. There is no top: the challenge is how far you get.',
     best: 'Best',
     floorShort: (floor: number) => `Floor ${n(floor)}`,
     record: (wins: number, losses: number) => `${n(wins)} W · ${n(losses)} L`,

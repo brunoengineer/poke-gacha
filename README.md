@@ -17,7 +17,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
 - **Saved teams**: up to 8 named teams, loaded in one click; evolved Pokémon come back as their evolved form.
 - **Six modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Shiny Hunt (chain wins on one species
-  for its shiny), Infinity Tower (+2 levels per floor, no top), Pokémon League (Top 16 → Champion).
+  for its shiny), Infinity Tower (+5 levels per floor, no top), Pokémon League (Top 16 → Champion).
 - **Synthesized chiptune** sound effects and original music, plus the Pokémon cries.
 
 The full rules and numbers are in [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md).

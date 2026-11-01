@@ -27,7 +27,7 @@ const battle = {
       competition: { name: 'Competição', desc: 'Desafie 100 treinadores e suba no ranking.' },
       gyms: { name: 'Ginásios', desc: 'Enfrente os Líderes de Ginásio de Kanto, Johto, Hoenn e Sinnoh, em ordem.' },
       hunt: { name: 'Caça Shiny', desc: 'Escolha um Pokémon e enfrente hordas dele. Cada vitória seguida aumenta a chance do shiny.' },
-      tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem 2 níveis mais forte. Até onde você chega?' },
+      tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem 5 níveis mais forte. Até onde você chega?' },
       league: { name: 'Liga Pokémon', desc: 'Quatro duelos eliminatórios até o título de Campeão, em Kanto, Johto, Hoenn e Sinnoh.' },
     },
     friendsCount: (count: number) => `${count} amigos`,
@@ -91,7 +91,7 @@ const battle = {
 
   tower: {
     title: 'Torre Infinita',
-    sub: 'Cada andar vencido traz um treinador 2 níveis acima. Não existe topo: o desafio é ver até onde você chega.',
+    sub: 'Cada andar vencido traz um treinador 5 níveis acima. Não existe topo: o desafio é ver até onde você chega.',
     best: 'Recorde',
     floorShort: (floor: number) => `Andar ${n(floor)}`,
     record: (wins: number, losses: number) => `${n(wins)} V · ${n(losses)} D`,
