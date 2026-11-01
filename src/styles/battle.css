@@ -1128,6 +1128,12 @@ html.arena-open { overflow: hidden; }
 .train-card:hover, .train-card:focus-visible { transform: translateY(-6px); }
 .train-card:hover .pcard, .train-card:focus-visible .pcard { box-shadow: 0 0 0 2px #7ee0a1, 0 10px 22px rgba(0, 0, 0, 0.45); }
 .train-card.fainted .pcard { filter: saturate(.5) brightness(.8); }
+/* At the level cap: can't train, shown dimmed. */
+.train-card.maxed { cursor: not-allowed; }
+.train-card.maxed:hover { transform: none; }
+.train-card.maxed:hover .pcard { box-shadow: none; }
+.train-card.maxed .pcard { filter: saturate(.3) brightness(.6); }
+.train-card.maxed .train-lv { color: var(--gold-hi); }
 .train-lv { display: block; margin-top: 4px; color: var(--muted); font-size: 11.5px; font-weight: 750; font-variant-numeric: tabular-nums; }
 .end-quote { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 4px; padding: 10px 14px 10px 6px; border-radius: 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); text-align: left; }
 .end-quote img { width: 72px; height: 72px; flex-shrink: 0; image-rendering: pixelated; }

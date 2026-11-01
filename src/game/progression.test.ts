@@ -23,17 +23,17 @@ describe('cards', () => {
     expect(startLevel(150)).toBe(1); // Mewtwo
   });
 
-  it('caps evolved and non-evolving cards at 100, but not unevolved base forms or shinies', () => {
-    expect(levelCap(CHARMANDER, false)).toBe(Infinity);
+  it('caps every card at 100 except shinies', () => {
+    expect(levelCap(CHARMANDER, false)).toBe(MAX_LEVEL);
     expect(levelCap(CHARMELEON, false)).toBe(MAX_LEVEL);
     expect(levelCap(128, false)).toBe(MAX_LEVEL); // Tauros never evolves
+    expect(levelCap(CHARMANDER, true)).toBe(Infinity);
     expect(isUncapped(CHARIZARD, true)).toBe(true);
   });
 
-  it('lets a high-level Charmander outgrow a Lv. 100 Charizard', () => {
-    expect(cardPower(CHARMANDER, 100)).toBeLessThan(cardPower(CHARIZARD, 100));
-    expect(cardPower(CHARMANDER, 250)).toBeGreaterThan(cardPower(CHARIZARD, 100));
+  it('lets a shiny keep growing past a Lv. 100 card', () => {
     expect(cardPower(CHARIZARD, 100, true)).toBeGreaterThan(cardPower(CHARIZARD, 100));
+    expect(cardPower(CHARMANDER, 250, true)).toBeGreaterThan(cardPower(CHARIZARD, 100));
   });
 
   it('derives rarity from the data', () => {
@@ -101,9 +101,15 @@ describe('copies and levels', () => {
     expect(candyRoom(save, cardKey(CHARIZARD))).toBe(3);
     expect(useCandies(save, cardKey(CHARIZARD), 10)).toBe(3);
     expect(save.items['rare-candy']).toBe(7);
+    save.cards[cardKey(CHARMANDER, true)] = { level: 150, copies: 1, obtainedAt: 0 };
+    expect(useCandies(save, cardKey(CHARMANDER, true), 7)).toBe(7);
+    expect(save.cards[cardKey(CHARMANDER, true)].level).toBe(157);
+    // A base form past 100 from before the cap change keeps its level but can't grow.
     save.cards[cardKey(CHARMANDER)] = { level: 150, copies: 1, obtainedAt: 0 };
-    expect(useCandies(save, cardKey(CHARMANDER), 7)).toBe(7);
-    expect(save.cards[cardKey(CHARMANDER)].level).toBe(157);
+    expect(candyRoom(save, cardKey(CHARMANDER))).toBe(0);
+    expect(useCandies(save, cardKey(CHARMANDER), 7)).toBe(0);
+    expect(addCopy(save, CHARMANDER).kind).toBe('max');
+    expect(save.cards[cardKey(CHARMANDER)].level).toBe(150);
   });
 });
 
@@ -282,11 +288,11 @@ describe('trainer evolutions', () => {
 });
 
 describe('baby Pokémon (Johto)', () => {
-  it('keeps the base form as stage 1, uncapped and starting at Lv. 1', () => {
+  it('keeps the base form as stage 1, capped and starting at Lv. 1', () => {
     expect(stage(172)).toBe(1); // Pichu
     expect(stage(25)).toBe(1); // Pikachu
     expect(stage(26)).toBe(2); // Raichu
-    expect(isUncapped(25, false)).toBe(true);
+    expect(isUncapped(25, false)).toBe(false);
     expect(startLevel(25)).toBe(1);
     expect(evolveForLevel(25, 22)).toBe(26); // Lt. Surge still has his Raichu
   });
@@ -344,5 +350,20 @@ describe('training after battles', () => {
     save.cards[cardKey(6)] = { level: 99, copies: 1, obtainedAt: 0 };
     expect(trainAfterBattle(save, ['6'], 'win', true, '6')).toMatchObject({ from: 99, to: 100, candy: 1 });
     expect(save.items['rare-candy']).toBe(1);
+    // Whole team capped: the levels become candy.
+    expect(trainAfterBattle(save, ['6'], 'lose', false)).toMatchObject({ key: '6', from: 100, to: 100, candy: 1 });
+  });
+
+  it('never trains a card at its cap while another can grow', () => {
+    const save = defaultSave();
+    save.cards[cardKey(6)] = { level: 100, copies: 1, obtainedAt: 0 };
+    save.cards[cardKey(4)] = { level: 120, copies: 1, obtainedAt: 0 }; // old uncapped base form
+    save.cards[cardKey(7)] = { level: 30, copies: 1, obtainedAt: 0 };
+    for (const r of [0, 0.4, 0.99]) {
+      expect(trainAfterBattle(save, ['6', '4', '7'], 'lose', false, null, () => r)!.key).toBe('7');
+    }
+    // Picking a capped card goes to one that can grow instead (the arena doesn't let it be picked).
+    expect(trainAfterBattle(save, ['6', '4', '7'], 'win', false, '6', () => 0)!.key).toBe('7');
+    expect(save.cards[cardKey(4)].level).toBe(120);
   });
 });

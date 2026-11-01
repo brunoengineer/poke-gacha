@@ -1,14 +1,14 @@
 // Card rules: one card per species plus its shiny version. Cards have a level; stats grow with it.
 //
-// Level caps (the "easter egg"):
-//   - Normal cards stop at Lv. 100…
-//   - …except a base form that could evolve but never did: it has no cap, so a patient trainer can push a
-//     Charmander past Lv. 100 until it outgrows a Charizard.
-//   - Shiny cards never evolve, and none of them have a cap.
+// Level caps:
+//   - Every card stops at Lv. 100…
+//   - …except shiny cards: they never evolve and have no cap, which is what makes hunting them worth it.
+//   - Until Nov 2026 unevolved base forms had no cap either. Cards already past 100 keep their level (saves never
+//     lose levels) but can't grow any further.
 
 import { LINK_CABLE } from '../data/items';
 import {
-  baseStatTotal, canEverEvolve, evolutionsOf, getSpecies, preEvolution, stage, type BaseStats, type Evolution, type Species,
+  baseStatTotal, evolutionsOf, getSpecies, preEvolution, stage, type BaseStats, type Evolution, type Species,
 } from '../data/species';
 
 export type CardKey = string;
@@ -52,9 +52,9 @@ export const power = (stats: Stats) => STAT_IDS.reduce((sum, id) => sum + stats[
 
 export const cardPower = (id: number, level: number, shiny = false) => power(statsAt(getSpecies(id), level, shiny));
 
-/** True when the card has no level cap (see the header comment). */
-export function isUncapped(id: number, shiny: boolean): boolean {
-  return shiny || (stage(id) === 1 && canEverEvolve(id));
+/** True when the card has no level cap: only shinies (see the header comment). */
+export function isUncapped(_id: number, shiny: boolean): boolean {
+  return shiny;
 }
 
 export const levelCap = (id: number, shiny: boolean) => (isUncapped(id, shiny) ? Infinity : MAX_LEVEL);

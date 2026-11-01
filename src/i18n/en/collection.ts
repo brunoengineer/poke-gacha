@@ -88,11 +88,7 @@ const collection: typeof pt = {
     openCard: (name: string) => `Open ${name}`,
     level: 'Level',
     capNormal: (max: number) => `Grows up to Lv. ${max}. Each duplicate and Rare Candy gives +1 level.`,
-    capMaxed: 'Max level! New copies turn into Rare Candy.',
-    capBase: (name: string) =>
-      `Trainer secret: as long as ${name} never evolves, it has no level cap. With patience it can even outgrow its own final evolution!`,
-    capBeyond: (name: string, level: number) =>
-      `Lv. ${n(level)} and climbing! ${name} is past the cap evolved forms have. Evolving now would bring it down to Lv. 100.`,
+    capMaxed: 'Max level! New copies turn into Rare Candy. Only shiny cards go past Lv. 100.',
     capShiny: 'Shiny cards never evolve, so they have no level cap. How far can you take it?',
     statsAt: (level: number) => `Stats at Lv. ${n(level)}`,
     baseStats: 'Base stats',
@@ -143,7 +139,7 @@ const collection: typeof pt = {
     chooseBranch: 'Choose what it will become:',
     consumes: (item: string) => `Uses 1 ${item}.`,
     clampWarning: (name: string, level: number, to: number) =>
-      `${name} is Lv. ${n(level)} with no cap. The evolved form has a cap: the card will drop to Lv. ${n(to)}.`,
+      `${name} is Lv. ${n(level)}, above the evolved form's cap: the card will drop to Lv. ${n(to)}.`,
     mergeNote: (name: string, level: number) => `You already own ${name}: both cards merge into one, at Lv. ${n(level)}.`,
     transferTitle: (from: string, to: string) => `Pass ${from}'s level to ${to}?`,
     transferText: (from: string, level: number, to: string, result: number) =>

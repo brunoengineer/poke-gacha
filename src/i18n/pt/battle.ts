@@ -192,6 +192,8 @@ const battle = {
       chooseTrain: (levels: number) => `Escolha quem treina: +${levels} Nv.`,
       chooseFirst: 'Escolha quem treina antes de continuar.',
       trainCard: (name: string, level: number) => `Treinar ${name}, Nv. ${level}`,
+      maxed: 'Nível máximo: só cartas shiny passam do Nv. 100',
+      maxedShort: 'Máx.',
       trained: (mon: string) => `${mon} treinou!`,
       levels: (from: number, to: number) => `Nv. ${n(from)} → ${n(to)}`,
       candy: (count: number) => `Nível máximo: +${count} Doce Raro`,

@@ -107,13 +107,16 @@ export interface BattleTraining {
 
 /**
  * After a battle, one Pokémon of the team trains: after a win the player picks it (`chosen`) and it gets +1 level
- * (+2 for a perfect win); after a loss a random one gets +1.
+ * (+2 for a perfect win); after a loss a random one gets +1. Cards at their cap can't be picked, and the random one
+ * is drawn from the cards that can still grow; only when the whole team is capped do the levels become Rare Candy.
  */
 export function trainAfterBattle(
   save: SaveData, team: CardKey[], result: 'win' | 'lose', perfect: boolean, chosen: CardKey | null = null, rng: () => number = Math.random,
 ): BattleTraining | null {
-  const keys = team.filter(key => save.cards[key]);
-  if (!keys.length) return null;
+  const owned = team.filter(key => save.cards[key]);
+  if (!owned.length) return null;
+  const growing = owned.filter(key => candyRoom(save, key) > 0);
+  const keys = growing.length ? growing : owned;
   const key = result === 'win' && chosen && keys.includes(chosen) ? chosen : keys[Math.floor(rng() * keys.length)];
   const levels = result === 'win' ? (perfect ? BATTLE_LEVELS.perfect : BATTLE_LEVELS.win) : BATTLE_LEVELS.lose;
   return { key, levels, ...addLevels(save, key, levels) };

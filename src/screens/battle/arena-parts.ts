@@ -222,19 +222,19 @@ export function trainingHTML(training: BattleTraining, card: BattleCard | undefi
     </div>`;
 }
 
-/** After a win the player picks who trains: the team's cards at their current levels. */
-export function trainChoiceHTML(team: { card: BattleCard; level: number; fainted: boolean }[], levels: number): string {
+/** After a win the player picks who trains: the team's cards at their current levels (capped ones disabled). */
+export function trainChoiceHTML(team: { card: BattleCard; level: number; fainted: boolean; maxed: boolean }[], levels: number): string {
   const t = L().battle.arena.end;
   return `
     <div class="end-train-choice" role="group" aria-labelledby="end-train-title">
       <strong id="end-train-title">${icon('up')} ${esc(t.chooseTrain(levels))}</strong>
       <span class="end-train-hint" hidden>${esc(t.chooseFirst)}</span>
       <div class="train-cards">
-        ${team.map(({ card, level, fainted }) => `
-          <button class="train-card ${fainted ? 'fainted' : ''}" type="button" data-train="${esc(card.key ?? '')}"
-            aria-label="${esc(t.trainCard(monName(card), level))}">
+        ${team.map(({ card, level, fainted, maxed }) => `
+          <button class="train-card ${fainted ? 'fainted' : ''} ${maxed ? 'maxed' : ''}" type="button" data-train="${esc(card.key ?? '')}"
+            ${maxed ? `disabled title="${esc(t.maxed)}"` : ''} aria-label="${esc(maxed ? `${monName(card)}: ${t.maxed}` : t.trainCard(monName(card), level))}">
             ${cardHTML({ id: card.id, shiny: card.shiny, level }, { size: 'xs', eager: true })}
-            <span class="train-lv">${esc(L().core.card.level)} ${fmt(level)}</span>
+            <span class="train-lv">${esc(maxed ? t.maxedShort : `${L().core.card.level} ${fmt(level)}`)}</span>
           </button>`).join('')}
       </div>
     </div>`;

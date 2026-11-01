@@ -192,6 +192,8 @@ const battle: typeof pt = {
       chooseTrain: (levels: number) => `Choose who trains: +${levels} Lv.`,
       chooseFirst: 'Choose who trains before you continue.',
       trainCard: (name: string, level: number) => `Train ${name}, Lv. ${level}`,
+      maxed: 'Max level: only shiny cards go past Lv. 100',
+      maxedShort: 'Max',
       trained: (mon: string) => `${mon} trained!`,
       levels: (from: number, to: number) => `Lv. ${n(from)} → ${n(to)}`,
       candy: (count: number) => `Max level: +${count} Rare Candy`,

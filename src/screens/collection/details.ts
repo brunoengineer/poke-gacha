@@ -192,14 +192,10 @@ function registeredHTML(sp: Species) {
 function levelHTML(key: CardKey) {
   const t = L().collection.details;
   const { id, shiny } = parseKey(key);
-  const name = getSpecies(id).name;
   const level = s().cards[key].level;
   const cap = levelCap(id, shiny);
   const uncapped = isUncapped(id, shiny);
-  let note: string;
-  if (shiny) note = t.capShiny;
-  else if (uncapped) note = level > MAX_LEVEL ? t.capBeyond(name, level) : t.capBase(name);
-  else note = level >= cap ? t.capMaxed : t.capNormal(MAX_LEVEL);
+  const note = shiny ? t.capShiny : level >= cap ? t.capMaxed : t.capNormal(MAX_LEVEL);
 
   return `
     <div class="dx-panel dx-level ${uncapped ? 'is-uncapped' : ''}">

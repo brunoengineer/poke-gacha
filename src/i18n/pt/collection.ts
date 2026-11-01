@@ -88,11 +88,7 @@ const collection = {
     openCard: (name: string) => `Abrir ${name}`,
     level: 'Nível',
     capNormal: (max: number) => `Sobe até o Nv. ${max}. Cópias repetidas e Doces Raros dão +1 nível cada.`,
-    capMaxed: 'Nível máximo! Novas cópias viram Doces Raros.',
-    capBase: (name: string) =>
-      `Segredo de treinador: enquanto ${name} não evoluir, ele não tem limite de nível. Com paciência, pode até superar a própria evolução final!`,
-    capBeyond: (name: string, level: number) =>
-      `Nv. ${n(level)} e subindo! ${name} já passou do limite das formas evoluídas. Se evoluir agora, cai para o Nv. 100.`,
+    capMaxed: 'Nível máximo! Novas cópias viram Doces Raros. Só cartas shiny passam do Nv. 100.',
     capShiny: 'Cartas shiny nunca evoluem e, por isso, não têm limite de nível. Até onde você chega?',
     statsAt: (level: number) => `Atributos no Nv. ${n(level)}`,
     baseStats: 'Atributos base',
@@ -143,7 +139,7 @@ const collection = {
     chooseBranch: 'Escolha em qual Pokémon ele vai se transformar:',
     consumes: (item: string) => `Gasta 1 ${item}.`,
     clampWarning: (name: string, level: number, to: number) =>
-      `${name} está no Nv. ${n(level)} sem limite. A forma evoluída tem limite: a carta vai para o Nv. ${n(to)}.`,
+      `${name} está no Nv. ${n(level)}, acima do limite da forma evoluída: a carta vai para o Nv. ${n(to)}.`,
     mergeNote: (name: string, level: number) => `Você já tem ${name}: as duas cartas se juntam em uma só, no Nv. ${n(level)}.`,
     transferTitle: (from: string, to: string) => `Passar o nível de ${from} para ${to}?`,
     transferText: (from: string, level: number, to: string, result: number) =>

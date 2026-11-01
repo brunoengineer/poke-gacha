@@ -20,12 +20,15 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
   so evolving never stalls a line. Getting an evolved form directly (pulling an Arbok) doesn't count: the next Ekans
   becomes an Ekans card of its own. Nothing ever evolves automatically, and pulls never take levels away.
 - A **Rare Candy** gives +1 level to any card.
-- **Cap Lv. 100**, with two exceptions (the easter egg):
-  - a **base form that can evolve but never did** has **no cap**: a Lv. 250 Charmander outgrows a Lv. 100 Charizard;
-  - **shiny cards never evolve and have no cap**: a shiny Charizard can go past Lv. 100.
-- A duplicate of a capped card turns into a Rare Candy.
+- **Cap Lv. 100** for every card except **shinies**: they never evolve and have **no cap**, so a shiny Charizard can go
+  past Lv. 100. That's the reward for hunting them (and the only way to keep up with the Infinity Tower past floor 43).
+  Until Nov 2026 unevolved base forms had no cap either; cards already past 100 keep their level (saves never lose
+  levels) but can't grow any further.
+- A duplicate of a capped card turns into a Rare Candy. Rare Candy can't be used on a capped card, and the post-battle
+  level can't be given to one: a win greys capped cards out of the choice, a loss picks among cards that can still grow
+  (only a fully capped team gets Rare Candy instead).
 - **Lv. 100 cards become foil**: a gold sheen sweeps across the card, with glints, a shining frame and a gold level tag
-  (shiny and uncapped cards keep it past 100).
+  (shinies keep it past 100).
 - **Every card starts at Lv. 1**, evolved forms and legendaries included (only the starter begins at Lv. 5). A pulled
   Charizard or Mewtwo is the better long-term card, since its stats grow faster, but levels always come from duplicates,
   Rare Candy and battles. Opponent trainers use the real evolution levels.
@@ -34,7 +37,7 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
 
 - Level evolutions use the real levels (Bulbasaur 16, Ivysaur 32…).
 - Stone evolutions need the stone item (consumed). Trade evolutions need a **Link Cable** (consumed).
-- Evolving keeps the level, clamped to 100 (so an uncapped base form loses its extra levels; the UI warns).
+- Evolving keeps the level, clamped to 100 (an old base form past 100 loses the extra levels; the UI warns).
 - Evolving into a species you already own merges both cards: `max(levels) + 1`.
 - **Pass level** (optional): when an evolved form of the card is already owned (any stage: a Lv. 27 Nidorino and a
   Lv. 1 Nidoking, or Charmander and Charizard), the card can merge into it with no level or item needed. Same result
@@ -224,4 +227,4 @@ Charmander → Cyndaquil, Squirtle → Totodile, and back to Kanto for a Johto s
    evolutions, sprites, cries, team generation, region filters) is derived from the data.
 
 Baby Pokémon don't count as a stage, so a new baby form (Pichu before Pikachu) doesn't change its base form's card:
-Pikachu stays an uncapped base form.
+Pikachu stays a base form.

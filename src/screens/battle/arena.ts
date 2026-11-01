@@ -18,7 +18,7 @@ import {
   type BattleState, type DuelLog, type Hit, type HpBattleSummary, type Side,
 } from '../../game/duel';
 import { DECK_SIZE } from '../../game/economy';
-import { BATTLE_LEVELS, type BattleTraining } from '../../game/progression';
+import { BATTLE_LEVELS, candyRoom, type BattleTraining } from '../../game/progression';
 import { playerTeam } from '../../game/teams';
 import { fmt, L } from '../../i18n';
 import { trainTeamAfterBattle } from '../../state/actions';
@@ -750,15 +750,17 @@ async function showEnd(b: Battle) {
   b.phase = 'end';
   const s = b.state;
   const summary = summarizeBattle(s);
-  // A loss trains a random team member right away; after a win the player picks who trains.
-  const training = summary.result === 'lose' ? trainTeamAfterBattle('lose', false) : null;
+  // A loss trains a random team member right away; after a win the player picks who trains (when the whole team is
+  // at its level cap there is nothing to pick: the levels become Rare Candy right away).
+  const choice = summary.result === 'win' ? trainChoice(b, summary.perfect) : '';
+  const training = summary.result === 'lose' ? trainTeamAfterBattle('lose', false)
+    : choice ? null : trainTeamAfterBattle('win', summary.perfect);
   b.outcome = { ...summary, forfeit: false, duels: [...s.duels], training };
   const o = b.config.opponent;
   const line = summary.result === 'win' ? o.loseLine : o.winLine;
   playMusic(null);
   sfx(summary.result === 'win' ? 'victory' : 'defeat');
 
-  const choice = summary.result === 'win' ? trainChoice(b, summary.perfect) : '';
   const panel = el(endHTML({
     result: summary.result, score: summary.score, perfect: summary.perfect, duels: s.duels,
     you: b.hand, opp: b.opp, name: o.name, portrait: o.portrait, line, training, trainChoice: choice,
@@ -769,7 +771,7 @@ async function showEnd(b: Battle) {
     const card = (event.target as Element).closest<HTMLElement>('[data-train]');
     if (card) pickTraining(b, card.dataset.train!);
   });
-  ($(panel, '.train-card') ?? $(panel, '.end-continue')).focus({ preventScroll: true });
+  ($(panel, '.train-card:not(:disabled)') ?? $(panel, '.end-continue')).focus({ preventScroll: true });
   if (reducedMotion()) {
     if (training) sfx('levelUp');
     return;
@@ -786,17 +788,20 @@ async function showEnd(b: Battle) {
   if (training && battle === b) celebrateTraining(panel);
 }
 
-/** The team at its current levels, for the post-win training choice. */
+/** The team at its current levels, for the post-win training choice (cards at their level cap can't be picked). */
 function trainChoice(b: Battle, perfect: boolean): string {
   const team = b.state.you.flatMap(f => (f.card.key && store.save.cards[f.card.key]
-    ? [{ card: f.card, level: store.save.cards[f.card.key].level, fainted: f.hp <= 0 }] : []));
-  return team.length ? trainChoiceHTML(team, perfect ? BATTLE_LEVELS.perfect : BATTLE_LEVELS.win) : '';
+    ? [{ card: f.card, level: store.save.cards[f.card.key].level, fainted: f.hp <= 0, maxed: candyRoom(store.save, f.card.key) <= 0 }] : []));
+  // Nobody can grow: no choice to make, the levels turn into Rare Candy (applied by showEnd).
+  if (!team.length || team.every(m => m.maxed)) return '';
+  return trainChoiceHTML(team, perfect ? BATTLE_LEVELS.perfect : BATTLE_LEVELS.win);
 }
 
 /** Applies the post-win training to the chosen card (once) and shows the result. */
 function pickTraining(b: Battle, key: string) {
   const outcome = b.outcome;
   if (b.phase !== 'end' || !outcome || outcome.result !== 'win' || outcome.training) return;
+  if (candyRoom(store.save, key) <= 0) return;
   const training = trainTeamAfterBattle('win', outcome.perfect, key);
   if (!training) return;
   outcome.training = training;
@@ -822,7 +827,7 @@ function finishClose(b: Battle) {
     choice.classList.add('nudge');
     $(choice, '.end-train-hint')?.removeAttribute('hidden');
     if (!reducedMotion()) choice.animate(shakeFrames(6), { duration: 360 });
-    $(choice, '.train-card').focus({ preventScroll: true });
+    $(choice, '.train-card:not(:disabled)')?.focus({ preventScroll: true });
     return;
   }
   sfx('close');
