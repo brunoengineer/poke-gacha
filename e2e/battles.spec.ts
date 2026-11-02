@@ -61,9 +61,9 @@ test.describe('luck', () => {
 });
 
 test.describe('legendary battle', () => {
-  /** A team that wins Kanto's boss: one huge Pokémon carries it, and the low average keeps the boss at Lv. 70. */
+  /** A team that wins Kanto's boss: strong shinies at Lv. 70, where the boss stays at its designed level. */
   function raidSave() {
-    const save = withCarry(midGameSave());
+    const save = withTeam(midGameSave(), 70);
     save.league.titles = 1;
     save.coins = 50_000;
     return save;

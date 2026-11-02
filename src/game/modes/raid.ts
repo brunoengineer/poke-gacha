@@ -1,7 +1,7 @@
 // Legendary Battle: pay a high fee to fight a random legendary or mythical Pokémon of the chosen region. The boss is one
 // Pokémon with huge HP that keeps its damage as the player's six fight it in turn, and hits normally, but one hit can
 // never take more than RAID_MAX_HIT of a Pokémon's max HP (critical hits included), so it never knocks one out at once.
-//   - Each region opens with that region's League title. Levels are fixed per region until the team's average passes them.
+//   - Each region opens with that region's League title. The boss matches the team's highest level, never below its region's.
 //   - The fee pays for the attempt: a loss, a forfeit or leaving mid-battle keeps nothing (battles aren't saved).
 //   - Each win pays coins and Rare Candy, then rolls for the boss: 1% shiny, 10% the normal card. RAID_PITY wins in a row
 //     in a region with neither guarantee the normal card. A boss the player already owns gives a Master Ball instead.
@@ -53,8 +53,8 @@ export const raidPool = (region: RegionId) =>
 export const raidUnlocked = (save: Pick<SaveData, 'league'>, region: RegionId) => leagueRecord(save, region).titles > 0;
 export const anyRaidUnlocked = (save: Pick<SaveData, 'league'>) => REGION_IDS.some(region => raidUnlocked(save, region));
 
-/** The boss's level against this team: as designed, until the team's average passes it. */
-export const raidLevel = (region: RegionId, scale?: PlayerScale) => Math.max(RAID_LEVELS[region], scale?.average ?? 0);
+/** The boss's level against this team: its strongest Pokémon's, never below the region's. */
+export const raidLevel = (region: RegionId, scale?: PlayerScale) => Math.max(RAID_LEVELS[region], scale?.max ?? 0);
 
 /** The boss as a battle card: huge HP, and hits capped so it can't knock out a Pokémon at once. */
 export function raidBossCard(id: number, level: number): BattleCard {

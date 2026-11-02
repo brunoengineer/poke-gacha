@@ -66,8 +66,8 @@ describe('legendary battle entry', () => {
     expect(['kanto', 'johto', 'hoenn', 'sinnoh'].map(r => raidLevel(r as 'kanto'))).toEqual([70, 100, 120, 140]);
   });
 
-  it('the boss level follows a team above it, and never drops below the design', () => {
-    expect(raidLevel('kanto', teamScale([300, 300, 300, 300, 300, 300]))).toBe(300);
+  it('the boss matches the strongest Pokémon on the team, and never drops below the design', () => {
+    expect(raidLevel('kanto', teamScale([10, 10, 10, 10, 10, 300]))).toBe(300);
     expect(raidLevel('sinnoh', teamScale([10, 10, 10, 10, 10, 10]))).toBe(140);
   });
 });
