@@ -234,7 +234,7 @@ Pick a region (it needs that region's League title), pay the fee and fight a ran
 only when the battle starts: Kanto 5 possible, Johto 6, Hoenn 10, Sinnoh 14. Fees: ₽3,000, ₽6,000, ₽10,000, ₽15,000. Losing,
 giving up or leaving mid-battle keeps nothing (battles aren't saved, so reloading can't save the fee).
 
-- **The boss**: one Pokémon at Lv. 70, 100, 120 or 140 by region (or the team's highest level, if higher), with **6× HP** that keeps
+- **The boss**: one Pokémon at Lv. 70, 100, 120 or 140 by region (or the team's highest level, if higher), with **5× HP** that keeps
   its damage as the six fight it in turn. It hits normally, but one hit can't take more than **40%** of a Pokémon's max HP,
   critical hits included. All bosses use the same HP multiplier, so the strongest species are harder for the same fee.
 - **Every win**: 25% of the fee back and Rare Candy ×10, ×20, ×30, ×40 by region.

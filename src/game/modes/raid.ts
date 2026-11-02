@@ -32,7 +32,7 @@ export const defaultRaidSave = (): RaidSave => ({});
 export const RAID_FEES: Record<RegionId, number> = { kanto: 3000, johto: 6000, hoenn: 10000, sinnoh: 15000 };
 const RAID_LEVELS: Record<RegionId, number> = { kanto: 70, johto: 100, hoenn: 120, sinnoh: 140 };
 /** Boss HP, times a normal Pokémon's of its species and level. */
-export const RAID_HP_MULT = 6;
+export const RAID_HP_MULT = 5;
 /** The most one boss hit can take, as a share of the target's max HP. */
 export const RAID_MAX_HIT = 0.4;
 export const RAID_CATCH_CHANCE = 0.1;
