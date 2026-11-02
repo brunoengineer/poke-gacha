@@ -321,7 +321,7 @@ Chimchar); if that's your own starter (already given by the Kanto title), Kanto'
 ## Online ranking
 
 Its own section in the main menu, with three public boards: **Infinity Tower** (best floor), **Power** (combined CP of the six
-strongest cards owned) and **Pokédex** (species caught). Top 50 per board, plus your own place; tied players share a place.
+strongest cards owned) and **Pokédex** (species caught plus shiny cards owned). Top 50 per board, plus your own place; tied players share a place.
 Anyone can read them. **Joining is optional**, needs a Google account and shows only a nickname of your choice (3–16
 characters); leaving removes your entry. Entries update about 30 seconds after a change, and only when a number changed.
 

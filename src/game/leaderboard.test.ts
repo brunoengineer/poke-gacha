@@ -18,7 +18,7 @@ describe('nicknames', () => {
 });
 
 describe('published stats', () => {
-  it('counts the best floor, the six strongest cards and the species caught', () => {
+  it('counts the best floor, the six strongest cards, and the species caught plus the shinies', () => {
     const save = defaultSave();
     save.tower.best = 12;
     save.caught = { 4: 1, 5: 1, 6: 1 };
@@ -26,7 +26,7 @@ describe('published stats', () => {
     for (const [key, , level] of levels) save.cards[key] = { level, copies: 1, obtainedAt: 0 };
     const stats = statsFromSave(save);
     expect(stats.tower).toBe(12);
-    expect(stats.caught).toBe(3);
+    expect(stats.caught).toBe(4); // 3 species + the shiny Charizard
     const expected = levels.map(([, id, level, shiny]) => cardPower(id, level, shiny)).sort((a, b) => b - a).slice(0, 6).reduce((s, p) => s + p, 0);
     expect(stats.power).toBe(expected);
     expect(Number.isInteger(stats.power)).toBe(true);
@@ -35,7 +35,10 @@ describe('published stats', () => {
   it('skips a card this version of the game does not know', () => {
     const save = defaultSave();
     save.cards['99999'] = { level: 50, copies: 1, obtainedAt: 0 };
-    expect(statsFromSave(save).power).toBe(0);
+    save.cards['99999s'] = { level: 50, copies: 1, obtainedAt: 0 };
+    const stats = statsFromSave(save);
+    expect(stats.power).toBe(0);
+    expect(stats.caught).toBe(0);
   });
 
   it('starts empty on a new save', () => {

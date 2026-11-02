@@ -15,7 +15,7 @@ export interface LeaderboardStats {
   tower: number;
   /** Combined Combat Power of the six strongest cards owned. */
   power: number;
-  /** Species in the Pokédex. */
+  /** Species in the Pokédex plus shiny cards owned, so a complete Pokédex can still be told apart. */
   caught: number;
 }
 
@@ -44,10 +44,14 @@ export function statsFromSave(save: Pick<SaveData, 'cards' | 'caught' | 'tower'>
     const { id, shiny } = parseKey(key);
     return hasSpecies(id) ? [cardPower(id, card.level, shiny)] : [];
   }).sort((a, b) => b - a);
+  const shinies = Object.keys(save.cards).filter(key => {
+    const { id, shiny } = parseKey(key);
+    return shiny && hasSpecies(id);
+  }).length;
   return {
     tower: save.tower.best,
     power: powers.slice(0, DECK_SIZE).reduce((sum, power) => sum + power, 0),
-    caught: Object.keys(save.caught).length,
+    caught: Object.keys(save.caught).length + shinies,
   };
 }
 
