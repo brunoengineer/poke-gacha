@@ -63,7 +63,7 @@ const capture: typeof pt = {
   locked: (badges: number) => `Beat ${plural(badges, 'Gym Leader', 'Gym Leaders')} to unlock`,
   lockedProgress: (have: number, need: number) => `${n(have)}/${n(need)} badges`,
   goGyms: 'Go to the Gyms',
-  masterHint: 'Master Balls are prizes from Competition and the Pokémon League.',
+  masterHint: 'Master Balls are prizes from Ranked and the Pokémon League.',
   notEnoughBalls: (name: string) => `You don't have enough ${name}s.`,
   bannerLocked: 'This capture is still locked.',
 
@@ -199,7 +199,7 @@ const capture: typeof pt = {
         text: 'Build a team of 6 cards and pick your challenge:',
       },
     ],
-    modes: { training: 'Training with friends', competition: 'Competition', gyms: '8 Gyms', league: 'Pokémon League' },
+    modes: { training: 'Training with friends', competition: 'Ranked', gyms: '8 Gyms', league: 'Pokémon League' },
     slideOf: (index: number, total: number) => `Tip ${n(index)} of ${n(total)}`,
     finish: 'Go capture!',
     finishNote: (coins: string, balls: number) => `You start with ${coins}: enough for ${balls} Poké Balls.`,

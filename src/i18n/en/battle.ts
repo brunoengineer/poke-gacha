@@ -24,7 +24,7 @@ const battle: typeof pt = {
     open: 'Enter',
     modes: {
       training: { name: 'Training', desc: 'Friendly battles with friends who keep up with your level.' },
-      competition: { name: 'Competition', desc: 'Challenge 100 trainers and climb the ladder.' },
+      competition: { name: 'Ranked', desc: 'Climb past 100 trainers who train against your team. Ash waits at the top.' },
       gyms: { name: 'Gyms', desc: 'Take on the Gym Leaders of Kanto, Johto, Hoenn and Sinnoh, in order.' },
       hunt: { name: 'Shiny Hunt', desc: 'Pick a Pokémon and battle hordes of it. Every win in a row raises the shiny chance.' },
       tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is 5 levels stronger. How far can you go?' },

@@ -24,7 +24,7 @@ const battle = {
     open: 'Entrar',
     modes: {
       training: { name: 'Treino', desc: 'Batalhas amistosas com amigos que acompanham o seu nível.' },
-      competition: { name: 'Competição', desc: 'Desafie 100 treinadores e suba no ranking.' },
+      competition: { name: 'Ranqueada', desc: 'Passe por 100 treinadores que treinam contra o seu time. O Ash espera no topo.' },
       gyms: { name: 'Ginásios', desc: 'Enfrente os Líderes de Ginásio de Kanto, Johto, Hoenn e Sinnoh, em ordem.' },
       hunt: { name: 'Caça Shiny', desc: 'Escolha um Pokémon e enfrente hordas dele. Cada vitória seguida aumenta a chance do shiny.' },
       tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem 5 níveis mais forte. Até onde você chega?' },

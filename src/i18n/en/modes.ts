@@ -1,4 +1,4 @@
-// English strings for the "modes" namespace (Competition, Pokémon League). Must have exactly the same keys as ../pt/modes.ts.
+// English strings for the "modes" namespace (Ranked, Pokémon League). Must have exactly the same keys as ../pt/modes.ts.
 import type pt from '../pt/modes';
 
 import regions from './regions';
@@ -26,8 +26,8 @@ const modes: typeof pt = {
   },
 
   competition: {
-    title: 'Competition',
-    subtitle: 'A ladder of 100 trainers. Challenge one of the five right above you and take their place.',
+    title: 'Ranked',
+    subtitle: 'A ladder of 100 trainers. Challenge one of the five right above you and take their place. They train against your team: your average level +10% per place above you.',
     yourRank: 'Your rank',
     unranked: 'Unranked',
     unrankedHint: 'Beat a trainer to enter the Top 100.',
@@ -42,6 +42,24 @@ const modes: typeof pt = {
     milestoneLeft: (places: number) => (places === 1 ? '1 place to go' : `${n(places)} places to go`),
     claim: 'Claim',
     randomStone: 'Random stone',
+    ash: {
+      name: 'Ash',
+      title: 'Trainer from Pallet Town',
+      lockedTitle: 'Someone is waiting at the top',
+      lockedText: 'Reach No. 1 on the ladder to challenge Ash.',
+      text: (boost: number) => `His team is ${n(boost)}% above your average level, and Pikachu is 100 levels above your strongest Pokémon. His team changes every battle. You can face him once per hour.`,
+      prize: 'Master Ball ×5',
+      challenge: 'Challenge Ash',
+      wait: (minutes: number) => `Back in ${n(minutes)} min`,
+      record: (wins: number, losses: number) => `${n(wins)} W · ${n(losses)} L`,
+      stage: 'Ranked · Ash',
+      intro: 'You made it to the top? Pikachu and I have been waiting. I choose you!',
+      winLine: "That was a great battle! Train hard and come find me again.",
+      loseLine: "Wow... you're amazing! Pikachu and I will come back even stronger.",
+      winTitle: 'You beat Ash!',
+      winSub: 'Not many trainers can say that. Five Master Balls are yours.',
+      lost: 'Ash won this time. You can challenge him again in an hour.',
+    },
     ladder: 'Ladder',
     showAll: 'Show full ladder',
     showNear: 'Show near me',

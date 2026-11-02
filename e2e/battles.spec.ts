@@ -3,6 +3,8 @@
 import { CARRY_TEAM, closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withCarry, withTeam } from './helpers';
 
 const strongSave = () => withTeam(midGameSave(), 5000);
+/** Reputation above the top of the ladder: the player is No. 1. */
+const reputationAtTop = 2001;
 /** Six weak cards: they lose to anything from the Tower's first floor up. */
 const weakSave = () => withTeam(midGameSave(), 1, ['19', '16', '10', '13', '129', '41']);
 
@@ -98,11 +100,79 @@ test.describe('gyms', () => {
 });
 
 test.describe('ranked ladder', () => {
+  const atTop = () => {
+    const save = withCarry(midGameSave());
+    save.ladder.rating = reputationAtTop;
+    save.ladder.best = 1;
+    delete save.ladder.ash;
+    return save;
+  };
+
+  test('trainers above are shown at the team average +10% per place', async ({ page }) => {
+    const save = withTeam(midGameSave(), 100);
+    await startGame(page, save, 'battle/competition');
+    const levels = await page.locator('.lrow.is-target .lrow-level').allInnerTexts();
+    expect(levels.map(text => Number(text.replace(/\D/g, '')))).toEqual([150, 140, 130, 120, 110]);
+  });
+
+  test('Ash stays locked until No. 1', async ({ page }) => {
+    const save = withCarry(midGameSave());
+    delete save.ladder.best;
+    save.ladder.milestones = [];
+    await startGame(page, save, 'battle/competition');
+    await expect(page.locator('.ash-card.is-locked')).toBeVisible();
+    await expect(page.locator('[data-act="ash"]')).toHaveCount(0);
+  });
+
+  test('a loss to Ash pays nothing and starts the hour', async ({ page }) => {
+    const save = atTop();
+    const balls = save.items['master-ball'] ?? 0;
+    await startGame(page, save, 'battle/competition');
+    await page.locator('[data-act="ash"]').click();
+    await page.locator('.arena-layer [data-act="start"]').click();
+    await expect(page.locator('.arena-layer .intro-name, .arena-layer')).toBeVisible();
+    await page.locator('.arena-layer [data-act="forfeit"]').click();
+    await page.locator('.modal-dialog [data-confirm]').click();
+    await expect(page.locator('.arena-layer')).toHaveCount(0);
+    const after = await stored(page);
+    expect(after.ladder.ash).toMatchObject({ wins: 0, losses: 1 });
+    expect(after.items['master-ball'] ?? 0).toBe(balls);
+    await expect(page.locator('[data-act="ash"]')).toHaveCount(0);
+    await expect(page.locator('.ash-wait')).toBeVisible();
+    // Reloading doesn't give another try.
+    await page.reload();
+    await expect(page.locator('.ash-wait')).toBeVisible();
+  });
+
+  test('beating Ash pays five Master Balls, once per hour', async ({ page }) => {
+    const save = atTop();
+    // Far above his team, and able to beat a Pikachu 100 levels above it.
+    save.cards[CARRY_TEAM[0]].level = 100_000;
+    const balls = save.items['master-ball'] ?? 0;
+    await startGame(page, save, 'battle/competition');
+    await page.locator('[data-act="ash"]').click();
+    await expect(page.locator('.arena-layer .intro-name')).toHaveText('Ash');
+    await playBattle(page);
+    await closeOverlays(page);
+    const after = await stored(page);
+    expect(after.items['master-ball']).toBe(balls + 5);
+    expect(after.ladder.ash).toMatchObject({ wins: 1, losses: 0 });
+    await expect(page.locator('.ash-wait')).toBeVisible();
+  });
+
+  test('Ash opens again after the hour', async ({ page }) => {
+    const save = atTop();
+    save.ladder.ash = { wins: 0, losses: 1, lastAt: Date.now() - 61 * 60 * 1000 };
+    await startGame(page, save, 'battle/competition');
+    await expect(page.locator('[data-act="ash"]')).toBeVisible();
+  });
+
   test('beating a trainer above climbs the ladder', async ({ page }) => {
-    const save = strongSave();
+    const save = withCarry(midGameSave());
     await startGame(page, save, 'battle/competition');
     const before = save.ladder.rating ?? 0;
-    await page.locator('[data-act="challenge"]').first().click();
+    // The nearest one, directly above.
+    await page.locator('[data-act="challenge"]').last().click();
     await playBattle(page);
     await closeOverlays(page);
     const after = await stored(page);

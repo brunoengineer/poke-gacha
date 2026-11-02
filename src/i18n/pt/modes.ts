@@ -1,4 +1,4 @@
-// Textos em português do namespace "modes" (Competição, Liga Pokémon). Funções recebem parâmetros (contagens, nomes).
+// Textos em português do namespace "modes" (Ranqueada, Liga Pokémon). Funções recebem parâmetros (contagens, nomes).
 import regions from './regions';
 
 const n = (value: number) => value.toLocaleString('pt-BR');
@@ -25,8 +25,8 @@ const modes = {
   } as Record<string, string>,
 
   competition: {
-    title: 'Competição',
-    subtitle: 'Um ranking de 100 treinadores. Desafie um dos cinco logo acima de você e tome o lugar dele.',
+    title: 'Ranqueada',
+    subtitle: 'Um ranking de 100 treinadores. Desafie um dos cinco logo acima de você e tome o lugar dele. Eles treinam contra o seu time: seu nível médio +10% por posição acima de você.',
     yourRank: 'Sua posição',
     unranked: 'Sem ranking',
     unrankedHint: 'Vença um treinador para entrar no Top 100.',
@@ -40,6 +40,24 @@ const modes = {
     milestoneDone: 'Resgatado',
     milestoneLeft: (places: number) => (places === 1 ? 'falta 1 posição' : `faltam ${n(places)} posições`),
     claim: 'Resgatar',
+    ash: {
+      name: 'Ash',
+      title: 'Treinador de Pallet',
+      lockedTitle: 'Alguém espera por você no topo',
+      lockedText: 'Chegue ao nº 1 do ranking para desafiar o Ash.',
+      text: (boost: number) => `O time dele fica ${n(boost)}% acima do seu nível médio, e o Pikachu fica 100 níveis acima do seu Pokémon mais forte. O time muda a cada batalha. Você pode enfrentá-lo uma vez por hora.`,
+      prize: 'Master Ball ×5',
+      challenge: 'Desafiar o Ash',
+      wait: (minutes: number) => `Volta em ${n(minutes)} min`,
+      record: (wins: number, losses: number) => `${n(wins)} V · ${n(losses)} D`,
+      stage: 'Ranqueada · Ash',
+      intro: 'Você chegou ao topo? O Pikachu e eu estávamos esperando. Eu escolho você!',
+      winLine: 'Que batalha incrível! Treine bastante e venha me encontrar de novo.',
+      loseLine: 'Uau... você é demais! O Pikachu e eu vamos voltar ainda mais fortes.',
+      winTitle: 'Você venceu o Ash!',
+      winSub: 'Poucos treinadores podem dizer isso. Cinco Master Balls são suas.',
+      lost: 'O Ash venceu desta vez. Você pode desafiá-lo de novo em uma hora.',
+    },
     randomStone: 'Pedra aleatória',
     ladder: 'Ranking',
     showAll: 'Ver ranking completo',

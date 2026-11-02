@@ -16,7 +16,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **Foil cards**: a card that reaches Lv. 100 turns into a shining gold foil.
 - **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
 - **Saved teams**: up to 8 named teams, loaded in one click; evolved Pokémon come back as their evolved form.
-- **Six modes**: Training (friends), Competition (ranked ladder), Gyms (badges), Shiny Hunt (chain wins on one species
+- **Six modes**: Training (friends), Ranked (a ladder that trains against you, with Ash at the top), Gyms (badges), Shiny Hunt (chain wins on one species
   for its shiny), Infinity Tower (+5 levels per floor, no top), Pokémon League (Top 16 → Champion).
 - **Synthesized chiptune** sound effects and original music, plus the Pokémon cries.
 
@@ -72,7 +72,7 @@ src/
   game/        Pure game rules (tested): cards, progression, gacha, battle, duel, teams, rewards, economy, modes/
   state/       Save format, store (events + local/cloud persistence), actions, Firebase
   ui/          Shell (header + router), login, card renderer, modals/toasts, drag and drop, effects, rewards, settings
-  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, competition, hunt, tower, league)
+  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, ranked ("competition"), hunt, tower, league)
   audio/       Synthesized sound effects, music sequencer, cries
   i18n/        pt-BR and English strings, one namespace per feature
   styles/      base.css (tokens, layout, shared components) + one CSS file per feature

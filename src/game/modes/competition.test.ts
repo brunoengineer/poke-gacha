@@ -2,11 +2,28 @@ import { describe, expect, it } from 'vitest';
 import { defaultSave } from '../../state/save';
 import { seeded } from '../rng';
 import {
-  applyLadderBattle, challengeable, claimMilestones, pendingMilestones, displayRank, generateLadder, ladderLevel, LADDER_SIZE, playerRank, rankForRating,
-  reputationAt, winCoins,
+  applyLadderBattle, challengeable, claimMilestones, pendingMilestones, displayRank, generateLadder, ladderLevel, LADDER_SIZE, playerRank, rankedLevel,
+  rankedTeam, rankForRating, reputationAt, winCoins,
 } from './competition';
 
-describe('competition ladder', () => {
+describe('ranked ladder', () => {
+  it('brings the team of the level it was challenged at, the same one every time', () => {
+    const ladder = generateLadder(42);
+    const level = rankedLevel(50, 55, 200);
+    expect(level).toBe(300);
+    const team = rankedTeam(ladder[49], level, 42);
+    expect(team).toHaveLength(6);
+    expect(team.every(m => m.level === 300)).toBe(true);
+    expect(rankedTeam(ladder[49], level, 42)).toEqual(team);
+  });
+
+  it('pays coins by the level actually fought', () => {
+    const save = defaultSave();
+    const result = applyLadderBattle(save.ladder, 98, 'win', false, seeded(1), 200);
+    expect(result.coins).toBe(2060);
+    expect(result.rewards).toContainEqual({ kind: 'coins', amount: 2060 });
+  });
+
   it('generates the same 100 trainers for the same seed', () => {
     const a = generateLadder(42);
     const b = generateLadder(42);

@@ -149,15 +149,20 @@ The first win of the day against each friend adds Rare Candy ×1. Every battle a
 Hard 12% chance of a **Link Cable**, a random evolution stone or a Johto trade item (King's Rock, Metal Coat,
 Dragon Scale, Up-Grade): "trading with friends". A loss pays ₽10.
 
-### Competition: the ranked ladder
-A ladder of 100 generated trainers (names, classes, portraits and teams from a per-save seed). You start unranked
-(below #100) and can challenge the 5 trainers directly above you. Beating one takes their place; losing costs a
-little reputation. Rank #1–#10 are Elite trainers with stronger, partially evolved teams.
+### Ranked: the ladder that trains against you
+(Id `competition` in saves and routes.) A ladder of 100 generated trainers (names, classes, portraits and species from a
+per-save seed). You start unranked (below #100) and can challenge the 5 trainers directly above you. Beating one takes
+their place; losing costs a little reputation. Rank #1–#10 are Elite trainers, with one rare Pokémon.
 
-- Opponent level by rank: about `4 + (100 − rank) × 0.6` (rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63).
-- Win: `30 + 4 × level` coins and Rare Candy ×1. Loss: ₽15.
+- **Opponent level**: your team's average, **+10% per place above you** (+10% … +50% for the five you can challenge),
+  and never below the rank's own level (rank 100 = Lv. 4 … rank 1 = Lv. 63). At No. 1, the challengers below are +10%.
+- Win: `60 + 10 × opponent level` coins and Rare Candy ×1. Loss: ₽15.
 - One-time milestones: Top 75 → Great Ball ×3 · Top 50 → Ultra Ball + Rare Candy ×10 · Top 25 → Ultra Ball ×3 +
   random stone · Top 10 → Ultra Ball ×5 + Rare Candy ×30 · #1 → Master Ball.
+
+**Ash** opens for good when you reach No. 1. His team is 5 Pokémon from those he used in the anime, different every battle,
+at **your average +40%**, plus **Pikachu at your strongest Pokémon's level +100**. **Once per hour** (the hour starts when
+the battle does). Winning pays **Master Ball ×5**; a loss costs nothing.
 
 ### Gyms: Kanto, Johto, Hoenn and Sinnoh leaders
 Fixed order, each unlocks after the previous badge. Themed rosters, hard by design: a fresh team needs some training

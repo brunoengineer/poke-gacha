@@ -1,9 +1,10 @@
-// Competition: a generated ladder of 100 trainers ranked by reputation. Logic and data live here.
+// Ranked mode (id "competition" in saves and routes): a generated ladder of 100 trainers ranked by reputation.
 //
 // Every trainer sits on a fixed rank slot with a fixed reputation (rank 100 = 20 points … rank 1 = 2,000),
 // generated from the save's seed so the ladder is the same across sessions. The player's rank is how many
 // trainers have more reputation than them, plus one. Beating one of the five trainers above you sets your
 // reputation just above theirs (you take their place); a loss costs a little reputation.
+// Whoever you challenge trains against your team: your average level +10% per place above you (rankedLevel).
 
 import { baseStatTotal, canEverEvolve, getSpecies, speciesList } from '../../data/species';
 import type { PokemonType } from '../../data/types';
@@ -11,6 +12,7 @@ import type { SaveData } from '../../state/save';
 import type { TeamMember } from '../battle';
 import { DECK_SIZE } from '../economy';
 import type { Reward } from '../rewards';
+import type { AshRecord } from './ash';
 import { hashString, pick, seeded, shuffle, type Rng } from '../rng';
 import { evolveForLevel, generateTeam, type TeamSpec } from '../teams';
 
@@ -25,6 +27,8 @@ export interface LadderSave {
   milestones: string[];
   /** Best rank ever reached (optional: older saves don't have it). */
   best?: number;
+  /** Battles against Ash (optional: absent until the first one). */
+  ash?: AshRecord;
 }
 
 export const defaultLadderSave = (): LadderSave => ({
@@ -43,13 +47,24 @@ export const REPUTATION_STEP = 20;
 export const LOSS_REPUTATION = 10;
 export const LOSS_COINS = 15;
 
-export const winCoins = (level: number) => 30 + 4 * level;
+export const winCoins = (level: number) => 60 + 10 * level;
 /** Rare Candy on every ladder win. */
 export const WIN_CANDY = 1;
 /** Fixed reputation of the trainer on rank slot `rank`. */
 export const reputationAt = (rank: number) => (LADDER_SIZE + 1 - rank) * REPUTATION_STEP;
-/** Opponent level by rank: rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63. */
+/** The rank's own level: rank 100 ≈ Lv. 4, rank 1 ≈ Lv. 63. The least a trainer on that rank ever has. */
 export const ladderLevel = (rank: number) => Math.round(4 + (LADDER_SIZE - rank) * 0.6);
+/** Added to the team's average per place the trainer is above the player. */
+export const RANKED_STEP = 0.1;
+
+/**
+ * Level of the trainer on slot `rank` when challenged from `position`: the team's average, +10% per place above the
+ * player (at No. 1, the challengers below count as one place), and never below the rank's own level.
+ */
+export function rankedLevel(rank: number, position: number, average: number): number {
+  const places = Math.max(1, position - rank);
+  return Math.max(ladderLevel(rank), Math.round(average * (1 + RANKED_STEP * places)));
+}
 export const isElite = (rank: number) => rank <= ELITE_RANKS;
 
 /** Rank for a reputation: trainers above + 1. LADDER_SIZE + 1 means unranked. */
@@ -222,6 +237,10 @@ export function trainerTeam(trainer: Pick<LadderTrainer, 'rank' | 'types'>, leve
   return team;
 }
 
+/** The team a trainer brings at that level (the same for the same level, so scouting shows the real one). */
+export const rankedTeam = (trainer: Pick<LadderTrainer, 'rank' | 'types'>, level: number, seed: number): TeamMember[] =>
+  trainerTeam(trainer, [level, level], seeded(seed ^ hashString(`ladder-${trainer.rank}`)));
+
 const ladderCache = new Map<number, LadderTrainer[]>();
 
 /** The whole ladder for a seed (cached): 100 trainers, rank 1 first. */
@@ -296,14 +315,14 @@ export interface LadderResult {
  * Applies a finished ladder battle against the trainer on slot `rank` (mutates the ladder slice).
  * A forfeit counts as a loss without the consolation coins; a draw changes nothing and pays like a loss.
  */
-export function applyLadderBattle(ladder: LadderSave, rank: number, result: 'win' | 'lose' | 'draw', forfeit = false, rng: Rng = Math.random): LadderResult {
+export function applyLadderBattle(ladder: LadderSave, rank: number, result: 'win' | 'lose' | 'draw', forfeit = false, rng: Rng = Math.random, level = ladderLevel(rank)): LadderResult {
   const ratingBefore = ladder.rating;
   const before = rankForRating(ratingBefore);
   let coins = 0;
   if (result === 'win') {
     ladder.wins++;
     ladder.rating = Math.max(ladder.rating, reputationAt(rank) + 1);
-    coins = winCoins(ladderLevel(rank));
+    coins = winCoins(level);
   } else {
     if (result === 'lose') {
       ladder.losses++;

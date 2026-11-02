@@ -1,14 +1,18 @@
-// Competition lobby (#/battle/competition): your rank card, the milestone track and the leaderboard centered on
-// you, with the five trainers above you open for a challenge. After a battle it applies the ladder result,
-// celebrates a rank-up and shows the rewards.
+// Ranked lobby (#/battle/competition): your rank card, the milestone track, Ash once you reach No. 1, and the
+// leaderboard centered on you, with the five trainers above you open for a challenge (they train against your team's
+// average). After a battle it applies the ladder result, celebrates a rank-up and shows the rewards.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
-import { trainerSpriteUrl } from '../../data/sprites';
+import { spriteUrl, trainerSpriteUrl } from '../../data/sprites';
 import {
   applyLadderBattle, challengeable, claimMilestones, pendingMilestones, displayRank, generateLadder, LADDER_SIZE, LOSS_REPUTATION, MILESTONES, milestonePreview,
-  rankForRating, winCoins, ELITE_RANKS, type LadderTrainer,
+  rankedLevel, rankedTeam, rankForRating, winCoins, ELITE_RANKS, type LadderTrainer,
 } from '../../game/modes/competition';
+import {
+  ASH_AVERAGE_BOOST, ashTeam, ashTeamLevel, ashUnlocked, ashWait, finishAshBattle, pikachuLevel, PIKACHU, startAshBattle,
+} from '../../game/modes/ash';
+import { playerScale } from '../../game/teams';
 import type { Reward } from '../../game/rewards';
 import { hashString } from '../../game/rng';
 import { fmt, itemName, L } from '../../i18n';
@@ -25,11 +29,19 @@ let root: HTMLElement | null = null;
 let offs: (() => void)[] = [];
 let showAll = false;
 let busy = false;
+/** Keeps Ash's countdown current while the screen is open. */
+let ashTimer: ReturnType<typeof setInterval> | undefined;
 
 const t = () => L().modes.competition;
 const ladder = () => generateLadder(store.save.ladder.seed);
 const position = () => rankForRating(store.save.ladder.rating);
 const rankLabel = (rank: number) => (rank > LADDER_SIZE ? '—' : `#${rank}`);
+const teamAverage = () => playerScale(store.save).average;
+/** A trainer as challenged now: the level and team it brings against the player's team. */
+function opponent(tr: LadderTrainer) {
+  const level = rankedLevel(tr.rank, position(), teamAverage());
+  return { level, team: rankedTeam(tr, level, store.save.ladder.seed) };
+}
 
 export const competitionMode: ModeModule = {
   render(container) {
@@ -39,8 +51,10 @@ export const competitionMode: ModeModule = {
     offs.push(on('progress', () => { if (!busy) render(); }), on('deck', () => { if (!busy) render(); }));
     render();
     requestAnimationFrame(() => scrollToYou('auto'));
+    ashTimer = setInterval(refreshAsh, 20_000);
   },
   dispose() {
+    clearInterval(ashTimer);
     root?.removeEventListener('click', onClick);
     offs.forEach(off => off());
     offs = [];
@@ -60,6 +74,7 @@ function render() {
       ${modeHead(t().title, t().subtitle)}
       ${heroHTML(pos)}
       ${milestonesHTML(pos)}
+      ${ashHTML()}
       <section class="ladder" aria-labelledby="ladder-title">
         <div class="ladder-head">
           <h2 class="section-title" id="ladder-title">${esc(t().ladder)}</h2>
@@ -72,6 +87,45 @@ function render() {
         <p class="tip">${icon('crown')} ${esc(t().eliteHint)}</p>
       </section>
     </div>`;
+}
+
+/** Ash: a teaser until the player reaches No. 1, then the challenge with its countdown. */
+function ashHTML() {
+  const a = t().ash;
+  const ladder = store.save.ladder;
+  if (!ashUnlocked(ladder)) {
+    return `
+      <section class="ash-card is-locked">
+        <span class="ash-portrait">${portrait('ash')}</span>
+        <div class="ash-text"><h2>${icon('lock')} ${esc(a.lockedTitle)}</h2><p>${esc(a.lockedText)}</p></div>
+      </section>`;
+  }
+  const scale = playerScale(store.save);
+  const wait = ashWait(ladder);
+  const record = ladder.ash;
+  return `
+    <section class="ash-card" data-ash>
+      <span class="ash-portrait">${portrait('ash')}</span>
+      <div class="ash-text">
+        <h2>${esc(a.name)}</h2>
+        <p>${esc(a.text(Math.round((ASH_AVERAGE_BOOST - 1) * 100)))}</p>
+        <div class="ash-meta">
+          <span class="pill">${icon('users')} ${esc(L().modes.level(ashTeamLevel(scale)))}</span>
+          <span class="pill"><img src="${esc(spriteUrl(PIKACHU))}" alt="" width="28" height="28"> ${esc(L().modes.level(pikachuLevel(scale)))}</span>
+          <span class="pill is-gold"><img src="${esc(itemSprite('master-ball'))}" alt="" width="24" height="24"> ${esc(a.prize)}</span>
+          ${record ? `<span class="pill">${esc(a.record(record.wins, record.losses))}</span>` : ''}
+        </div>
+      </div>
+      ${wait > 0
+        ? `<span class="ash-wait">${icon('lock')} ${esc(a.wait(Math.ceil(wait / 60_000)))}</span>`
+        : `<button class="btn btn-primary btn-lg" type="button" data-act="ash">${icon('swords')} ${esc(a.challenge)}</button>`}
+    </section>`;
+}
+
+function refreshAsh() {
+  if (busy) return;
+  const card = root?.querySelector('[data-ash]');
+  if (card) card.outerHTML = ashHTML();
 }
 
 function heroHTML(pos: number) {
@@ -177,6 +231,8 @@ function trainerRowHTML(tr: LadderTrainer, shown: number, target: boolean) {
   const podium = shown <= 3 ? ` data-podium="${shown}"` : '';
   const title = classTitle(tr.classId);
   const defend = position() === 1;
+  // Only the trainers open for a challenge have a known level: it depends on where the player stands.
+  const faced = target ? opponent(tr) : null;
   return `
     <li class="lrow${tr.elite ? ' is-elite' : ''}${target ? ' is-target' : ''}" data-slot="${tr.rank}"${podium}>
       <span class="lrow-pos">${shown <= 3 ? icon('crown') : ''}<b>${shown}</b></span>
@@ -186,13 +242,13 @@ function trainerRowHTML(tr: LadderTrainer, shown: number, target: boolean) {
         <small class="lrow-class">${esc(title)}</small>
         <span class="lrow-types">${typeBadges(tr.types)}</span>
       </span>
-      ${target ? `<button class="lrow-team" type="button" data-act="scout" data-slot="${tr.rank}" aria-label="${esc(t().scout(tr.name))}">${teamStrip(tr.team)}</button>` : '<span class="lrow-team-empty"></span>'}
-      <span class="lrow-level">${esc(L().modes.level(tr.level))}</span>
+      ${faced ? `<button class="lrow-team" type="button" data-act="scout" data-slot="${tr.rank}" aria-label="${esc(t().scout(tr.name))}">${teamStrip(faced.team)}</button>` : '<span class="lrow-team-empty"></span>'}
+      <span class="lrow-level">${faced ? esc(L().modes.level(faced.level)) : ''}</span>
       <span class="lrow-rep">${esc(t().points(tr.reputation))}</span>
-      ${target ? `
+      ${faced ? `
         <button class="btn btn-primary btn-sm lrow-go" type="button" data-act="challenge" data-slot="${tr.rank}">
           ${icon('swords')} ${esc(defend ? t().defend : t().challenge)}
-          <small>${icon('coin', 'i-coin')}${fmt(winCoins(tr.level))}</small>
+          <small>${icon('coin', 'i-coin')}${fmt(winCoins(faced.level))}</small>
         </button>` : '<span class="lrow-go-empty"></span>'}
     </li>`;
 }
@@ -236,14 +292,15 @@ function onClick(event: Event) {
       break;
     case 'scout': {
       const tr = ladder()[slot - 1];
+      const faced = opponent(tr);
       sfx('open');
       void scoutModal({
         name: tr.name,
         title: `${classTitle(tr.classId)} · #${displayRank(tr.rank, position())}`,
         sprite: tr.sprite,
         types: tr.types,
-        team: tr.team,
-        info: `${icon('coin', 'i-coin')} ${esc(t().prize(winCoins(tr.level)))}`,
+        team: faced.team,
+        info: `${icon('coin', 'i-coin')} ${esc(t().prize(winCoins(faced.level)))}`,
         action: position() === 1 ? t().defend : t().challenge,
       }).then(go => { if (go) void challenge(slot); });
       break;
@@ -253,6 +310,9 @@ function onClick(event: Event) {
       break;
     case 'claim':
       void claim();
+      break;
+    case 'ash':
+      void fightAsh();
       break;
   }
 }
@@ -264,12 +324,41 @@ async function claim() {
   await showRewards(grant(result.rewards), { title: t().milestoneTitle(t().milestone(last.rank)), crest: last.rank === 1 ? 'crown' : 'medal' });
 }
 
+async function fightAsh() {
+  if (busy || !teamReady()) return;
+  // The hour starts now: leaving the battle doesn't give another try.
+  if (!update(save => startAshBattle(save.ladder), ['progress'])) return;
+  const a = t().ash;
+  busy = true;
+  sfx('click');
+  try {
+    const outcome = await runBattle({
+      mode: 'competition',
+      opponent: {
+        id: 'ash', name: a.name, title: a.title, portrait: trainerSpriteUrl('ash'),
+        team: ashTeam(playerScale(store.save)), intro: a.intro, winLine: a.winLine, loseLine: a.loseLine,
+      },
+      music: 'champion',
+      stage: a.stage,
+    });
+    const won = !outcome.forfeit && outcome.result === 'win';
+    recordBattle(outcome.forfeit ? 'forfeit' : outcome.result);
+    const prize = update(save => finishAshBattle(save.ladder, won), ['progress']);
+    if (won) await showRewards(grant(prize), { title: a.winTitle, subtitle: a.winSub, crest: 'crown' });
+    else toast(a.lost, 'info');
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
 const lineFor = (list: string[], tr: LadderTrainer, salt: string) => list[hashString(`${tr.id}-${salt}`) % list.length];
 
 async function challenge(slot: number) {
   if (busy || !challengeable(store.save.ladder.rating).includes(slot) || !teamReady()) return;
   const tr = ladder()[slot - 1];
   const shown = displayRank(slot, position());
+  const faced = opponent(tr);
   busy = true;
   sfx('click');
   try {
@@ -280,7 +369,7 @@ async function challenge(slot: number) {
         name: tr.name,
         title: `${classTitle(tr.classId)} · #${shown}`,
         portrait: trainerSpriteUrl(tr.sprite),
-        team: tr.team,
+        team: faced.team,
         intro: lineFor(tr.elite ? t().eliteIntro : t().intro, tr, 'intro'),
         winLine: lineFor(t().winLine, tr, 'win'),
         loseLine: lineFor(t().loseLine, tr, 'lose'),
@@ -288,7 +377,7 @@ async function challenge(slot: number) {
       music: 'battle',
       stage: t().stage(shown),
     });
-    const result = update(save => applyLadderBattle(save.ladder, slot, outcome.result, outcome.forfeit), ['progress']);
+    const result = update(save => applyLadderBattle(save.ladder, slot, outcome.result, outcome.forfeit, undefined, faced.level), ['progress']);
     recordBattle(outcome.forfeit ? 'forfeit' : outcome.result);
     // Grant right away: the milestones are already marked as claimed, so leaving during the rank-up can't lose them.
     const applied = result.rewards.length ? grant(result.rewards) : [];

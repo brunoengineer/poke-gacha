@@ -62,7 +62,7 @@ const capture = {
   locked: (badges: number) => `Vença ${plural(badges, 'líder de ginásio', 'líderes de ginásio')} para liberar`,
   lockedProgress: (have: number, need: number) => `${n(have)}/${n(need)} insígnias`,
   goGyms: 'Ir aos ginásios',
-  masterHint: 'Master Balls são prêmios da Competição e da Liga Pokémon.',
+  masterHint: 'Master Balls são prêmios da Ranqueada e da Liga Pokémon.',
   notEnoughBalls: (name: string) => `Você não tem ${name} suficientes.`,
   bannerLocked: 'Esta captura ainda está bloqueada.',
 
@@ -198,7 +198,7 @@ const capture = {
         text: 'Monte uma equipe de 6 cartas e escolha o desafio:',
       },
     ],
-    modes: { training: 'Treino com amigos', competition: 'Competição', gyms: '8 Ginásios', league: 'Liga Pokémon' },
+    modes: { training: 'Treino com amigos', competition: 'Ranqueada', gyms: '8 Ginásios', league: 'Liga Pokémon' },
     slideOf: (index: number, total: number) => `Dica ${n(index)} de ${n(total)}`,
     finish: 'Ir capturar!',
     finishNote: (coins: string, balls: number) => `Você começa com ${coins}: dá para ${balls} Poké Balls.`,

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultSave } from '../../state/save';
 import { REGION_IDS, type RegionId } from '../regions';
 import { seeded } from '../rng';
-import { LADDER_SIZE, ladderLevel, MILESTONES, milestonePreview, winCoins as ladderCoins } from './competition';
+import { LADDER_SIZE, ladderLevel, MILESTONES, milestonePreview, rankedLevel, winCoins as ladderCoins } from './competition';
 import { FIRST_WIN_CANDY, gymRewards, gymTeam, REGION_GYMS, REMATCH_CANDY, REMATCH_LEVELS, REMATCH_MAX } from './gyms';
 import { buildBracket, duelInfo, duelLevels, leagueFee, MAX_BONUS, placementRewards, startRun, TITLE_BONUS } from './league';
 import { floorLevel, floorRewards } from './tower';
@@ -91,6 +91,12 @@ describe('designed difficulty', () => {
     expect(duelLevels(3, 40, 'sinnoh')).toEqual([178, 180]);
   });
 
+  it('ranked ladder: +10% over the team average per place above, never below the rank level', () => {
+    expect([54, 53, 52, 51, 50].map(rank => rankedLevel(rank, 55, 100))).toEqual([110, 120, 130, 140, 150]);
+    expect(rankedLevel(1, 2, 10)).toBe(63); // a weak team still meets the rank's own level
+    expect(rankedLevel(3, 1, 100)).toBe(110); // defending No. 1
+  });
+
   it('ranked ladder: level by rank', () => {
     expect(LADDER_SIZE).toBe(100);
     expect([100, 75, 50, 25, 10, 1].map(ladderLevel)).toEqual([4, 19, 34, 49, 58, 63]);
@@ -135,7 +141,7 @@ describe('designed prizes', () => {
   });
 
   it('ranked ladder: coins per win and the milestones', () => {
-    expect([ladderCoins(4), ladderCoins(63)]).toEqual([46, 282]);
+    expect([ladderCoins(4), ladderCoins(63), ladderCoins(200)]).toEqual([100, 690, 2060]);
     expect(MILESTONES.map(m => m.id)).toHaveLength(5);
     expect(milestonePreview(MILESTONES[MILESTONES.length - 1])).toEqual([item('master-ball', 1)]);
   });

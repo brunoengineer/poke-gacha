@@ -1023,3 +1023,29 @@ button.lrow-team:hover { background: rgba(255, 255, 255, 0.06); }
 @media (max-width: 720px) {
     .run-mons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* --- Ranked: Ash ------------------------------------------------------------------------------------ */
+
+.ash-card {
+    display: flex;
+    align-items: center;
+    gap: 14px 18px;
+    flex-wrap: wrap;
+    margin-block: 16px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(246, 196, 83, 0.5);
+    background: linear-gradient(100deg, rgba(240, 106, 106, 0.16), rgba(246, 196, 83, 0.1) 55%, rgba(255, 255, 255, 0.02));
+}
+.ash-card.is-locked { border-color: var(--line); background: rgba(255, 255, 255, 0.03); }
+.ash-card.is-locked .ash-portrait { filter: brightness(0) opacity(.5); }
+.ash-portrait { flex-shrink: 0; width: 72px; }
+.ash-portrait img { width: 72px; height: 72px; image-rendering: pixelated; }
+.ash-text { flex: 1 1 260px; display: grid; gap: 6px; min-width: 0; }
+.ash-text h2 { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 21px; font-weight: 700; color: var(--gold-hi); }
+.ash-text h2 .i { width: 17px; height: 17px; }
+.ash-text p { color: var(--muted); font-size: 14px; }
+.ash-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.ash-meta img { image-rendering: pixelated; }
+.ash-wait { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); color: var(--muted); font-weight: 700; white-space: nowrap; }
+.ash-wait .i { width: 15px; height: 15px; }
