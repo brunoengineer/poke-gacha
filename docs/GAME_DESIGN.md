@@ -314,6 +314,13 @@ Rare Candy ×100.
 Master Ball ×2 + Rare Candy ×120.
 
 Every league adds +5 levels per title (up to +40), so rematch titles go well past 140.
+**Master League** (a title in all four Leagues, fee ₽10,000): a reason to raise normal cards to Lv. 100. The team can't
+have any shiny, legendary or mythical card (the entry screen names the ones to take off). Blue, Lance, Steven and Cynthia,
+in that order, all at Lv. 100 with no legendaries; titles add no levels and the opponents never train up. Attrition and
+heals as in the other Leagues. **3 entries a day** (device clock), counted on paying, even after a loss. Prizes are paid on
+each win, so a loss keeps them: Master Ball ×2, ×3, ×5, then ×10 for the title. The title also gives a random **shiny
+legendary or mythical** the player doesn't own yet (a duplicate once they own them all), at most one a day; a first title
+gives no shiny starter.
 **First Hoenn / Sinnoh title**: a shiny copy of that region's starter of your starter's type (Charmander → Torchic,
 Chimchar); if that's your own starter (already given by the Kanto title), Kanto's of the same type instead
 (`firstTitleStarter`).

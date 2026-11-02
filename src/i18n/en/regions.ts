@@ -1,5 +1,6 @@
 // English texts for Hoenn and Sinnoh. Must have exactly the same keys as ../pt/regions.ts.
 import type pt from '../pt/regions';
+import type { masterRules as ptMasterRules } from '../pt/regions';
 
 const n = (value: number) => value.toLocaleString('en-US');
 
@@ -27,6 +28,33 @@ const sinnoh: LeagueTexts = {
   prizeFirstTitle: "First title: a shiny Sinnoh starter, matching your starter's type",
   firstTitle: 'First Sinnoh title! A shiny Sinnoh starter has joined your collection.',
   championTitle: 'Sinnoh League Champion!',
+};
+
+const master: LeagueTexts = {
+  title: 'Master League',
+  subtitle: 'Everyone at Lv. 100, with no shiny, legendary or mythical. Four duels in a row; the first loss ends your run.',
+  plateau: 'Only for those who won all four Leagues',
+  heroText: 'Blue, Lance, Steven and Cynthia, all at Lv. 100. No shiny, legendary or mythical on your team: here the best-built team wins. Every win pays in Master Balls, and the title is worth a shiny legendary or mythical.',
+  lockedTitle: 'The Master League is still closed',
+  lockedText: (titles: number) => `Win the title in all four Leagues to open the Master League. You have ${n(titles)} of 4.`,
+  prizeFirstTitle: '',
+  firstTitle: 'First Master League title! You are a true Pokémon Master.',
+  championTitle: 'Master League Champion!',
+};
+
+export const masterRules: typeof ptMasterRules = {
+  tab: 'Master',
+  formerChampion: 'Former Champion',
+  entries: 'Entries today',
+  enterTitle: 'Enter the Master League?',
+  enterText: (fee: number, left: number) => `The entry fee is ₽ ${n(fee)} and it uses one of your 3 entries for the day, even if you lose: after this one, ${n(left)} left today. Four duels in a row, and the first loss ends your run. Your team is registered for the whole run, and HP doesn't heal between duels: you get one heal choice before each duel.`,
+  noEntries: (total: number) => `You've used all ${n(total)} entries for today. Come back tomorrow!`,
+  banned: (names: string) => `No shiny, legendary or mythical in the Master League. Take off your team: ${names}.`,
+  shinyName: (name: string) => `Shiny ${name}`,
+  win: (index: number) => `Win ${n(index)}`,
+  winTitle: 'Victory prize',
+  shinyPrize: "Plus a shiny legendary or mythical you don't own yet (1 per day)",
+  shinyPrizeTaken: "Today's shiny legendary or mythical is already yours. Come back tomorrow!",
 };
 
 const regions: typeof pt = {
@@ -317,6 +345,27 @@ const regions: typeof pt = {
       win: 'A predictable ending. Study your Pokémon more closely.',
       lose: 'An ending I did not foresee. The Champion is waiting for you.',
     },
+    // Master League
+    'blue-master': {
+      intro: "So you beat all four Leagues. No legendaries and no shinies now: just you, your team and your strategy.",
+      win: 'Plenty of power in the other Leagues, not much strategy here. Come back with a real team.',
+      lose: "Hmph. That team was well thought out. Lance won't be so easy.",
+    },
+    'lance-master': {
+      intro: 'Nobody hides a weakness behind a legendary here. My dragons want to see how your team answers.',
+      win: "A team has to cover its own weaknesses. Yours didn't.",
+      lose: 'You met my dragons as an equal. Steven is waiting for you.',
+    },
+    'steven-master': {
+      intro: 'Without legendaries, every stone on a team has to be well polished. Let me see yours.',
+      win: 'Good stones, badly set. Try another combination.',
+      lose: 'What a well-polished team! Only Cynthia stands between you and the title.',
+    },
+    'cynthia-master': {
+      intro: 'Getting here already says a lot about you. Now the last battle, on equal terms, with everything we have.',
+      win: 'That was beautiful, but not quite enough. The Master League opens again tomorrow.',
+      lose: 'No legendaries, no shinies, and you still won. You are a true Pokémon Master.',
+    },
     cynthia: {
       intro: "I'm glad you made it this far. As Sinnoh's Champion, I will battle with everything I have.",
       win: 'That was a beautiful battle. Come back whenever you want to challenge me.',
@@ -324,7 +373,7 @@ const regions: typeof pt = {
     },
   },
 
-  leagues: { hoenn, sinnoh },
+  leagues: { hoenn, sinnoh, master },
 };
 
 export default regions;

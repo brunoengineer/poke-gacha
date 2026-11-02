@@ -153,7 +153,8 @@ function modeCardHTML(id: ModeId): string {
     const nextLocked = LEAGUE_REGIONS.find(r => !leagueUnlocked(s, r));
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.leagueLocked)}</span>`
       : open.map(r => `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel(r), best(r)))}</span>`).join('')
-        + (nextLocked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel(nextLocked), t.leagueRegionLocked))}</span>` : '');
+        + (nextLocked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel(nextLocked), t.leagueRegionLocked))}</span>` : '')
+        + (leagueUnlocked(s, 'master') ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(L().modes.league.masterRules.tab, best('master')))}</span>` : '');
   }
 
   return `

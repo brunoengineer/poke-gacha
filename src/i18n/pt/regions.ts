@@ -28,6 +28,33 @@ const hoenn: LeagueTexts = {
   championTitle: 'Campeão da Liga de Hoenn!',
 };
 
+const master: LeagueTexts = {
+  title: 'Liga Master',
+  subtitle: 'Todos no Nv. 100, sem shiny, lendário ou mítico. Quatro duelos seguidos; a primeira derrota encerra a campanha.',
+  plateau: 'Só para quem venceu as quatro Ligas',
+  heroText: 'Blue, Lance, Steven e Cynthia, todos no Nv. 100. Shiny, lendário e mítico não entram no seu time: aqui vence quem monta a melhor equipe. Cada vitória paga em Master Balls, e o título vale um lendário ou mítico shiny.',
+  lockedTitle: 'A Liga Master ainda está fechada',
+  lockedText: (titles: number) => `Conquiste o título nas quatro Ligas para abrir a Liga Master. Você tem ${n(titles)} de 4.`,
+  prizeFirstTitle: '',
+  firstTitle: 'Primeiro título da Liga Master! Você é um verdadeiro Mestre Pokémon.',
+  championTitle: 'Campeão da Liga Master!',
+};
+
+const masterRules = {
+  tab: 'Master',
+  formerChampion: 'Ex-Campeão',
+  entries: 'Entradas hoje',
+  enterTitle: 'Entrar na Liga Master?',
+  enterText: (fee: number, left: number) => `A inscrição custa ₽ ${n(fee)} e conta como uma das 3 entradas do dia, mesmo se você perder: depois desta, restam ${n(left)} hoje. Quatro duelos seguidos, e a primeira derrota encerra a campanha. Seu time fica inscrito durante toda a campanha, e o HP não se recupera entre os duelos: você tem uma escolha de cura antes de cada duelo.`,
+  noEntries: (total: number) => `Você já usou as ${n(total)} entradas de hoje. Volte amanhã!`,
+  banned: (names: string) => `Shiny, lendário e mítico não entram na Liga Master. Tire do time: ${names}.`,
+  shinyName: (name: string) => `${name} shiny`,
+  win: (index: number) => `${n(index)}ª vitória`,
+  winTitle: 'Prêmio da vitória',
+  shinyPrize: 'E um lendário ou mítico shiny que você ainda não tem (1 por dia)',
+  shinyPrizeTaken: 'O lendário ou mítico shiny de hoje já é seu. Volte amanhã!',
+};
+
 const sinnoh: LeagueTexts = {
   title: 'Liga de Sinnoh',
   subtitle: 'A Elite dos Quatro de Sinnoh e a Campeã Cynthia. Quatro duelos seguidos; a primeira derrota encerra a campanha.',
@@ -329,6 +356,27 @@ const regions = {
       win: 'Um final previsível. Estude mais os seus Pokémon.',
       lose: 'Um desfecho que eu não esperava. A Campeã espera por você.',
     },
+    // Liga Master
+    'blue-master': {
+      intro: 'Então você venceu as quatro Ligas. Agora sem lendários e sem shinies: só você, seu time e a sua estratégia.',
+      win: 'Muito poder nas outras Ligas, pouca estratégia aqui. Volte com um time de verdade.',
+      lose: 'Hmpf. Esse time foi bem pensado. Lance não vai ser tão fácil.',
+    },
+    'lance-master': {
+      intro: 'Aqui ninguém esconde a fraqueza atrás de um lendário. Meus dragões querem ver como o seu time responde.',
+      win: 'Um time precisa cobrir as próprias fraquezas. O seu não cobriu.',
+      lose: 'Você enfrentou meus dragões de igual para igual. Steven espera por você.',
+    },
+    'steven-master': {
+      intro: 'Sem lendários, cada pedra do time precisa estar bem lapidada. Vamos ver as suas.',
+      win: 'Boas pedras, mas mal encaixadas. Tente outra combinação.',
+      lose: 'Que time bem lapidado! Só resta Cynthia entre você e o título.',
+    },
+    'cynthia-master': {
+      intro: 'Chegar até aqui já diz muito sobre você. Agora, a última batalha, no mesmo nível, com tudo o que temos.',
+      win: 'Foi lindo, mas ainda não foi o bastante. A Liga Master abre de novo amanhã.',
+      lose: 'Nenhum lendário, nenhum shiny, e mesmo assim você venceu. Você é um verdadeiro Mestre Pokémon.',
+    },
     cynthia: {
       intro: 'Que bom que você chegou até aqui. Como Campeã de Sinnoh, vou batalhar com tudo o que tenho.',
       win: 'Foi uma batalha linda. Volte sempre que quiser me desafiar.',
@@ -336,7 +384,8 @@ const regions = {
     },
   } as Record<string, { intro: string; win: string; lose: string }>,
 
-  leagues: { hoenn, sinnoh },
+  leagues: { hoenn, sinnoh, master },
 };
 
+export { masterRules };
 export default regions;

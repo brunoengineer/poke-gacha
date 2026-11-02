@@ -60,6 +60,96 @@ test.describe('luck', () => {
   }
 });
 
+test.describe('master league', () => {
+  const NORMAL_TEAM = ['6', '10', '13', '16', '19', '25'];
+
+  /** Every title won, with a team allowed in; the huge levels only make the wins certain (the test checks the flow). */
+  function masterSave() {
+    const save = midGameSave();
+    const title = { runs: 1, best: 4, titles: 1 };
+    Object.assign(save.league, { ...title, johto: title, hoenn: title, sinnoh: title });
+    delete save.league.run;
+    save.coins = 50_000;
+    return withTeam(save, 999, NORMAL_TEAM);
+  }
+
+  test('stays closed until all four titles', async ({ page }) => {
+    const save = masterSave();
+    delete save.league.sinnoh;
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="master"]').click();
+    await expect(page.locator('.league-locked')).toBeVisible();
+    await expect(page.locator('.region-tab[data-region="master"] small')).toHaveText('3/4');
+  });
+
+  test('names the cards that cannot enter, and refuses them', async ({ page }) => {
+    const save = withTeam(masterSave(), 100, ['6s', '150', '251', '10', '13', '16']);
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="master"]').click();
+    const warning = page.locator('[data-banned]');
+    await expect(warning).toContainText('Shiny Charizard');
+    await expect(warning).toContainText('Mewtwo');
+    await expect(warning).toContainText('Celebi');
+    await page.locator('[data-act="enter"]').click();
+    await expect(page.locator('.modal-dialog')).toHaveCount(0);
+    expect((await stored(page)).league.master?.run).toBeUndefined();
+  });
+
+  test('a full run pays each win, then the title and a shiny', async ({ page }) => {
+    test.setTimeout(240_000);
+    const save = masterSave();
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="master"]').click();
+    await page.locator('[data-act="enter"]').click();
+    await page.locator('.modal-dialog [data-confirm]').click();
+    let after = await stored(page);
+    expect(after.coins).toBe(save.coins - 10_000);
+    expect(after.league.master.entries).toBe(1);
+
+    const balls = save.items['master-ball'] ?? 0;
+    let paid = 0;
+    for (const prize of [2, 3, 5]) {
+      await page.locator('[data-act="fight"]').click();
+      await playBattle(page);
+      await page.locator('.rewards-continue').click();
+      await expect(page.locator('.modal-rewards')).toHaveCount(0);
+      paid += prize;
+      after = await stored(page);
+      expect(after.items['master-ball']).toBe(balls + paid);
+      if (await page.locator('[data-heal="rest"]').count()) await page.locator('[data-heal="rest"]').click();
+    }
+
+    const shinies = Object.keys(save.cards).filter(key => key.endsWith('s')).length;
+    await page.locator('[data-act="fight"]').click();
+    await playBattle(page);
+    await expect.poll(async () => (await stored(page)).league.master.titles).toBe(1);
+    after = await stored(page);
+    expect(after.items['master-ball']).toBe(balls + paid + 10);
+    expect(after.league.master.run).toBeUndefined();
+    expect(Object.keys(after.cards).filter(key => key.endsWith('s'))).toHaveLength(shinies + 1);
+  });
+
+  test('a loss still uses the entry, and the third one closes the day', async ({ page }) => {
+    const save = masterSave();
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="master"]').click();
+    for (const used of [1, 2, 3]) {
+      await page.locator('[data-act="enter"]').click();
+      await page.locator('.modal-dialog [data-confirm]').click();
+      await page.locator('[data-act="abandon"]').click();
+      await page.locator('.modal-dialog [data-confirm]').click();
+      await page.locator('.rewards-continue').click();
+      await expect(page.locator('.modal-rewards')).toHaveCount(0);
+      expect((await stored(page)).league.master.entries).toBe(used);
+    }
+    const coins = (await stored(page)).coins;
+    await page.locator('[data-act="enter"]').click();
+    await expect(page.locator('.league-warn')).toBeVisible();
+    await expect(page.locator('.modal-dialog')).toHaveCount(0);
+    expect((await stored(page)).coins).toBe(coins);
+  });
+});
+
 test.describe('training', () => {
   test('a win pays coins and candy, and the team member picked trains', async ({ page }) => {
     const save = strongSave();

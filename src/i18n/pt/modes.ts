@@ -1,5 +1,5 @@
 // Textos em português do namespace "modes" (Ranqueada, Liga Pokémon). Funções recebem parâmetros (contagens, nomes).
-import regions from './regions';
+import regions, { masterRules } from './regions';
 
 const n = (value: number) => value.toLocaleString('pt-BR');
 
@@ -8,7 +8,7 @@ const modes = {
   yourTeam: 'Seu time',
   you: 'Você',
   level: (lv: number) => `Nv. ${n(lv)}`,
-  levelRange: (min: number, max: number) => `Nv. ${n(min)}–${n(max)}`,
+  levelRange: (min: number, max: number) => (min === max ? `Nv. ${n(min)}` : `Nv. ${n(min)}–${n(max)}`),
 
   /** Títulos das classes de treinador (ids em src/game/modes/competition.ts). */
   classes: {
@@ -218,6 +218,8 @@ const modes = {
     },
     hoenn: regions.leagues.hoenn,
     sinnoh: regions.leagues.sinnoh,
+    master: regions.leagues.master,
+    masterRules,
     lines: {
       lorelei: {
         intro: 'Bem-vindo à Liga. Meus Pokémon de gelo vão congelar a sua ambição.',

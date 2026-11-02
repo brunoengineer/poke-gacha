@@ -72,7 +72,7 @@ describe('pokémon league', () => {
   it('ends the run on the first loss with that round placement', () => {
     const save = leagueSave();
     startRun(save, 3);
-    expect(recordDuel(save, true)).toEqual({ kind: 'advance', duel: 1 });
+    expect(recordDuel(save, true)).toEqual({ kind: 'advance', duel: 1, rewards: [] });
     const out = recordDuel(save, false);
     expect(out).toMatchObject({ kind: 'out', placement: 1 });
     expect(rewardsOf(out)).toContainEqual({ kind: 'item', item: 'great-ball', amount: 5 });

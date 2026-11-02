@@ -1,7 +1,7 @@
 // League bracket view: 16 entrants in a mirrored tree (left half, final in the middle, right half).
 // Results show up round by round as the player wins; the player's path is highlighted in gold.
 
-import type { Bracket, Entrant } from '../../game/modes/league';
+import { MASTER_RIVALS, type Bracket, type Entrant } from '../../game/modes/league';
 import { L } from '../../i18n';
 import { esc, icon } from '../../ui/dom';
 import { classTitle, PLAYER_SPRITE, portrait } from './competition-ui';
@@ -13,6 +13,7 @@ export function entrantName(e: Entrant) {
 export function entrantTitle(e: Entrant) {
   const t = L().modes.league;
   if (e.kind === 'champion') return t.champion;
+  if (MASTER_RIVALS.some(rival => rival.id === e.id)) return t.masterRules.formerChampion;
   if (e.kind === 'e4') return t.eliteFour;
   if (e.kind === 'elite') return classTitle(e.classId ?? '');
   return '';

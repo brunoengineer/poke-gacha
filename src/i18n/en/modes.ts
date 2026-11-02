@@ -1,7 +1,7 @@
 // English strings for the "modes" namespace (Ranked, Pokémon League). Must have exactly the same keys as ../pt/modes.ts.
 import type pt from '../pt/modes';
 
-import regions from './regions';
+import regions, { masterRules } from './regions';
 
 const n = (value: number) => value.toLocaleString('en-US');
 
@@ -10,7 +10,7 @@ const modes: typeof pt = {
   yourTeam: 'Your team',
   you: 'You',
   level: (lv: number) => `Lv. ${n(lv)}`,
-  levelRange: (min: number, max: number) => `Lv. ${n(min)}–${n(max)}`,
+  levelRange: (min: number, max: number) => (min === max ? `Lv. ${n(min)}` : `Lv. ${n(min)}–${n(max)}`),
 
   classes: {
     youngster: 'Youngster', lass: 'Lass', bugcatcher: 'Bug Catcher', picnicker: 'Picnicker', camper: 'Camper',
@@ -218,6 +218,8 @@ const modes: typeof pt = {
     },
     hoenn: regions.leagues.hoenn,
     sinnoh: regions.leagues.sinnoh,
+    master: regions.leagues.master,
+    masterRules,
     lines: {
       lorelei: {
         intro: 'Welcome to the League. My ice Pokémon will freeze your ambition.',

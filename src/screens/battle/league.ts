@@ -1,7 +1,7 @@
 // Pokémon League (#/battle/league): locked panel until 8 badges, then the lobby (entry, prizes, Hall of Fame)
 // or the run in progress (next duel card, your path and the 16-slot bracket). It applies each duel's result,
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
-// A region switch (Kanto, Johto, Hoenn, Sinnoh) picks the league; each keeps its own run, titles and Hall of Fame.
+// A switch (Kanto, Johto, Hoenn, Sinnoh, Master) picks the league; each keeps its own run, titles and Hall of Fame.
 // During a run the registered team is shown with its HP (it carries over between duels), and before each duel after
 // the first the player makes one heal choice (Potion, Revive or Rest).
 
@@ -11,15 +11,15 @@ import { trainerSpriteUrl } from '../../data/sprites';
 import { UNLOCK_BADGES } from '../../game/economy';
 import { regionBadges } from '../../game/modes/gyms';
 import {
-  abandonRun, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
-  leagueFee, leagueRecord, REST_HP, REVIVE_HP, runScale, runTeam, setRunHp, type HealKind, type LeagueRun,
-  LEAGUE_REGIONS, leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, type Bracket,
-  type Entrant, type LeagueRegion,
+  abandonRun, ALL_LEAGUES, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
+  leagueFee, leagueRecord, leagueTitles, LEAGUE_REGIONS, leagueUnlocked, MASTER_DAILY_ENTRIES, masterBanned, masterEntriesToday, masterShinyAvailable,
+  PLACEMENTS, placementRewards, recordDuel, REST_HP, REVIVE_HP, runBonus, runScale, runTeam, setRunHp, startRun, winRewards, type Bracket,
+  type Entrant, type HealKind, type LeagueRegion, type LeagueRun,
 } from '../../game/modes/league';
 import type { Reward } from '../../game/rewards';
 import { toBattleCard, type TeamMember } from '../../game/battle';
 import { parseKey } from '../../game/cards';
-import { getSpecies } from '../../data/species';
+import { getSpecies, hasSpecies } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { hashString } from '../../game/rng';
@@ -45,11 +45,12 @@ let fresh = -1;
 let region: LeagueRegion | null = null;
 
 const t = () => L().modes.league;
+const m = () => t().masterRules;
 
 function shownRegion(): LeagueRegion {
   if (region) return region;
   const save = store.save;
-  const newestFirst = [...LEAGUE_REGIONS].reverse();
+  const newestFirst = [...ALL_LEAGUES].reverse();
   return newestFirst.find(r => leagueRecord(save, r).run) ?? newestFirst.find(r => leagueUnlocked(save, r)) ?? 'kanto';
 }
 
@@ -94,11 +95,12 @@ function regionTabs() {
     if (league.run) return t().duelOf(league.run.duel + 1, LEAGUE_DUELS);
     return league.best >= 0 ? placementName(league.best) : t().never;
   };
-  return regionSwitchHTML(shownRegion(), LEAGUE_REGIONS.map(r => {
+  return regionSwitchHTML(shownRegion(), ALL_LEAGUES.map(r => {
     const open = leagueUnlocked(store.save, r);
     return {
       region: r, locked: !open, done: leagueRecord(store.save, r).titles > 0,
-      note: open ? note(r) : `${regionBadges(store.save.gyms, r)}/${UNLOCK_BADGES.league}`,
+      label: r === 'master' ? m().tab : undefined,
+      note: open ? note(r) : r === 'master' ? `${leagueTitles(store.save)}/${LEAGUE_REGIONS.length}` : `${regionBadges(store.save.gyms, r)}/${UNLOCK_BADGES.league}`,
     };
   }), t().region);
 }
@@ -125,8 +127,9 @@ function render() {
 }
 
 function lockedHTML() {
-  const badges = regionBadges(store.save.gyms, shownRegion());
-  const needed = UNLOCK_BADGES.league;
+  const shown = shownRegion();
+  const badges = shown === 'master' ? leagueTitles(store.save) : regionBadges(store.save.gyms, shown);
+  const needed = shown === 'master' ? LEAGUE_REGIONS.length : UNLOCK_BADGES.league;
   return `
     <section class="league-locked">
       <div class="league-emblem is-locked">${TROPHY_SVG}<span class="league-lock">${icon('lock')}</span></div>
@@ -135,7 +138,7 @@ function lockedHTML() {
       <ol class="badge-slots" aria-hidden="true">
         ${Array.from({ length: needed }, (_, i) => `<li class="${i < badges ? 'is-earned' : ''}">${icon(i < badges ? 'check' : 'medal')}</li>`).join('')}
       </ol>
-      <a class="btn btn-primary" href="#/battle/gyms">${icon('medal')} ${esc(t().goGyms)}</a>
+      ${shown === 'master' ? '' : `<a class="btn btn-primary" href="#/battle/gyms">${icon('medal')} ${esc(t().goGyms)}</a>`}
       ${bossesHTML()}
     </section>`;
 }
@@ -148,7 +151,7 @@ function bossesHTML() {
         <li class="boss${i === bosses.length - 1 ? ' is-champion' : ''}">
           ${portrait(b.sprite, b.name)}
           <b>${esc(b.name)}</b>
-          <small>${esc(i === bosses.length - 1 ? t().champion : t().eliteFour)}</small>
+          <small>${esc(i === bosses.length - 1 ? t().champion : shownRegion() === 'master' ? m().formerChampion : t().eliteFour)}</small>
         </li>`).join('')}
     </ul>`;
 }
@@ -161,11 +164,34 @@ function rewardChips(rewards: Reward[]) {
   }).join('');
 }
 
+/** The Master League's prizes: each win pays on the spot, and the title adds the day's shiny. */
+function masterPrizesHTML() {
+  return [...Array(LEAGUE_DUELS).keys()].reverse().map(i => {
+    const title = i === LEAGUE_DUELS - 1;
+    return `
+      <li class="prize${title ? ' is-champion' : ''}">
+        <b class="prize-name">${title ? icon('crown') : ''}${esc(title ? t().champion : m().win(i + 1))}</b>
+        <span class="prize-chips">${rewardChips(winRewards(i, 'master'))}</span>
+        ${title ? `<small class="prize-extra">${icon('sparkle')} ${esc(masterShinyAvailable(store.save) ? m().shinyPrize : m().shinyPrizeTaken)}</small>` : ''}
+      </li>`;
+  }).join('');
+}
+
+/** The team's cards the Master League refuses, by name. */
+function bannedNames() {
+  return masterBanned(store.save.deck).map(key => {
+    const { id, shiny } = parseKey(key);
+    const name = hasSpecies(id) ? getSpecies(id).name : key;
+    return shiny ? m().shinyName(name) : name;
+  }).join(', ');
+}
+
 function lobbyHTML(check: ReturnType<typeof canEnter>) {
   const shown = shownRegion();
   const league = rec();
   const fee = leagueFee(shown);
-  const bonus = titleBonus(league.titles);
+  const bonus = runBonus(league.titles, shown);
+  const banned = shown === 'master' ? bannedNames() : '';
   // What this team would meet if it entered now.
   const scale = playerScale(store.save);
   const first = duelDifficulty(0, bonus, shown, scale);
@@ -183,10 +209,13 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
           <span class="pill">${icon('coin', 'i-coin')} ${esc(t().fee)}: <b>₽ ${fmt(fee)}</b></span>
           <span class="pill">${icon('bolt')} ${esc(t().levels)}: <b>${esc(L().modes.levelRange(min, max))}</b>${bonus ? ` <small>(${esc(t().bonus(bonus))})</small>` : ''}</span>
           ${first.scaled || last.scaled ? `<span class="pill is-scaled" title="${esc(t().scaledHint)}">${icon('up')} ${esc(t().scaled)}</span>` : ''}
+          ${shown === 'master' ? `<span class="pill">${icon('flag')} ${esc(m().entries)}: <b>${fmt(masterEntriesToday(store.save))}/${fmt(MASTER_DAILY_ENTRIES)}</b></span>` : ''}
           ${league.titles ? `<span class="pill is-gold">${icon('crown')} ${esc(t().titles)}: <b>${fmt(league.titles)}</b></span>` : ''}
         </div>
         <button class="btn btn-primary btn-lg" type="button" data-act="enter">${icon('flag')} ${esc(t().enter)} <small class="btn-price">₽ ${fmt(fee)}</small></button>
         ${check === 'coins' ? `<p class="league-warn">${esc(L().core.notEnoughCoins(fee))}</p>` : ''}
+        ${check === 'daily' ? `<p class="league-warn">${esc(m().noEntries(MASTER_DAILY_ENTRIES))}</p>` : ''}
+        ${banned ? `<p class="league-warn" data-banned>${esc(m().banned(banned))}</p>` : ''}
       </div>
       ${bossesHTML()}
     </section>
@@ -194,7 +223,7 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
       <section class="panel prizes" aria-labelledby="prizes-title">
         <h2 class="section-title" id="prizes-title">${icon('gift')} ${esc(t().prizes)}</h2>
         <ol class="prize-list">
-          ${[...PLACEMENTS.keys()].reverse().map(i => `
+          ${shown === 'master' ? masterPrizesHTML() : [...PLACEMENTS.keys()].reverse().map(i => `
             <li class="prize${i === CHAMPION ? ' is-champion' : ''}${league.best === i ? ' is-best' : ''}">
               <b class="prize-name">${i === CHAMPION ? icon('crown') : ''}${esc(placementName(i))}</b>
               <span class="prize-chips">${rewardChips(placementRewards(i, shown))}</span>
@@ -336,7 +365,7 @@ function pathHTML(bracket: Bracket, won: number) {
 // --- Actions -------------------------------------------------------------------------
 
 function onClick(event: Event) {
-  const picked = clickedRegion(event);
+  const picked = clickedRegion(event) as LeagueRegion | undefined;
   if (picked && !busy) {
     if (picked !== shownRegion()) {
       sfx('toggle');
@@ -365,10 +394,20 @@ async function enter() {
     toast(L().core.notEnoughCoins(fee), 'warning');
     return;
   }
+  if (check === 'daily' || check === 'banned') {
+    sfx('error');
+    toast(check === 'daily' ? m().noEntries(MASTER_DAILY_ENTRIES) : m().banned(bannedNames()), 'warning');
+    return;
+  }
   if (check === 'team' || !teamReady()) return;
   if (check !== 'ok') return;
   sfx('open');
-  const ok = await confirmDialog({ title: t().enterTitle, message: t().enterText(fee), confirmText: t().enterConfirm });
+  const master = shown === 'master';
+  const ok = await confirmDialog({
+    title: master ? m().enterTitle : t().enterTitle,
+    message: master ? m().enterText(fee, MASTER_DAILY_ENTRIES - masterEntriesToday(store.save) - 1) : t().enterText(fee),
+    confirmText: t().enterConfirm,
+  });
   if (!ok) return;
   region = shown;
   if (update(save => startRun(save, undefined, undefined, shown), ['progress'])) sfx('buy');
@@ -443,9 +482,11 @@ async function fight() {
 
     if (result.kind === 'advance') {
       fresh = result.duel;
+      const paid = result.rewards.length ? grant(result.rewards) : [];
       busy = false;
       render();
-      toast(t().advanced(t().stages[result.duel]), 'success');
+      if (paid.length) await showRewards(paid, { title: m().winTitle, subtitle: t().advanced(t().stages[result.duel]) });
+      else toast(t().advanced(t().stages[result.duel]), 'success');
       return;
     }
     render();
