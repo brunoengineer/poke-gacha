@@ -38,7 +38,9 @@ test('the header fits on every screen wide enough to show the tabs', async ({ pa
     await page.evaluate(l => localStorage.setItem('pg-lang', l), lang);
     await page.reload();
     await expect(page.locator('.topbar')).toBeVisible();
-    for (const width of [681, 700, 760, 761, 880, 960, 961, 1024]) {
+    // Wide on purpose: it's what a player sees if the web font fails, and it makes every OS test the same worst case.
+    await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; letter-spacing: .02em !important; }' });
+    for (const width of [681, 700, 800, 801, 900, 1040, 1041, 1200]) {
       await page.setViewportSize({ width, height: 700 });
       await expectNoSideScroll(page);
       const [brand, tabs, end] = await Promise.all(['.brand', '.tabs', '.topbar-end'].map(s => page.locator(s).boundingBox()));
