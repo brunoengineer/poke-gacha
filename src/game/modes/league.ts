@@ -5,8 +5,8 @@
 // the Champion in the final. The other matches are decided by strength, so the people you meet next really
 // did win their way to you. The run lives in the save, so leaving and coming back continues it.
 // Attrition: the team is registered (locked) when the run starts, and HP and faints carry over between duels.
-// Between duels the player makes one heal choice: a Potion (one Pokémon to full), a Revive (one fainted Pokémon
-// back at half HP) or a Rest (the whole team recovers 20%; fainted ones stay down).
+// Before each duel after the first the player gets 2 Revives (a fainted Pokémon back at half HP) and 4 Potions (one
+// Pokémon to full); what isn't used is lost.
 // A team above a duel's levels makes the opponents train up to match (scaling.ts).
 // Every region has a league in the same format: Kanto (Blue), Johto (Lance), Hoenn (Steven), Sinnoh (Cynthia), each
 // stronger and pricier than the last. Functions take the region last and default to Kanto; the other regions' progress
@@ -44,7 +44,9 @@ export interface LeagueRun {
   team?: CardKey[];
   /** HP of each registered card as a fraction of max HP, by registered key (missing = full). */
   hp?: Record<CardKey, number>;
-  /** Duel index whose heal choice was already used (one choice before each duel after the first). */
+  /** Items already used before duel `duel` (older runs: none). */
+  used?: { duel: number; potions: number; revives: number };
+  /** Older runs only: the duel whose one heal choice was used. Nothing reads it now. */
   healed?: number;
 }
 
@@ -423,37 +425,46 @@ export function setRunHp(save: SaveData, hpLeft: number[], region: LeagueRegion 
   run.hp = Object.fromEntries(team.map((m, i) => [m.registered, Math.max(0, Math.min(1, hpLeft[i] ?? m.hp))]));
 }
 
-export type HealKind = 'potion' | 'revive' | 'rest';
+export type HealKind = 'potion' | 'revive';
 export const REVIVE_HP = 0.5;
-export const REST_HP = 0.2;
-/** True when the next duel still has its heal choice to make (and there is anything to heal). The Master League has none. */
-export function healPending(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun, region: LeagueRegion = 'kanto'): boolean {
-  if (region === 'master') return false;
-  return run.duel > 0 && run.healed !== run.duel && runTeam(save, run).some(m => m.hp < 1);
+/** What the regions' Leagues give before each duel after the first. */
+export const LEAGUE_KIT = { potions: 4, revives: 2 };
+
+/** The items still available before the next duel. */
+export function kitLeft(run: LeagueRun) {
+  const used = run.used?.duel === run.duel ? run.used : { potions: 0, revives: 0 };
+  return { potions: LEAGUE_KIT.potions - used.potions, revives: LEAGUE_KIT.revives - used.revives };
 }
 
-/** Which heals can be used now, and on whom. */
+/** True when the next duel still has an item to use (and anyone to use it on). The Master League has none. */
+export function healPending(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun, region: LeagueRegion = 'kanto'): boolean {
+  if (region === 'master' || run.duel === 0) return false;
+  const targets = healTargets(save, run);
+  return targets.potion.length > 0 || targets.revive.length > 0;
+}
+
+/** Which items can be used now, and on whom. */
 export function healTargets(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun): Record<HealKind, CardKey[]> {
   const team = runTeam(save, run);
+  const left = kitLeft(run);
   return {
-    potion: team.filter(m => m.hp > 0 && m.hp < 1).map(m => m.registered),
-    revive: team.filter(m => m.hp <= 0).map(m => m.registered),
-    rest: team.some(m => m.hp > 0 && m.hp < 1) ? team.filter(m => m.hp > 0 && m.hp < 1).map(m => m.registered) : [],
+    potion: left.potions > 0 ? team.filter(m => m.hp > 0 && m.hp < 1).map(m => m.registered) : [],
+    revive: left.revives > 0 ? team.filter(m => m.hp <= 0).map(m => m.registered) : [],
   };
 }
 
-/** Uses the heal choice before the next duel (mutates the save). `target` is a registered key (Potion, Revive). */
-export function applyHeal(save: SaveData, kind: HealKind, target: CardKey | null = null, region: LeagueRegion = 'kanto'): boolean {
+/** Uses an item before the next duel (mutates the save). `target` is a registered key. */
+export function applyHeal(save: SaveData, kind: HealKind, target: CardKey, region: LeagueRegion = 'kanto'): boolean {
   const run = leagueRecord(save, region).run;
   if (!run || !healPending(save, run, region)) return false;
-  const targets = healTargets(save, run)[kind];
-  if (!targets.length || (kind !== 'rest' && (!target || !targets.includes(target)))) return false;
-  const hp = { ...run.hp };
-  if (kind === 'potion') hp[target!] = 1;
-  else if (kind === 'revive') hp[target!] = REVIVE_HP;
-  else for (const m of runTeam(save, run)) if (m.hp > 0) hp[m.registered] = Math.min(1, m.hp + REST_HP);
-  run.hp = hp;
-  run.healed = run.duel;
+  if (!healTargets(save, run)[kind].includes(target)) return false;
+  const left = kitLeft(run);
+  run.hp = { ...run.hp, [target]: kind === 'potion' ? 1 : REVIVE_HP };
+  run.used = {
+    duel: run.duel,
+    potions: LEAGUE_KIT.potions - left.potions + (kind === 'potion' ? 1 : 0),
+    revives: LEAGUE_KIT.revives - left.revives + (kind === 'revive' ? 1 : 0),
+  };
   return true;
 }
 

@@ -143,7 +143,7 @@ describe('master league duels', () => {
     const run = save.league.master!.run!;
     expect(run.hp).toEqual({});
     expect(healPending(save, run, 'master')).toBe(false);
-    for (const kind of ['potion', 'revive', 'rest'] as const) expect(applyHeal(save, kind, '6', 'master')).toBe(false);
+    for (const kind of ['potion', 'revive'] as const) expect(applyHeal(save, kind, '6', 'master')).toBe(false);
   });
 
   it('does not lock the team, and a run from before this rule needs nothing to go on', () => {
@@ -154,14 +154,14 @@ describe('master league duels', () => {
     expect(healPending(save, run, 'master')).toBe(false);
   });
 
-  it('the other leagues keep their one heal choice', () => {
+  it('the other leagues keep their items', () => {
     const save = masterSave();
     save.gyms.badges = ['boulder', 'cascade', 'thunder', 'rainbow', 'soul', 'marsh', 'volcano', 'earth'];
     startRun(save, 7, NOON);
     setRunHp(save, [0.5, 0.5, 1, 1, 1, 1]);
     recordDuel(save, true);
     expect(applyHeal(save, 'potion', '6')).toBe(true);
-    expect(applyHeal(save, 'potion', '9')).toBe(false);
+    expect(save.league.run!.hp!['6']).toBe(1);
   });
 });
 

@@ -3,7 +3,7 @@
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
 // A switch (Kanto, Johto, Hoenn, Sinnoh, Master) picks the league; each keeps its own run, titles and Hall of Fame.
 // During a run the registered team is shown with its HP (it carries over between duels), and before each duel after
-// the first the player makes one heal choice (Potion, Revive or Rest). The Master League has neither: each duel starts
+// the first the player gets 2 Revives and 4 Potions. The Master League has neither: each duel starts
 // at full HP with the current team, which the player can change between duels (saved teams one click away).
 
 import { sfx } from '../../audio';
@@ -12,9 +12,9 @@ import { trainerSpriteUrl } from '../../data/sprites';
 import { UNLOCK_BADGES } from '../../game/economy';
 import { regionBadges } from '../../game/modes/gyms';
 import {
-  abandonRun, ALL_LEAGUES, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
-  leagueFee, leagueRecord, leagueTitles, LEAGUE_REGIONS, leagueUnlocked, MASTER_DAILY_ENTRIES, masterBanned, masterEntriesToday, masterShinyAvailable,
-  PLACEMENTS, placementRewards, recordDuel, REST_HP, REVIVE_HP, runBonus, runScale, runTeam, setRunHp, startRun, winRewards, type Bracket,
+  abandonRun, ALL_LEAGUES, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, kitLeft, LEAGUE_DUELS,
+  LEAGUE_KIT, leagueFee, leagueRecord, leagueTitles, LEAGUE_REGIONS, leagueUnlocked, MASTER_DAILY_ENTRIES, masterBanned, masterEntriesToday, masterShinyAvailable,
+  PLACEMENTS, placementRewards, recordDuel, REVIVE_HP, runBonus, runScale, runTeam, setRunHp, startRun, winRewards, type Bracket,
   type Entrant, type HealKind, type LeagueRegion, type LeagueRun,
 } from '../../game/modes/league';
 import type { Reward } from '../../game/rewards';
@@ -294,11 +294,12 @@ function runHTML() {
     ${master ? '' : runTeamHTML(run)}`;
 }
 
-/** The registered team with its HP; before a duel (after the first) it hosts the heal choice. */
+/** The registered team with its HP; before a duel (after the first) it hosts the items. */
 function runTeamHTML(run: LeagueRun) {
   const team = runTeam(store.save, run);
   const pending = healPending(store.save, run);
   const targets = pending ? healTargets(store.save, run) : null;
+  const left = kitLeft(run);
   const member = (m: ReturnType<typeof runTeam>[number]) => {
     const { id, shiny } = parseKey(m.key);
     const sp = getSpecies(id);
@@ -327,8 +328,8 @@ function runTeamHTML(run: LeagueRun) {
       </header>
       ${pending ? `
         <div class="heal-choice">
-          <p><b>${esc(t().healTitle)}</b> ${esc(t().healText(Math.round(REVIVE_HP * 100)))}</p>
-          <button class="btn btn-secondary btn-sm" type="button" data-heal="rest" ${targets!.rest.length ? '' : 'disabled'}>${icon('sparkle')} ${esc(t().rest(Math.round(REST_HP * 100)))}</button>
+          <p><b>${esc(t().healTitle(LEAGUE_KIT.revives, LEAGUE_KIT.potions))}</b> ${esc(t().healText(Math.round(REVIVE_HP * 100)))}</p>
+          <span class="pill" data-kit-left>${esc(t().revive)}: <b>${fmt(left.revives)}</b> · ${esc(t().potion)}: <b>${fmt(left.potions)}</b></span>
         </div>` : ''}
       <ol class="run-mons">${team.map(member).join('')}</ol>
     </section>`;
@@ -381,7 +382,7 @@ function onClick(event: Event) {
     return;
   }
   const heal = (event.target as Element).closest<HTMLButtonElement>('[data-heal]');
-  if (heal && !busy && !heal.disabled) return void useHeal(heal.dataset.heal as HealKind, heal.dataset.key ?? null);
+  if (heal && !busy) return void useHeal(heal.dataset.heal as HealKind, heal.dataset.key!);
   const button = (event.target as Element).closest<HTMLElement>('[data-act]');
   if (!button || busy) return;
   const act = button.dataset.act;
@@ -410,7 +411,7 @@ async function enter() {
   const master = shown === 'master';
   const ok = await confirmDialog({
     title: master ? m().enterTitle : t().enterTitle,
-    message: master ? m().enterText(fee, MASTER_DAILY_ENTRIES - masterEntriesToday(store.save) - 1) : t().enterText(fee),
+    message: master ? m().enterText(fee, MASTER_DAILY_ENTRIES - masterEntriesToday(store.save) - 1) : t().enterText(fee, LEAGUE_KIT.revives, LEAGUE_KIT.potions),
     confirmText: t().enterConfirm,
   });
   if (!ok) return;
@@ -418,13 +419,13 @@ async function enter() {
   if (update(save => startRun(save, undefined, undefined, shown), ['progress'])) sfx('buy');
 }
 
-function useHeal(kind: HealKind, target: string | null) {
+function useHeal(kind: HealKind, target: string) {
   const shown = shownRegion();
   region = shown;
   if (!update(save => applyHeal(save, kind, target, shown), ['progress'])) return;
   sfx(kind === 'revive' ? 'levelUp' : 'candy');
-  const name = target ? getSpecies(parseKey(runTeam(store.save, rec().run!).find(m => m.registered === target)?.key ?? target).id).name : '';
-  toast(kind === 'rest' ? t().restDone(Math.round(REST_HP * 100)) : kind === 'revive' ? t().reviveDone(name) : t().potionDone(name), 'success');
+  const name = getSpecies(parseKey(runTeam(store.save, rec().run!).find(m => m.registered === target)?.key ?? target).id).name;
+  toast(kind === 'revive' ? t().reviveDone(name) : t().potionDone(name), 'success');
 }
 
 async function abandon() {

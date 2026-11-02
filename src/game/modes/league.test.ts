@@ -6,7 +6,7 @@ import { JOHTO_BADGES } from './gyms';
 import {
   type DuelResult, abandonRun, buildBracket, canEnter, championBoss, duelInfo, firstTitleStarter, JOHTO_CHAMPION, JOHTO_ELITE_FOUR,
   JOHTO_LEAGUE_FEE, LEAGUE_FEE, leagueRecord, MAX_BONUS, placementRewards, recordDuel, startRun, titleBonus,
-  applyHeal, healPending, healTargets, runTeam, setRunHp,
+  applyHeal, healPending, healTargets, kitLeft, runTeam, setRunHp,
 } from './league';
 
 const TEAM = ['6', '9', '3', '25', '143', '130'];
@@ -245,25 +245,49 @@ describe('league attrition', () => {
     expect(healPending(save, save.league.run!)).toBe(true);
   });
 
-  it('allows exactly one heal choice before each duel: Potion, Revive or Rest', () => {
+  it('gives 2 Revives and 4 Potions before each duel, and what is not used is lost', () => {
     const save = started();
-    setRunHp(save, [1, 0.4, 0, 1, 1, 0.9]);
+    const key = (i: number) => TEAM[i];
+    setRunHp(save, [0, 0, 0, 0.4, 0.3, 0.2]);
     recordDuel(save, true);
     const run = save.league.run!;
-    expect(healTargets(save, run)).toEqual({ potion: ['9', '130'], revive: ['3'], rest: ['9', '130'] });
-    expect(applyHeal(save, 'potion', '3')).toBe(false); // a fainted one needs a Revive
-    expect(applyHeal(save, 'revive', '3')).toBe(true);
-    expect(run.hp!['3']).toBe(0.5);
-    expect(applyHeal(save, 'rest')).toBe(false); // one choice per duel
+    const hp = () => runTeam(save, run).map(m => m.hp);
+    expect(kitLeft(run)).toEqual({ potions: 4, revives: 2 });
+    expect(healTargets(save, run)).toEqual({ potion: [key(3), key(4), key(5)], revive: [key(0), key(1), key(2)] });
+    expect(applyHeal(save, 'potion', key(0))).toBe(false); // a fainted one needs a Revive
+    expect(applyHeal(save, 'revive', key(3))).toBe(false); // and a Revive, a fainted one
+    expect(applyHeal(save, 'revive', key(0))).toBe(true);
+    expect(applyHeal(save, 'revive', key(1))).toBe(true);
+    expect(applyHeal(save, 'revive', key(2))).toBe(false); // only two
+    expect(applyHeal(save, 'potion', key(0))).toBe(true); // tops up one just revived
+    expect(healPending(save, run)).toBe(true);
+    for (const i of [3, 4, 5]) expect(applyHeal(save, 'potion', key(i))).toBe(true);
+    expect(applyHeal(save, 'potion', key(1))).toBe(false); // only four
+    expect(hp()).toEqual([1, 0.5, 0, 1, 1, 1]);
+    expect(kitLeft(run)).toEqual({ potions: 0, revives: 0 });
     expect(healPending(save, run)).toBe(false);
-    // Next round: Rest heals the living by 20%, fainted ones stay down.
-    setRunHp(save, [0.5, 0, 1, 1, 1, 0.95]);
+    // The next duel gives a new set.
+    setRunHp(save, hp());
     recordDuel(save, true);
-    expect(applyHeal(save, 'rest')).toBe(true);
-    expect(runTeam(save, run).map(m => m.hp)).toEqual([0.7, 0, 1, 1, 1, 1]);
+    expect(kitLeft(run)).toEqual({ potions: 4, revives: 2 });
+    expect(healPending(save, run)).toBe(true);
+    // Nobody to use the rest on: the duel doesn't wait.
+    setRunHp(save, [1, 1, 1, 1, 1, 0.5]);
+    expect(applyHeal(save, 'potion', key(5))).toBe(true);
+    expect(healPending(save, run)).toBe(false);
   });
 
-  it('skips the heal choice when nobody is hurt', () => {
+  it('a run from before the items gets them too, even after its one heal choice', () => {
+    const save = started();
+    setRunHp(save, [0, 1, 1, 1, 1, 1]);
+    recordDuel(save, true);
+    const run = save.league.run!;
+    run.healed = run.duel;
+    expect(healPending(save, run)).toBe(true);
+    expect(applyHeal(save, 'revive', TEAM[0])).toBe(true);
+  });
+
+  it('asks for nothing when nobody is hurt', () => {
     const save = started();
     setRunHp(save, [1, 1, 1, 1, 1, 1]);
     recordDuel(save, true);

@@ -285,9 +285,9 @@ Needs 8 badges and a full team; entry fee ₽1,000. Four duels in a row; the fir
 
 **Attrition** (every region's League): the team is **registered at entry** and locked for the whole run (changing the
 team in the Collection doesn't affect it; a registered card that evolves mid-run is followed). **HP and faints carry
-over** between duels, stored as a fraction of max HP. Before each duel after the first, the player makes **one heal
-choice**: a **Potion** (one Pokémon back to full), a **Revive** (one fainted Pokémon back at 50%) or a **Rest** (the
-whole team +20%; fainted ones stay down). No choice is asked when nobody is hurt. "Perfect" only counts faints in that
+over** between duels, stored as a fraction of max HP. Before each duel after the first, the player gets **2 Revives** (a
+fainted Pokémon back at 50%) and **4 Potions** (one Pokémon back to full, including one just revived); what isn't used is
+lost. The next duel waits until no item has anyone left to use it on. "Perfect" only counts faints in that
 duel. The post-battle level-up goes to the registered team. Prizes didn't change:
 
 | Lost at | Placement | Reward |

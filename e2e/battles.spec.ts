@@ -512,22 +512,28 @@ test.describe('pokémon league', () => {
     expect(after.league.run.duel).toBe(1);
   });
 
-  test('HP carries over, and the heal choice comes before the next duel', async ({ page }) => {
+  test('HP carries over, and the items come before the next duel', async ({ page }) => {
     const save = kantoSave();
     save.league.run = {
       seed: 7, duel: 1, bonus: 0, startedAt: 1, team: CARRY_TEAM,
-      hp: { '150s': 1, 19: 0, 16: 0.4, 10: 1, 13: 1, 129: 1 },
+      hp: { '150s': 1, 19: 0, 16: 0.4, 10: 0.7, 13: 0.6, 129: 0.8 },
     };
     await startGame(page, save, 'battle/league');
     await page.locator('.region-tab[data-region="kanto"]').click();
 
-    // Battling is blocked until the heal is chosen.
+    // Battling is blocked until the items are used.
     await expect(page.locator('[data-act="fight"]')).toHaveCount(0);
     await expect(page.locator('.run-mon.is-fainted')).toHaveCount(1);
     await page.locator('[data-heal="revive"]').click();
     let after = await stored(page);
     expect(after.league.run.hp['19']).toBe(0.5);
-    expect(after.league.run.healed).toBe(1);
+    await expect(page.locator('[data-kit-left]')).toContainText('1');
+    await expect(page.locator('[data-act="fight"]')).toHaveCount(0);
+    for (const name of ['Rattata', 'Caterpie', 'Weedle', 'Magikarp']) await page.locator('.run-mon', { hasText: name }).locator('[data-heal="potion"]').click();
+    after = await stored(page);
+    expect(after.league.run.hp['19']).toBe(1);
+    expect(after.league.run.hp['10']).toBe(1);
+    expect(after.league.run.used).toEqual({ duel: 1, potions: 4, revives: 1 });
     await expect(page.locator('[data-heal]')).toHaveCount(0);
 
     // The strong one wins alone, so whoever stayed out keeps the HP they had.
@@ -559,7 +565,7 @@ test.describe('pokémon league', () => {
     const save = withTeam(midGameSave(), 178);
     save.cards[STRONG_TEAM[0]].level = 330;
     delete save.league.run;
-    save.league.run = { seed: 7, duel: 3, bonus: 0, startedAt: 1, team: STRONG_TEAM, hp: {}, healed: 3 };
+    save.league.run = { seed: 7, duel: 3, bonus: 0, startedAt: 1, team: STRONG_TEAM, hp: {} };
     await startGame(page, save, 'battle/league');
     await page.locator('.region-tab[data-region="kanto"]').click();
     // Average 203: the final at +30% (264), its ace at the team's strongest.
