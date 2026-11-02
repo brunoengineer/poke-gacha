@@ -1,7 +1,7 @@
 // Every battle mode, played for real from its lobby to its rewards.
 
 import type { Page } from '@playwright/test';
-import { CARRY_TEAM, closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withCarry, withTeam } from './helpers';
+import { type Save, CARRY_TEAM, closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withCarry, withTeam } from './helpers';
 
 const strongSave = () => withTeam(midGameSave(), 5000);
 /** Reputation above the top of the ladder: the player is No. 1. */
@@ -58,6 +58,79 @@ test.describe('luck', () => {
       await expect.poll(async () => (await pops(page)).some(pop => pop.name.includes('pop-dmg'))).toBe(true);
     });
   }
+});
+
+test.describe('legendary battle', () => {
+  /** A team that wins Kanto's boss: one huge Pokémon carries it, and the low average keeps the boss at Lv. 70. */
+  function raidSave() {
+    const save = withCarry(midGameSave());
+    save.league.titles = 1;
+    save.coins = 50_000;
+    return save;
+  }
+
+  /** Fixes this mode's rolls at 50%: Moltres comes out, and no catch happens by luck (only the guaranteed one). */
+  const fixRolls = (page: Page) => page.addInitScript(() => {
+    const real = Math.random;
+    Math.random = () => (new Error().stack?.includes('raid.ts') ? 0.5 : real());
+  });
+
+  async function challengeKanto(page: Page, save: Save) {
+    await startGame(page, save, 'battle/raid');
+    await page.locator('.region-tab[data-region="kanto"]').click();
+    await page.locator('[data-act="raid"]').click();
+    await page.locator('.modal-dialog [data-confirm]').click();
+    await expect(page.locator('.arena-layer')).toBeVisible();
+  }
+
+  test('a win pays, and the guaranteed catch gives the card', async ({ page }) => {
+    const save = raidSave();
+    for (const id of [144, 145, 146, 150, 151]) delete save.cards[id];
+    save.raid = { kanto: { wins: 14, losses: 0, sinceCatch: 14 } };
+    await fixRolls(page);
+    await challengeKanto(page, save);
+    await expect(page.locator('.arena-layer .intro-opp')).toContainText('Moltres');
+    await playBattle(page);
+    await page.locator('.rewards-continue').click();
+    const after = await stored(page);
+    expect(after.raid.kanto).toMatchObject({ wins: 15, sinceCatch: 0 });
+    expect(after.coins).toBeGreaterThanOrEqual(save.coins - 3000 + 750);
+    expect([144, 145, 146, 150, 151].filter(id => after.cards[id])).toEqual([146]);
+    expect(after.items['rare-candy']).toBeGreaterThan(save.items['rare-candy'] ?? 0);
+  });
+
+  test('an owned boss gives a Master Ball instead', async ({ page }) => {
+    const save = raidSave();
+    for (const id of [144, 145, 146, 150, 151]) save.cards[id] = { level: 50, copies: 1, obtainedAt: 1 };
+    save.raid = { kanto: { wins: 14, losses: 0, sinceCatch: 14 } };
+    await fixRolls(page);
+    await challengeKanto(page, save);
+    await playBattle(page);
+    await page.locator('.rewards-continue').click();
+    const after = await stored(page);
+    expect(after.items['master-ball']).toBe((save.items['master-ball'] ?? 0) + 1);
+    expect(after.cards[146].copies).toBe(1);
+  });
+
+  test('giving up keeps the fee and pays nothing', async ({ page }) => {
+    const save = raidSave();
+    await challengeKanto(page, save);
+    await page.locator('.arena-layer [data-act="start"]').click();
+    await page.locator('.arena-layer [data-act="forfeit"]').click();
+    await page.locator('.modal-dialog [data-confirm]').click();
+    await expect(page.locator('.arena-layer')).toHaveCount(0);
+    const after = await stored(page);
+    expect(after.coins).toBe(save.coins - 3000);
+    expect(after.raid.kanto).toMatchObject({ wins: 0, losses: 1, sinceCatch: 0 });
+  });
+
+  test('a region without its title stays closed', async ({ page }) => {
+    const save = raidSave();
+    await startGame(page, save, 'battle/raid');
+    await page.locator('.region-tab[data-region="sinnoh"]').click();
+    await expect(page.locator('.raid-panel.is-locked')).toBeVisible();
+    await expect(page.locator('[data-act="raid"]')).toHaveCount(0);
+  });
 });
 
 test.describe('master league', () => {

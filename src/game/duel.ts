@@ -4,6 +4,7 @@
 //     Sp. Def, whichever deals more damage. Type advantage scales it (typeMultiplier). There are no moves.
 //   - Each hit can go differently, with the same fixed chances for both sides: critical (double damage), miss or
 //     blocked by the target (no damage).
+//   - A card with maxHit (Legendary Battle bosses) can't take more than that share of the target's max HP in one hit.
 //   - The winner stays in with the HP it has left; the losing side sends its next Pokémon. The player chooses
 //     who goes in (at the start, after a faint, and optionally when a new opponent enters); the opponent sends
 //     its team in order.
@@ -63,6 +64,9 @@ export interface Hit extends Strike {
 const hitFor = (attack: number, defense: number, mult: number) =>
   Math.max(1, Math.round(((attack * attack) / (attack + defense)) * DAMAGE_SCALE * mult));
 
+const capHit = (attacker: BattleCard, defender: BattleCard, damage: number) =>
+  (attacker.maxHit ? Math.min(damage, Math.max(1, Math.round(defender.stats.hp * attacker.maxHit))) : damage);
+
 /** The hit `attacker` lands on `defender` before luck (always the stronger of its physical and special attack). */
 export function strike(attacker: BattleCard, defender: BattleCard): Strike {
   const effectiveness = bestEffectiveness(attacker.types, defender.types);
@@ -70,8 +74,8 @@ export function strike(attacker: BattleCard, defender: BattleCard): Strike {
   const physical = hitFor(attacker.stats.atk, defender.stats.def, mult);
   const special = hitFor(attacker.stats.spa, defender.stats.spd, mult);
   return physical >= special
-    ? { stat: 'atk', damage: physical, effectiveness, mult }
-    : { stat: 'spa', damage: special, effectiveness, mult };
+    ? { stat: 'atk', damage: capHit(attacker, defender, physical), effectiveness, mult }
+    : { stat: 'spa', damage: capHit(attacker, defender, special), effectiveness, mult };
 }
 
 export const firstStriker = (you: BattleCard, opp: BattleCard): Side => (opp.stats.spe > you.stats.spe ? 'opp' : 'you');
@@ -89,7 +93,7 @@ export function fightDuel(you: Fighter, opp: Fighter, rng: Rng = defaultRng): Du
     const [attacker, defender] = side === 'you' ? [you, opp] : [opp, you];
     const s = strike(attacker.card, defender.card);
     const outcome = rollHit(rng);
-    const damage = outcome === 'crit' ? s.damage * CRIT_MULT : outcome === 'normal' ? s.damage : 0;
+    const damage = outcome === 'crit' ? capHit(attacker.card, defender.card, s.damage * CRIT_MULT) : outcome === 'normal' ? s.damage : 0;
     defender.hp = Math.max(0, defender.hp - damage);
     hits.push({ ...s, damage, outcome, attacker: side, hpLeft: defender.hp, ko: defender.hp === 0 });
     side = side === 'you' ? 'opp' : 'you';

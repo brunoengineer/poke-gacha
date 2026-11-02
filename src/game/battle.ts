@@ -19,6 +19,8 @@ export interface BattleCard {
   power: number;
   /** Card key, for the player's cards. */
   key?: string;
+  /** The most one hit can take, as a share of the target's max HP (Legendary Battle bosses). */
+  maxHit?: number;
 }
 
 export function toBattleCard(member: TeamMember, key?: string): BattleCard {

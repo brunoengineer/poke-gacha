@@ -3,7 +3,7 @@
 import { expect, fixture, fixtureNames, midGameSave, startGame, stored, test } from './helpers';
 
 const SCREENS = [
-  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league', 'ranking',
+  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league', 'battle/raid', 'ranking',
 ];
 
 for (const name of fixtureNames()) {

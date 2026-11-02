@@ -1362,6 +1362,44 @@ html.arena-open { overflow: hidden; }
 
 /* --- Shiny Hunt --------------------------------------------------------------------------------------- */
 
+.raid-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 20px;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(140deg, rgba(255, 92, 138, 0.1), rgba(255, 255, 255, 0.02) 60%);
+    border: 1px solid var(--line);
+}
+.raid-panel.is-locked { display: grid; grid-template-columns: 1fr; justify-items: center; text-align: center; }
+.raid-side { display: grid; align-content: start; gap: 12px; min-width: 0; }
+.raid-side > .btn { justify-self: start; }
+.raid-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.raid-pool { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.raid-panel.is-locked .raid-pool { justify-content: center; }
+.raid-boss {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+}
+.raid-boss img { width: 60px; height: 60px; object-fit: contain; filter: brightness(0) opacity(.55); }
+.raid-boss.is-owned img { filter: none; }
+.raid-boss .i { position: absolute; top: 3px; right: 3px; width: 14px; height: 14px; color: #ffe29a; }
+.raid-stats { display: flex; gap: 10px; }
+.raid-stats > div { flex: 1; padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); }
+.raid-stats dd { font-family: var(--font-display); font-size: 20px; }
+.raid-odds { list-style: none; display: grid; gap: 6px; }
+.raid-odds li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--muted); }
+.raid-odds li > .i, .raid-odds li > img { flex-shrink: 0; width: 20px; height: 20px; }
+.raid-odds li > span { flex: 1; min-width: 0; }
+.raid-odds li > b { color: var(--text); text-align: right; }
+.raid-pity { display: grid; gap: 6px; }
+
 .hunt-totals { display: flex; gap: 10px; }
 .hunt-totals span {
     display: grid;

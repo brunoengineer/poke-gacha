@@ -41,6 +41,8 @@ export interface Opponent {
   /** Portrait URL (trainerSpriteUrl()). */
   portrait?: string;
   team: TeamMember[];
+  /** Ready-made cards instead of building them from `team` (Legendary Battle bosses, with their huge HP). */
+  cards?: BattleCard[];
   /** Line shown before the battle. */
   intro?: string;
   /** Lines shown when the opponent wins / loses. */
@@ -49,7 +51,7 @@ export interface Opponent {
 }
 
 export interface BattleConfig {
-  mode: 'training' | 'competition' | 'gym' | 'league' | 'tower' | 'hunt';
+  mode: 'training' | 'competition' | 'gym' | 'league' | 'tower' | 'hunt' | 'raid';
   opponent: Opponent;
   music?: 'battle' | 'gym' | 'league' | 'champion';
   /** Small label at the top (e.g. "Quartas de final"). */
@@ -80,6 +82,7 @@ const MODE_ACCENT: Record<BattleConfig['mode'], string> = {
   league: '#c58cff',
   tower: '#ff8a5c',
   hunt: '#7fdcff',
+  raid: '#ff5c8a',
 };
 
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
@@ -153,7 +156,7 @@ export function runBattle(config: BattleConfig): Promise<BattleOutcome> {
   }
 
   return new Promise(resolve => {
-    const opp = config.opponent.team.slice(0, DECK_SIZE).map(m => toBattleCard(m));
+    const opp = config.opponent.cards ?? config.opponent.team.slice(0, DECK_SIZE).map(m => toBattleCard(m));
     const layer = el(`<div class="arena-layer" role="dialog" aria-modal="true" data-mode="${config.mode}"
       aria-label="${esc(L().battle.arena.versus(L().battle.arena.you, config.opponent.name))}"
       style="--accent:${esc(config.accent ?? MODE_ACCENT[config.mode])}"></div>`);

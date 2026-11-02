@@ -229,6 +229,18 @@ Rematches (every region): +10 levels per rematch (up to +40), half the coins plu
 Badges unlock the Great Ball (1) and Ultra Ball (3), counting every badge; each League needs its region's 8 badges,
 and each region's Gyms the 8 badges of the region before (`UNLOCK_BADGES`, `regionGymsOpen`).
 
+### Legendary Battle: a boss with huge HP
+Pick a region (it needs that region's League title), pay the fee and fight a random legendary or mythical from it, revealed
+only when the battle starts: Kanto 5 possible, Johto 6, Hoenn 10, Sinnoh 14. Fees: ₽3,000, ₽6,000, ₽10,000, ₽15,000. Losing,
+giving up or leaving mid-battle keeps nothing (battles aren't saved, so reloading can't save the fee).
+
+- **The boss**: one Pokémon at Lv. 70, 100, 120 or 140 by region (or the team's average, if higher), with **4× HP** that keeps
+  its damage as the six fight it in turn. It hits normally, but one hit can't take more than **40%** of a Pokémon's max HP,
+  critical hits included. All bosses use the same HP multiplier, so the strongest species are harder for the same fee.
+- **Every win**: 25% of the fee back and Rare Candy ×10, ×20, ×30, ×40 by region.
+- **Then one roll**: 1% the shiny card, 10% the normal card. **15 wins in a row in a region** without a catch guarantee the normal card.
+- **Already owned**: 1 Master Ball instead (the shiny and the normal card count separately). It still counts as a catch.
+
 ### Shiny Hunt: chains on one species
 Pick a caught species in the Pokédex (card details → **Hunt**) and battle wild hordes of it, one paid attempt at a
 time. Legendary and mythical Pokémon can't be hunted; neither can species never caught (captures keep their surprise).

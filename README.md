@@ -16,6 +16,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **Foil cards**: a card that reaches Lv. 100 turns into a shining gold foil.
 - **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, any hit can be a critical, miss or get blocked, and you choose who goes in and when to switch.
 - **Saved teams**: up to 8 named teams, loaded in one click; evolved Pokémon come back as their evolved form.
+- **Legendary Battle**: pay to fight a random legendary or mythical with huge HP, for a chance to catch it.
 - **Master League**: after all four titles, a Lv. 100 league with no shiny, legendary or mythical cards, 3 entries a day.
 - **Online ranking**: optional public boards for the Infinity Tower, Power and the Pokédex.
 - **Six modes**: Training (friends), Ranked (a ladder that trains against you, with Ash at the top), Gyms (badges), Shiny Hunt (chain wins on one species

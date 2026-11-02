@@ -28,6 +28,7 @@ import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
 import { defaultGymSave, type GymSave } from '../game/modes/gyms';
 import { defaultHuntSave, type HuntSave } from '../game/modes/hunt';
 import { defaultLeagueSave, type LeagueSave } from '../game/modes/league';
+import { defaultRaidSave, type RaidSave } from '../game/modes/raid';
 import { defaultTowerSave, type TowerSave } from '../game/modes/tower';
 import { defaultTrainingSave, type TrainingSave } from '../game/modes/training';
 
@@ -79,6 +80,8 @@ export interface SaveData {
   online: OnlineSave;
   /** Shiny Hunt: target species and chain (added after the Johto release; older saves start with no target). */
   hunt: HuntSave;
+  /** Legendary Battle: wins, losses and the guaranteed-catch counter per region (older saves: none yet). */
+  raid: RaidSave;
   stats: {
     pulls: number;
     shinies: number;
@@ -116,6 +119,7 @@ export function defaultSave(): SaveData {
     league: defaultLeagueSave(),
     tower: defaultTowerSave(),
     hunt: defaultHuntSave(),
+    raid: defaultRaidSave(),
     online: defaultOnlineSave(),
     stats: { pulls: 0, shinies: 0, evolutions: 0, battles: 0, wins: 0, losses: 0, coinsEarned: 0, candiesUsed: 0 },
     daily: { last: null, streak: 0 },
@@ -163,6 +167,7 @@ export function normalizeSave(raw: unknown): SaveData {
     league: merge(d.league, s.league),
     tower: merge(d.tower, s.tower),
     hunt: merge(d.hunt, s.hunt),
+    raid: merge(d.raid, s.raid),
     online: merge(d.online, s.online),
     stats: merge(d.stats, s.stats),
     daily: merge(d.daily, s.daily),

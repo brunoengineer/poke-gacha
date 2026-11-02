@@ -6,6 +6,8 @@ import { sfx } from '../../audio';
 import { playerRank } from '../../game/modes/competition';
 import { currentGymRegion, GYM_REGIONS, REGION_GYMS, regionBadges, regionGymsOpen } from '../../game/modes/gyms';
 import { LEAGUE_REGIONS, leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
+import { anyRaidUnlocked, raidPool, raidUnlocked } from '../../game/modes/raid';
+import { cardKey } from '../../game/cards';
 import { FRIENDS } from '../../game/modes/training';
 import { getSpecies } from '../../data/species';
 import { trainerSpriteUrl } from '../../data/sprites';
@@ -20,11 +22,12 @@ import { competitionMode } from './competition';
 import { gymsMode } from './gyms';
 import { huntMode } from './hunt';
 import { leagueMode } from './league';
+import { raidMode } from './raid';
 import { leagueOpen, teamSummaryHTML } from './team';
 import { towerOpen, towerMode } from './tower';
 import { trainingMode } from './training';
 
-type ModeId = 'training' | 'competition' | 'gyms' | 'hunt' | 'tower' | 'league';
+type ModeId = 'training' | 'competition' | 'gyms' | 'hunt' | 'tower' | 'league' | 'raid';
 
 const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; color: string }> = {
   training: { module: trainingMode, icon: 'users', art: ['youngster', 'oak', 'lass'], color: '#4fd18b' },
@@ -33,8 +36,9 @@ const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; c
   hunt: { module: huntMode, icon: 'sparkle', art: ['pokemonrangerf', 'pokemaniac', 'pokemonranger'], color: '#7fdcff' },
   tower: { module: towerMode, icon: 'tower', art: ['veteranf', 'acetrainer', 'veteran'], color: '#ff8a5c' },
   league: { module: leagueMode, icon: 'crown', art: ['karen', 'lance', 'blue'], color: '#c58cff' },
+  raid: { module: raidMode, icon: 'bolt', art: ['pokemonranger', 'cynthia', 'veteran'], color: '#ff5c8a' },
 };
-const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'hunt', 'tower', 'league'];
+const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'hunt', 'tower', 'league', 'raid'];
 
 let section: HTMLElement;
 let current: ModeId | null = null;
@@ -57,6 +61,7 @@ export const battleView: ViewModule = {
     const mode = (ORDER as string[]).includes(arg) ? (arg as ModeId) : null;
     // Replace (not push) the locked league's entry, so Back doesn't bounce straight back here.
     if (mode === 'league' && !leagueOpen()) return void location.replace('#/battle');
+    if (mode === 'raid' && !anyRaidUnlocked(store.save)) return void location.replace('#/battle');
     if (mode && mode === current) return;
     leaveMode();
     if (mode) renderMode(mode);
@@ -88,6 +93,11 @@ function onClick(event: Event) {
       toast(L().battle.hub.towerLocked, 'warning');
       return;
     }
+    if (id === 'raid' && !anyRaidUnlocked(store.save)) {
+      sfx('error');
+      toast(L().battle.hub.raidLocked, 'warning');
+      return;
+    }
     sfx('open');
     navigate(`battle/${id}`);
   }
@@ -117,7 +127,7 @@ function modeCardHTML(id: ModeId): string {
   const t = L().battle.hub;
   const m = MODES[id];
   const s = store.save;
-  const locked = (id === 'league' && !leagueOpen()) || (id === 'tower' && !towerOpen());
+  const locked = (id === 'league' && !leagueOpen()) || (id === 'tower' && !towerOpen()) || (id === 'raid' && !anyRaidUnlocked(s));
   let status = '';
   if (id === 'training') status = `<span class="mode-pill">${icon('users')} ${esc(t.friendsCount(FRIENDS.length))}</span>`;
   if (id === 'competition') {
@@ -155,6 +165,12 @@ function modeCardHTML(id: ModeId): string {
       : open.map(r => `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel(r), best(r)))}</span>`).join('')
         + (nextLocked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel(nextLocked), t.leagueRegionLocked))}</span>` : '')
         + (leagueUnlocked(s, 'master') ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(L().modes.league.masterRules.tab, best('master')))}</span>` : '');
+  }
+
+  if (id === 'raid') {
+    const pool = LEAGUE_REGIONS.filter(r => raidUnlocked(s, r)).flatMap(r => raidPool(r));
+    status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.raidLocked)}</span>`
+      : `<span class="mode-pill">${icon('bolt')} ${esc(t.raidCaught(pool.filter(sp => cardKey(sp.id) in s.cards).length, pool.length))}</span>`;
   }
 
   return `

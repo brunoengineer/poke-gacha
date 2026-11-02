@@ -127,7 +127,7 @@ test('an empty board invites the player', async ({ page }) => {
 test('it is a section of its own: not a battle mode, and the old link still gets there', async ({ page }) => {
   await fakeBoard(page);
   await startGame(page, midGameSave(), 'battle');
-  await expect(page.locator('[data-mode]')).toHaveCount(6);
+  await expect(page.locator('[data-mode]')).toHaveCount(7);
   await expect(page.locator('[data-mode="online"]')).toHaveCount(0);
   await page.goto('/#/battle/online');
   await expect(page).toHaveURL(/#\/ranking$/);
