@@ -10,7 +10,7 @@
 //     both merge into the evolved card and the old species stays registered.
 
 import { RARE_CANDY } from '../data/items';
-import { descendants, evolutionsOf, getSpecies, type Evolution } from '../data/species';
+import { descendants, evolutionsOf, getSpecies, preEvolution, type Evolution } from '../data/species';
 import type { SaveData } from '../state/save';
 import { cardKey, levelCap, parseKey, requiredItem, requiredLevel, startLevel, type CardKey } from './cards';
 import { OVERFLOW_CANDY } from './economy';
@@ -207,6 +207,56 @@ export function transferTargets(save: SaveData, key: CardKey): number[] {
 export function transferLevel(save: SaveData, key: CardKey, to: number, now = Date.now()): EvolveResult | null {
   if (!transferTargets(save, key).includes(to)) return null;
   return { ...replaceCard(save, key, to, now), item: null };
+}
+
+export interface PlannedTransfer {
+  from: CardKey;
+  to: number;
+  fromLevel: number;
+  toLevel: number;
+  /** Level of the evolved card after this pass (later passes into the same card build on it). */
+  level: number;
+}
+
+/** Steps from the root of the evolution line (babies count here: only the order within a line matters). */
+function lineDepth(id: number): number {
+  const from = preEvolution(id);
+  return from == null ? 0 : lineDepth(from) + 1;
+}
+
+/**
+ * Every level pass worth doing at once ("Pass levels"), in Pokédex order. Each card goes to the most evolved form owned
+ * (on a tie, the highest level). Left out: `skip`, cards that would lose levels (past the evolved form's cap), passes
+ * that gain nothing (the evolved card is at its cap), and cards whose evolved form is also on the team (it would
+ * shrink). Nothing is changed here; apply the result with transferMany().
+ */
+export function planTransfers(save: SaveData, skip: ReadonlySet<CardKey> = new Set()): PlannedTransfer[] {
+  const levels = new Map<CardKey, number>();
+  const deck = new Set(save.deck);
+  const plan: PlannedTransfer[] = [];
+  const keys = Object.keys(save.cards).filter(key => !parseKey(key).shiny).sort((a, b) => parseKey(a).id - parseKey(b).id);
+  for (const from of keys) {
+    if (skip.has(from)) continue;
+    const fromLevel = levels.get(from) ?? save.cards[from].level;
+    const levelOfTarget = (id: number) => levels.get(cardKey(id)) ?? save.cards[cardKey(id)].level;
+    const to = transferTargets(save, from)
+      .sort((a, b) => lineDepth(b) - lineDepth(a) || levelOfTarget(b) - levelOfTarget(a) || a - b)[0];
+    if (to == null) continue;
+    const toKey = cardKey(to);
+    const toLevel = levelOfTarget(to);
+    const cap = levelCap(to, false);
+    const level = Math.min(cap, Math.max(fromLevel, toLevel) + 1);
+    if (fromLevel > cap || level <= toLevel || (deck.has(from) && deck.has(toKey))) continue;
+    plan.push({ from, to, fromLevel, toLevel, level });
+    levels.set(toKey, level);
+    if (deck.delete(from)) deck.add(toKey);
+  }
+  return plan;
+}
+
+/** Applies planned passes. Returns how many went through. */
+export function transferMany(save: SaveData, plan: PlannedTransfer[], now = Date.now()): number {
+  return plan.filter(t => transferLevel(save, t.from, t.to, now)).length;
 }
 
 /** Turns card `key` into species `to`, merging into its card when owned. Shared by evolve() and transferLevel(). */

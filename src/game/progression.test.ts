@@ -3,7 +3,8 @@ import { defaultSave } from '../state/save';
 import { cardKey, cardPower, isUncapped, levelCap, MAX_LEVEL, rarity, startLevel, statsAt } from './cards';
 import { getSpecies, stage } from '../data/species';
 import {
-  addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, previewEvolution, trainAfterBattle, transferLevel, transferTargets, useCandies,
+  addCopy, candyRoom, canEvolveNow, evolutionOptions, evolve, planTransfers, previewEvolution, trainAfterBattle, transferLevel, transferMany,
+  transferTargets, useCandies,
 } from './progression';
 import { generateTeam, evolveForLevel } from './teams';
 import { matchup, toBattleCard, typeMultiplier } from './battle';
@@ -193,6 +194,66 @@ describe('evolution', () => {
     save.cards[cardKey(CHARMANDER, true)] = { level: 50, copies: 1, obtainedAt: 0 };
     expect(transferTargets(save, cardKey(CHARMANDER, true))).toEqual([]);
     expect(transferLevel(save, cardKey(CHARMANDER), CHARIZARD)).toMatchObject({ level: 13 });
+  });
+
+  describe('pass levels in one go', () => {
+    const own = (save: ReturnType<typeof defaultSave>, key: string, level: number) => { save.cards[key] = { level, copies: 1, obtainedAt: 0 }; };
+
+    it('sends every card to the most evolved form owned, building up the level', () => {
+      const save = defaultSave();
+      own(save, '4', 30); own(save, '5', 10); own(save, '6', 5);
+      own(save, '25', 12); // nothing evolved owned: stays
+      const plan = planTransfers(save);
+      expect(plan).toEqual([
+        { from: '4', to: 6, fromLevel: 30, toLevel: 5, level: 31 },
+        { from: '5', to: 6, fromLevel: 10, toLevel: 31, level: 32 },
+      ]);
+      expect(save.cards['4'].level).toBe(30); // planning changes nothing
+      expect(transferMany(save, plan)).toBe(2);
+      expect(save.cards['4']).toBeUndefined();
+      expect(save.cards['5']).toBeUndefined();
+      expect(save.cards['6'].level).toBe(32);
+      expect(save.cards['25'].level).toBe(12);
+      expect(planTransfers(save)).toEqual([]);
+    });
+
+    it('picks the highest level among branches of the same stage', () => {
+      const save = defaultSave();
+      own(save, '133', 8); own(save, '134', 5); own(save, '135', 50); // Eevee, Vaporeon, Jolteon
+      expect(planTransfers(save)[0]).toMatchObject({ from: '133', to: 135, level: 51 });
+    });
+
+    it('leaves out shinies, skipped cards, passes that lose levels or gain nothing', () => {
+      const save = defaultSave();
+      own(save, cardKey(4, true), 50); own(save, '6', 20); // a shiny never passes
+      expect(planTransfers(save)).toEqual([]);
+      own(save, '4', 30);
+      expect(planTransfers(save, new Set(['4']))).toEqual([]); // the player kept it out
+      expect(planTransfers(save)).toHaveLength(1);
+      save.cards['4'].level = 140; // an old base form past the cap would lose levels
+      expect(planTransfers(save)).toEqual([]);
+      save.cards['4'].level = 60;
+      save.cards['6'].level = 100; // the evolved card is at its cap: nothing to gain
+      expect(planTransfers(save)).toEqual([]);
+    });
+
+    it("doesn't shrink the team, and swaps the slot when only the base form is on it", () => {
+      const save = defaultSave();
+      own(save, '4', 30); own(save, '6', 20); own(save, '7', 10); own(save, '9', 10);
+      save.deck = ['4', '6', '7'];
+      // Charmander and Charizard are both on the team: kept. Squirtle isn't sharing with Blastoise: it passes.
+      expect(planTransfers(save).map(t => t.from)).toEqual(['7']);
+      transferMany(save, planTransfers(save));
+      expect(save.deck).toEqual(['4', '6', '9']);
+    });
+
+    it('keeps two base forms of one line from colliding on the team', () => {
+      const save = defaultSave();
+      own(save, '4', 30); own(save, '5', 20); own(save, '6', 20);
+      save.deck = ['4', '5'];
+      // Charmander's slot becomes Charizard, so Charmeleon must stay or the team would drop a slot.
+      expect(planTransfers(save).map(t => t.from)).toEqual(['4']);
+    });
   });
 
   it('never evolves shinies', () => {

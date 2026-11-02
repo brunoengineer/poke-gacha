@@ -7,8 +7,8 @@ import { cardKey, type CardKey } from '../game/cards';
 import { DAILY_BALL, DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
 import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
 import {
-  addItem, evolve as evolveCard, trainAfterBattle, transferLevel as transferCardLevel, useCandies as applyCandies,
-  type BattleTraining, type EvolveResult,
+  addItem, evolve as evolveCard, trainAfterBattle, transferLevel as transferCardLevel, transferMany, useCandies as applyCandies,
+  type BattleTraining, type EvolveResult, type PlannedTransfer,
 } from '../game/progression';
 import { applyRewards, type AppliedReward, type Reward } from '../game/rewards';
 import {
@@ -49,6 +49,16 @@ export function evolve(key: CardKey, to: number): EvolveResult | null {
     emit('deck');
   }
   return result;
+}
+
+/** Applies a batch of level passes ("Pass levels") at once: one save, one refresh. */
+export function transferLevels(plan: PlannedTransfer[]): number {
+  const done = update(save => transferMany(save, plan), []);
+  if (done) {
+    emit('cards', plan.flatMap(t => [t.from, cardKey(t.to)]));
+    emit('deck');
+  }
+  return done;
 }
 
 export function transferLevel(key: CardKey, to: number): EvolveResult | null {

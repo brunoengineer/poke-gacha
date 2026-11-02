@@ -45,6 +45,12 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
   as the merge above (`max(levels) + 1`, clamped to the cap); the old species stays registered and its new copies go
   to the evolved card. It doesn't count as an evolution in the stats.
 
+**Pass levels** (all at once): when anything can be passed, a banner above the Pokédex opens a review list. Each card
+goes to its most evolved owned form (on a tie, the highest level), one after another, so several cards build up the same
+evolved card. Left out: shinies, cards that would lose levels (old base forms past the cap), passes that gain nothing
+(evolved card at its cap) and cards whose evolved form is also on the team (the team would shrink). Tapping a row keeps
+that Pokémon out.
+
 ## Captures (gacha)
 
 | Ball | Price | Unlock | Notes |

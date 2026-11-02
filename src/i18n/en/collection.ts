@@ -119,6 +119,16 @@ const collection: typeof pt = {
     immune: 'Immune to',
   },
 
+  autoPass: {
+    banner: (count: number) => `${n(count)} Pokémon can pass their level to an evolved form you own.`,
+    button: 'Pass levels',
+    title: 'Pass levels',
+    sub: 'Each card merges into its most evolved form you own and stays registered in your Pokédex. Tap a row to keep that Pokémon as it is.',
+    keeps: 'Unchanged',
+    confirm: (count: number) => `Pass ${n(count)}`,
+    done: (count: string, cards: string) => `${count} Pokémon passed their level to ${cards} ${cards === '1' ? 'card' : 'cards'}!`,
+  },
+
   savedTeams: {
     title: 'Saved teams',
     sub: (max: number) => `Save up to ${max} teams and switch in one click. Evolved Pokémon come back as their evolved form.`,

@@ -15,6 +15,7 @@ import { esc, icon } from '../../ui/dom';
 import type { ViewModule } from '../types';
 import { openDetails } from './details';
 import { initDock, setDockVisible } from './dock';
+import { openAutoPass, syncAutoPass } from './auto-pass';
 import { evolveFlow } from './evolution';
 import { applyFilters, counts, mountGrid, normalize, updateFlags, updateTiles, type Filters, type Mode, type SortId } from './grid';
 import { toggleTeam } from './team';
@@ -121,6 +122,11 @@ function render() {
         </label>
       </div>
     </div>
+    <div class="dex-autopass" data-autopass hidden>
+      <span class="dex-autopass-icon">${icon('up')}</span>
+      <p data-autopass-text></p>
+      <button class="btn btn-evolve btn-sm" type="button" data-autopass-open>${icon('up')} ${esc(t.autoPass.button)}</button>
+    </div>
     <div class="dex-active" data-active hidden></div>
     <div class="dex-grid" data-grid></div>
     <div class="empty dex-empty" data-empty hidden>
@@ -181,6 +187,8 @@ function bindToolbar() {
     syncControls();
     refresh(true);
   });
+
+  view.querySelector('[data-autopass-open]')!.addEventListener('click', openAutoPass);
 
   view.querySelector('[data-clear-filters]')!.addEventListener('click', () => {
     Object.assign(filters, { mode: 'all', region: 0, type: '', rarities: [], query: '' });
@@ -300,6 +308,7 @@ function refresh(regrid: boolean) {
   view.querySelector<HTMLElement>('[data-onboarding]')!.hidden = c.cards > 0;
   view.querySelector('[data-count="evolve"]')!.textContent = c.evolvable ? fmt(c.evolvable) : '';
   view.querySelector('[data-count="shiny"]')!.textContent = c.shinies ? fmt(c.shinies) : '';
+  syncAutoPass(view.querySelector<HTMLElement>('[data-autopass]')!);
 
   const active = view.querySelector<HTMLElement>('[data-active]')!;
   active.hidden = !regrid && active.hidden;

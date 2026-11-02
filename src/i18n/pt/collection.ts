@@ -119,6 +119,16 @@ const collection = {
     immune: 'Imune a',
   },
 
+  autoPass: {
+    banner: (count: number) => `${n(count)} Pokémon podem passar o nível para uma evolução que você já tem.`,
+    button: 'Passar níveis',
+    title: 'Passar níveis',
+    sub: 'Cada carta se junta à forma mais evoluída que você tem e continua registrada na Pokédex. Toque em uma linha para manter aquele Pokémon como está.',
+    keeps: 'Sem mudança',
+    confirm: (count: number) => `Passar ${n(count)}`,
+    done: (count: string, cards: string) => `${count} Pokémon passaram o nível para ${cards} ${cards === '1' ? 'carta' : 'cartas'}!`,
+  },
+
   savedTeams: {
     title: 'Times salvos',
     sub: (max: number) => `Salve até ${max} times e troque com um toque. Pokémon que evoluíram voltam na forma evoluída.`,
