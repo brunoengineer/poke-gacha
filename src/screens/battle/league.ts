@@ -11,9 +11,9 @@ import { trainerSpriteUrl } from '../../data/sprites';
 import { UNLOCK_BADGES } from '../../game/economy';
 import { regionBadges } from '../../game/modes/gyms';
 import {
-  abandonRun, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
-  leagueFee, leagueRecord, REST_HP, REVIVE_HP, runTeam, setRunHp, type HealKind, type LeagueRun,
-  LEAGUE_REGIONS, leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, duelLevels, type Bracket,
+  abandonRun, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
+  leagueFee, leagueRecord, REST_HP, REVIVE_HP, runScale, runTeam, setRunHp, type HealKind, type LeagueRun,
+  LEAGUE_REGIONS, leagueUnlocked, PLACEMENTS, placementRewards, recordDuel, startRun, titleBonus, type Bracket,
   type Entrant, type LeagueRegion,
 } from '../../game/modes/league';
 import type { Reward } from '../../game/rewards';
@@ -23,6 +23,7 @@ import { getSpecies } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { hashString } from '../../game/rng';
+import { playerScale } from '../../game/teams';
 import { fmt, itemName, L, locale } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
 import { on, store, update } from '../../state/store';
@@ -165,8 +166,12 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
   const league = rec();
   const fee = leagueFee(shown);
   const bonus = titleBonus(league.titles);
-  const [min] = duelLevels(0, bonus, shown);
-  const [, max] = duelLevels(LEAGUE_DUELS - 1, bonus, shown);
+  // What this team would meet if it entered now.
+  const scale = playerScale(store.save);
+  const first = duelDifficulty(0, bonus, shown, scale);
+  const last = duelDifficulty(LEAGUE_DUELS - 1, bonus, shown, scale);
+  const min = first.levels[0];
+  const max = last.ace ?? last.levels[1];
   return `
     <section class="league-hero">
       <div class="league-emblem">${TROPHY_SVG}</div>
@@ -177,6 +182,7 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
         <div class="league-pills">
           <span class="pill">${icon('coin', 'i-coin')} ${esc(t().fee)}: <b>₽ ${fmt(fee)}</b></span>
           <span class="pill">${icon('bolt')} ${esc(t().levels)}: <b>${esc(L().modes.levelRange(min, max))}</b>${bonus ? ` <small>(${esc(t().bonus(bonus))})</small>` : ''}</span>
+          ${first.scaled || last.scaled ? `<span class="pill is-scaled" title="${esc(t().scaledHint)}">${icon('up')} ${esc(t().scaled)}</span>` : ''}
           ${league.titles ? `<span class="pill is-gold">${icon('crown')} ${esc(t().titles)}: <b>${fmt(league.titles)}</b></span>` : ''}
         </div>
         <button class="btn btn-primary btn-lg" type="button" data-act="enter">${icon('flag')} ${esc(t().enter)} <small class="btn-price">₽ ${fmt(fee)}</small></button>
@@ -227,7 +233,7 @@ function hallHTML() {
 function runHTML() {
   const run = rec().run!;
   const bracket = currentBracket()!;
-  const info = duelInfo(bracket, run, run.duel, store.save.starter, shownRegion());
+  const info = duelInfo(bracket, run, run.duel, store.save.starter, shownRegion(), runScale(store.save, run));
   const opp = info.opponent;
   const kind = opp.kind;
   return `
@@ -237,7 +243,7 @@ function runHTML() {
         <span class="label">${esc(t().duelOf(run.duel + 1, LEAGUE_DUELS))} · ${esc(t().stages[run.duel])}</span>
         <h2 class="next-name">${esc(opp.name)}</h2>
         <p class="next-title">${kind === 'champion' ? icon('crown') : kind === 'e4' ? icon('star') : ''} ${esc(entrantTitle(opp))}</p>
-        <div class="next-meta">${typeBadges(opp.types)}<span class="pill">${esc(L().modes.levelRange(info.levels[0], info.levels[1]))}</span></div>
+        <div class="next-meta">${typeBadges(opp.types)}<span class="pill">${esc(L().modes.levelRange(info.levels[0], info.levels[1]))}</span>${info.scaled ? `<span class="pill is-scaled" title="${esc(t().scaledHint)}">${icon('up')} ${esc(info.ace != null ? t().scaledAce(info.ace) : t().scaled)}</span>` : ''}</div>
         <div class="next-team">${teamStrip(info.team)}</div>
         <div class="next-actions">
           ${healPending(store.save, run) ? `<p class="heal-first">${icon('sparkle')} ${esc(t().healFirst)}</p>`
@@ -407,7 +413,7 @@ async function fight() {
   const setup = runBattleSetup(run);
   const bracket = currentBracket()!;
   const duel = run.duel;
-  const info = duelInfo(bracket, run, duel, store.save.starter, shown);
+  const info = duelInfo(bracket, run, duel, store.save.starter, shown, runScale(store.save, run));
   const opp = info.opponent;
   busy = true;
   sfx('click');

@@ -7,6 +7,7 @@
 // Attrition: the team is registered (locked) when the run starts, and HP and faints carry over between duels.
 // Between duels the player makes one heal choice: a Potion (one Pokémon to full), a Revive (one fainted Pokémon
 // back at half HP) or a Rest (the whole team recovers 20%; fainted ones stay down).
+// A team above a duel's levels makes the opponents train up to match (scaling.ts).
 // Every region has a league in the same format: Kanto (Blue), Johto (Lance), Hoenn (Steven), Sinnoh (Cynthia), each
 // stronger and pricier than the last. Functions take the region last and default to Kanto; the other regions' progress
 // lives in `league.johto`, `league.hoenn`, `league.sinnoh`.
@@ -21,6 +22,7 @@ import type { Reward } from '../rewards';
 import { generateTeam } from '../teams';
 import { hashString, randInt, seeded, shuffle } from '../rng';
 import { resolveKey } from '../saved-teams';
+import { scaleDuel, teamScale, type Difficulty, type PlayerScale } from '../scaling';
 import { generateLadder, trainerTeam, ELITE_RANKS } from './competition';
 import { regionBadges } from './gyms';
 import { HOENN_CHAMPION, HOENN_ELITE_FOUR } from './hoenn';
@@ -108,6 +110,10 @@ export const duelLevels = (duel: number, bonus: number, region: LeagueRegion = '
   const [min, max] = DUEL_LEVELS[region][duel];
   return [min + bonus, max + bonus];
 };
+
+/** A duel's levels against this team (`scale`; without it, as designed). */
+export const duelDifficulty = (duel: number, bonus: number, region: LeagueRegion = 'kanto', scale?: PlayerScale): Difficulty =>
+  scaleDuel(duelLevels(duel, bonus, region), duel, duelLevels(LEAGUE_DUELS - 1, bonus, region)[1], scale);
 
 /** Each league needs its region's 8 badges (which in turn need the region before). */
 export const leagueUnlocked = (save: Pick<SaveData, 'gyms'>, region: LeagueRegion = 'kanto') =>
@@ -286,13 +292,17 @@ export interface DuelInfo {
   opponent: Entrant;
   team: TeamMember[];
   levels: [number, number];
+  /** Level of the opponent's last Pokémon, when it differs from the rest. */
+  ace: number | null;
+  /** True when the player's team outgrew this duel's designed levels. */
+  scaled: boolean;
   final: boolean;
 }
 
 /** The opponent and team of duel `duel` in a run (stable, so leaving and coming back shows the same team). */
-export function duelInfo(bracket: Bracket, run: LeagueRun, duel: number, starter: number | null, region: LeagueRegion = 'kanto'): DuelInfo {
+export function duelInfo(bracket: Bracket, run: LeagueRun, duel: number, starter: number | null, region: LeagueRegion = 'kanto', scale?: PlayerScale): DuelInfo {
   const opponent = bracket.path[duel];
-  const levels = duelLevels(duel, run.bonus, region);
+  const { levels, ace, scaled } = duelDifficulty(duel, run.bonus, region, scale);
   const rng = seeded(run.seed ^ hashString(`duel-${duel}`));
   let team: TeamMember[];
   if (opponent.kind === 'elite') {
@@ -304,7 +314,8 @@ export function duelInfo(bracket: Bracket, run: LeagueRun, duel: number, starter
   // Aces lead from the back: the strongest levels go to the last slots.
   const sorted = team.map(m => m.level).sort((a, b) => a - b);
   team = team.map((m, i) => ({ ...m, level: sorted[i] }));
-  return { opponent, team, levels, final: duel === LEAGUE_DUELS - 1 };
+  if (ace != null) team[team.length - 1] = { ...team[team.length - 1], level: ace };
+  return { opponent, team, levels, ace, scaled, final: duel === LEAGUE_DUELS - 1 };
 }
 
 // --- Runs ------------------------------------------------------------------------------
@@ -338,6 +349,10 @@ export function runTeam(save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun):
     return key ? [{ registered: reg, key, hp: Math.max(0, Math.min(1, run.hp?.[reg] ?? 1)) }] : [];
   });
 }
+
+/** The registered team's levels: what the duels scale to (they follow its level-ups during the run). */
+export const runScale = (save: Pick<SaveData, 'cards' | 'deck'>, run: LeagueRun): PlayerScale =>
+  teamScale(runTeam(save, run).map(m => save.cards[m.key]?.level ?? 1));
 
 /** Stores the team's HP after a duel (fractions in team order, as the battle reports them). */
 export function setRunHp(save: SaveData, hpLeft: number[], region: LeagueRegion = 'kanto') {

@@ -247,6 +247,20 @@ a player gets.
 - Pacing: a floor adds 30 levels across the opposing team, while a clear gives about 4–5 (3 candies + the post-battle
   level), so the tower pulls ahead fast and needs the other modes to keep climbing.
 
+### When the team outgrows Gyms and Leagues
+Gyms and Leagues keep their designed levels (rematch and title bonuses included) until the **team's average level**
+passes them; then they train up to match (`src/game/scaling.ts`). Prizes don't change. A battle with the current team
+(the registered one in a League run) shows this on its card as "Trained up".
+
+- **Gyms** (each on its own, when the average passes its top level): at least a share of the average, by position in the
+  region: 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100%. Never below the designed levels. The 8th gym's last Pokémon, the ace,
+  has the level of the team's strongest Pokémon.
+- **Leagues** (all four duels at once, when the average passes the League's top level): the average, +10%, +20%, +30%. The
+  final's ace has the level of the team's strongest Pokémon (or the +30%, if that's higher).
+
+Example, average 178 and a Lv. 330 Gengar: Gym 4 at 142, Gym 8 at 178 with an ace at 330; League duels at 178, 196, 214,
+and 231 with an ace at 330.
+
 ### Pokémon League: elimination championship
 Needs 8 badges and a full team; entry fee ₽1,000. Four duels in a row; the first loss ends the run.
 

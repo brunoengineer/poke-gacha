@@ -1,6 +1,6 @@
 // Every battle mode, played for real from its lobby to its rewards.
 
-import { closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withTeam } from './helpers';
+import { CARRY_TEAM, closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withCarry, withTeam } from './helpers';
 
 const strongSave = () => withTeam(midGameSave(), 5000);
 /** Six weak cards: they lose to anything from the Tower's first floor up. */
@@ -44,7 +44,7 @@ test.describe('training', () => {
 
 test.describe('gyms', () => {
   test('beating Brock gives the badge, its rewards and opens Misty', async ({ page }) => {
-    const save = strongSave();
+    const save = withCarry(midGameSave());
     save.gyms = { badges: [], records: {} };
     await startGame(page, save, 'battle/gyms');
     await expect(page.locator('[data-gym="misty"]')).toHaveCount(0); // locked
@@ -56,6 +56,33 @@ test.describe('gyms', () => {
     expect(after.coins).toBe(save.coins + 250);
     expect(after.items['great-ball']).toBe((save.items['great-ball'] ?? 0) + 3);
     await expect(page.locator('[data-gym="misty"]')).toBeVisible();
+  });
+
+  test('a team below the levels sees them as designed; an overleveled one sees them trained up', async ({ page }) => {
+    // Lv. 1 team: every gym as designed.
+    const low = withTeam(midGameSave(), 1, ['19', '16', '10', '13', '129', '41']);
+    low.gyms = { badges: [], records: {} };
+    await startGame(page, low, 'battle/gyms');
+    await page.locator('.region-tab[data-region="kanto"]').click();
+    await expect(page.locator('.gym-scaled')).toHaveCount(0);
+    await expect(page.locator('.gym-card').first().locator('.gym-levels')).toContainText('15');
+  });
+
+  test('an overleveled team makes leaders train up, with an ace at its strongest level', async ({ page }) => {
+    const save = withTeam(midGameSave(), 178);
+    save.cards[STRONG_TEAM[0]].level = 330;
+    // Average 203: Brock at 65% of it, Giovanni at all of it with the ace at 330.
+    await startGame(page, save, 'battle/gyms');
+    await page.locator('.region-tab[data-region="kanto"]').click();
+    const cards = page.locator('.gym-card');
+    await expect(cards.nth(0).locator('.gym-levels')).toContainText('132');
+    await expect(cards.nth(7).locator('.gym-levels')).toContainText('203');
+    await expect(cards.nth(7).locator('.gym-scaled')).toContainText('330');
+
+    // The real battle brings those levels: the leader's first Pokémon shows Lv. 203.
+    await page.locator('[data-gym="giovanni"]').click();
+    await page.locator('.arena-layer [data-act="start"]').click();
+    await expect(page.locator('.arena-layer .hpbox').first()).toContainText('203');
   });
 
   test('a later region stays locked until the one before is complete', async ({ page }) => {
@@ -144,7 +171,7 @@ test.describe('shiny hunt', () => {
 
 test.describe('pokémon league', () => {
   const kantoSave = () => {
-    const save = strongSave();
+    const save = withCarry(midGameSave());
     delete save.league.run;
     return save;
   };
@@ -157,7 +184,7 @@ test.describe('pokémon league', () => {
     await page.locator('.modal-dialog [data-confirm]').click();
     let after = await stored(page);
     expect(after.coins).toBe(save.coins - 1000);
-    expect(after.league.run.team).toEqual(STRONG_TEAM);
+    expect(after.league.run.team).toEqual(CARRY_TEAM);
     await expect(page.locator('.run-mon')).toHaveCount(6);
 
     await page.locator('[data-act="fight"]').click();
@@ -169,8 +196,8 @@ test.describe('pokémon league', () => {
   test('HP carries over, and the heal choice comes before the next duel', async ({ page }) => {
     const save = kantoSave();
     save.league.run = {
-      seed: 7, duel: 1, bonus: 0, startedAt: 1, team: STRONG_TEAM,
-      hp: { '6s': 0, '25s': 0.4, '3s': 1, '9s': 1, '150s': 1, '149s': 1 },
+      seed: 7, duel: 1, bonus: 0, startedAt: 1, team: CARRY_TEAM,
+      hp: { '150s': 1, 19: 0, 16: 0.4, 10: 1, 13: 1, 129: 1 },
     };
     await startGame(page, save, 'battle/league');
     await page.locator('.region-tab[data-region="kanto"]').click();
@@ -180,23 +207,23 @@ test.describe('pokémon league', () => {
     await expect(page.locator('.run-mon.is-fainted')).toHaveCount(1);
     await page.locator('[data-heal="revive"]').click();
     let after = await stored(page);
-    expect(after.league.run.hp['6s']).toBe(0.5);
+    expect(after.league.run.hp['19']).toBe(0.5);
     expect(after.league.run.healed).toBe(1);
     await expect(page.locator('[data-heal]')).toHaveCount(0);
 
-    // In the battle the hurt Pokémon starts hurt: the first card sent in is at half HP.
+    // The strong one wins alone, so whoever stayed out keeps the HP they had.
     await page.locator('[data-act="fight"]').click();
     await playBattle(page);
     after = await stored(page);
     expect(after.league.run.duel).toBe(2);
-    expect(after.league.run.hp['25s']).toBeCloseTo(0.4, 1);
+    expect(after.league.run.hp['16']).toBeCloseTo(0.4, 1);
   });
 
   test('changing the team mid-run does not change who fights', async ({ page }) => {
     const save = kantoSave();
-    save.league.run = { seed: 7, duel: 0, bonus: 0, startedAt: 1, team: STRONG_TEAM, hp: {} };
-    save.deck = ['19'];
-    save.cards['19'] = { level: 1, copies: 1, obtainedAt: 1 };
+    save.league.run = { seed: 7, duel: 0, bonus: 0, startedAt: 1, team: CARRY_TEAM, hp: {} };
+    save.deck = ['41'];
+    save.cards['41'] = { level: 1, copies: 1, obtainedAt: 1 };
     await startGame(page, save, 'battle/league');
     await page.locator('.region-tab[data-region="kanto"]').click();
     await page.locator('[data-act="fight"]').click();
@@ -205,13 +232,25 @@ test.describe('pokémon league', () => {
     const after = await stored(page);
     expect(after.league.run.duel).toBe(1);
     // The level-up goes to the team that fought, not to the current one.
-    expect(after.cards['6s'].level).toBeGreaterThan(5000);
-    expect(after.cards['19'].level).toBe(1);
+    expect(after.cards['150s'].level).toBeGreaterThan(355);
+    expect(after.cards['41'].level).toBe(1);
+  });
+
+  test('an overleveled team sees the opponents trained up', async ({ page }) => {
+    const save = withTeam(midGameSave(), 178);
+    save.cards[STRONG_TEAM[0]].level = 330;
+    delete save.league.run;
+    save.league.run = { seed: 7, duel: 3, bonus: 0, startedAt: 1, team: STRONG_TEAM, hp: {}, healed: 3 };
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="kanto"]').click();
+    // Average 203: the final at +30% (264), its ace at the team's strongest.
+    await expect(page.locator('.league-next .pill.is-scaled')).toContainText('330');
+    await expect(page.locator('.league-next .next-meta')).toContainText('264');
   });
 
   test('giving up ends the run with its placement prize', async ({ page }) => {
     const save = kantoSave();
-    save.league.run = { seed: 7, duel: 0, bonus: 0, startedAt: 1, team: STRONG_TEAM, hp: {} };
+    save.league.run = { seed: 7, duel: 0, bonus: 0, startedAt: 1, team: CARRY_TEAM, hp: {} };
     await startGame(page, save, 'battle/league');
     await page.locator('.region-tab[data-region="kanto"]').click();
     await page.locator('[data-act="abandon"]').click();

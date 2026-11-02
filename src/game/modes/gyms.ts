@@ -3,6 +3,7 @@
 // Hoenn's and Sinnoh's leaders live in hoenn.ts / sinnoh.ts.
 // Rosters are fixed and themed (base forms evolve for the level automatically).
 // Rematches get harder (+10 levels each, up to +40) and pay half the coins plus Rare Candy.
+// A team above a gym's levels makes it train up to match (scaling.ts).
 
 import { LINK_CABLE, RARE_CANDY } from '../../data/items';
 import type { PokemonType } from '../../data/types';
@@ -10,6 +11,7 @@ import type { TeamMember } from '../battle';
 import { mergeRewards, type Reward } from '../rewards';
 import { defaultRng, type Rng } from '../rng';
 import { previousRegion, REGION_IDS, type RegionId } from '../regions';
+import { scaleGym, type Difficulty, type PlayerScale } from '../scaling';
 import { generateTeam } from '../teams';
 import { HOENN_GYMS } from './hoenn';
 import { SINNOH_GYMS } from './sinnoh';
@@ -138,13 +140,22 @@ export function rematchBonus(gyms: GymSave, gym: Gym): number {
   return Math.min(REMATCH_MAX, REMATCH_LEVELS * wins);
 }
 
+/** The designed levels of the next battle (rematch bonus included). */
 export function gymLevels(gyms: GymSave, gym: Gym): [number, number] {
   const bonus = rematchBonus(gyms, gym);
   return [gym.levels[0] + bonus, gym.levels[1] + bonus];
 }
 
-export function gymTeam(gyms: GymSave, gym: Gym, rng: Rng = defaultRng): TeamMember[] {
-  return generateTeam({ level: gymLevels(gyms, gym), species: gym.roster, exact: gym.exact }, rng);
+/** The next battle's levels against this team (`scale`; without it, as designed). */
+export function gymDifficulty(gyms: GymSave, gym: Gym, scale?: PlayerScale): Difficulty {
+  return scaleGym(gymLevels(gyms, gym), REGION_GYMS[gymRegion(gym)].indexOf(gym), scale);
+}
+
+export function gymTeam(gyms: GymSave, gym: Gym, rng: Rng = defaultRng, scale?: PlayerScale): TeamMember[] {
+  const { levels, ace } = gymDifficulty(gyms, gym, scale);
+  const team = generateTeam({ level: levels, species: gym.roster, exact: gym.exact }, rng);
+  if (ace != null) team[team.length - 1] = { ...team[team.length - 1], level: ace };
+  return team;
 }
 
 /** Rewards for beating a gym: badge + full rewards the first time, half coins + Rare Candy on rematches. */

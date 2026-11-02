@@ -45,6 +45,15 @@ export const midGameSave = () => fixture('save-v2-tower-hunt.json');
 /** Keys of the team that wins everything: shinies have no level cap. */
 export const STRONG_TEAM = ['6s', '25s', '3s', '9s', '150s', '149s'];
 
+/** One huge Pokémon first and five weak ones: it wins alone, and the low average keeps Leagues at their designed levels. */
+export const CARRY_TEAM = ['150s', '19', '16', '10', '13', '129'];
+
+export function withCarry(save: Save): Save {
+  withTeam(save, 1, CARRY_TEAM);
+  save.cards[CARRY_TEAM[0]].level = 355; // average 60
+  return save;
+}
+
 /** Gives the save a team of six at this level. */
 export function withTeam(save: Save, level: number, keys = STRONG_TEAM): Save {
   for (const key of keys) {

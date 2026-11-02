@@ -976,6 +976,9 @@ button.lrow-team:hover { background: rgba(255, 255, 255, 0.06); }
     .rewards.is-staged .reward { opacity: 1; transform: none; }
 }
 
+.pill.is-scaled { background: rgba(240, 106, 106, 0.16); border-color: rgba(240, 106, 106, 0.4); color: #ffb3a8; }
+.pill.is-scaled .i { width: 13px; height: 13px; stroke-width: 3; }
+
 /* --- League run: registered team with HP, heal choice between duels --------------------------- */
 
 .run-team { display: grid; gap: 12px; }

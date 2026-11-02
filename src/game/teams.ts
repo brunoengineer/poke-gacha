@@ -9,6 +9,7 @@ import { evolutionLevel, parseKey, requiredLevel } from './cards';
 import type { TeamMember } from './battle';
 import { DECK_SIZE } from './economy';
 import { defaultRng, randInt, shuffle, type Rng } from './rng';
+import { teamScale, type PlayerScale } from './scaling';
 
 export interface TeamSpec {
   /** Level, or an inclusive range rolled per member. */
@@ -95,6 +96,9 @@ export function playerLevels(save: SaveData): { team: number; top: number; avera
   const avg = (list: number[]) => (list.length ? Math.round(list.reduce((s, l) => s + l, 0) / list.length) : 1);
   return { team: avg(team), top: avg(top), average: avg(levels.map(c => c.level)) };
 }
+
+/** The current team's levels, for the difficulty that follows an overleveled team. */
+export const playerScale = (save: SaveData): PlayerScale => teamScale(save.deck.map(key => save.cards[key]?.level ?? 0));
 
 /** The player's team as battle members. */
 export function playerTeam(save: SaveData): (TeamMember & { key: string })[] {

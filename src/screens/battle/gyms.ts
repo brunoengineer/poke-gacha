@@ -7,14 +7,14 @@ import { spriteUrl, trainerSpriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { UNLOCK_BADGES } from '../../game/economy';
 import {
-  currentGymRegion, getGym, GYM_REGIONS, gymLevels, gymRegion, gymRewards, gymStatus, gymTeam, recordGym, REGION_GYMS, regionBadges,
+  currentGymRegion, getGym, gymDifficulty, GYM_REGIONS, gymRegion, gymRewards, gymStatus, gymTeam, recordGym, REGION_GYMS, regionBadges,
   regionGymsOpen, rematchBonus, type Gym, type GymRegion,
 } from '../../game/modes/gyms';
 import type { Reward } from '../../game/rewards';
 import { seeded } from '../../game/rng';
 import { previousRegion, REGION_IDS } from '../../game/regions';
 import { MAX_LEVEL } from '../../game/cards';
-import { evolveForLevel } from '../../game/teams';
+import { evolveForLevel, playerScale } from '../../game/teams';
 import { fmt, itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
 import { on, store, update } from '../../state/store';
@@ -132,7 +132,7 @@ function gymHTML(gym: Gym, index: number, shown: GymRegion): string {
   const gyms = store.save.gyms;
   const list = REGION_GYMS[shown];
   const status = gymStatus(gyms, index, shown);
-  const [lo, hi] = gymLevels(gyms, gym);
+  const { levels: [lo, hi], ace, scaled } = gymDifficulty(gyms, gym, playerScale(store.save));
   const record = gyms.records[gym.id];
   const bonus = rematchBonus(gyms, gym);
   const rng = seeded(index + 1);
@@ -150,6 +150,7 @@ function gymHTML(gym: Gym, index: number, shown: GymRegion): string {
         <span class="gym-city">${esc(t.gymNumber(index + 1))} · ${esc(tx.city)}</span>
         <h3 class="gym-leader">${esc(gym.leader)}</h3>
         <span class="gym-meta">${typeBadge(gym.type)}<span class="gym-levels">${esc(t.levels(lo, hi))}</span>
+          ${scaled ? `<span class="gym-scaled" title="${esc(t.scaledHint)}">${icon('up')} ${esc(ace != null ? t.scaledAce(ace) : t.scaled)}</span>` : ''}
           ${record ? `<span class="gym-record">${esc(t.record(record.wins, record.losses))}</span>` : ''}</span>
         <span class="gym-roster" aria-hidden="true">${roster.map(id => `<img class="${locked ? 'silhouette' : ''}" src="${esc(spriteUrl(id))}" alt="" loading="lazy" draggable="false">`).join('')}</span>
         <span class="gym-rewards">
@@ -192,7 +193,7 @@ async function challenge(gym: Gym) {
   const t = L().battle.gyms;
   const tx = L().battle.leaders[gym.id];
   const rematch = status === 'beaten';
-  const team = gymTeam(store.save.gyms, gym);
+  const team = gymTeam(store.save.gyms, gym, undefined, playerScale(store.save));
   const stage = `${regionLabel(gymsRegion)} · ${t.gymNumber(index + 1)}`;
 
   const outcome = await runBattle({
