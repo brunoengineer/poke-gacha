@@ -40,9 +40,10 @@ test('the header fits on every screen wide enough to show the tabs', async ({ pa
     await expect(page.locator('.topbar')).toBeVisible();
     // Wide on purpose: it's what a player sees if the web font fails, and it makes every OS test the same worst case.
     await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; letter-spacing: .02em !important; }' });
-    for (const width of [681, 700, 800, 801, 900, 1040, 1041, 1200]) {
+    for (const width of [681, 700, 820, 821, 900, 1060, 1061, 1200]) {
       await page.setViewportSize({ width, height: 700 });
-      await expectNoSideScroll(page);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, `${lang}: the page overflows sideways at ${width}px`).toBeLessThanOrEqual(0);
       const [brand, tabs, end] = await Promise.all(['.brand', '.tabs', '.topbar-end'].map(s => page.locator(s).boundingBox()));
       expect(tabs!.x, `${lang}: tabs clear the logo at ${width}px`).toBeGreaterThanOrEqual(brand!.x + brand!.width);
       expect(tabs!.x + tabs!.width, `${lang}: tabs clear the coins at ${width}px`).toBeLessThanOrEqual(end!.x);

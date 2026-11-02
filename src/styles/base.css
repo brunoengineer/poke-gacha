@@ -734,14 +734,20 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
 
 /* --- Responsive (header) -------------------------------------------------------- */
 
+/* The bar can never push the page sideways: whatever the font, the tabs give way (a label shortens with "…"). */
+.brand, .topbar-end { flex-shrink: 0; }
+.tabs, .tabs .tab, .tabs .tab span { min-width: 0; }
+.tabs .tab .i { flex-shrink: 0; }
+.tabs .tab span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* Between phones and desktops the four tabs share the bar with the logo and the coins. The widths leave room for a
    wider font, in case the web font doesn't load. */
-@media (max-width: 1040px) {
+@media (max-width: 1060px) {
     .topbar { gap: 8px; }
     .brand-text { display: none; }
     .tabs .tab { gap: 6px; padding: 8px 10px; }
 }
-@media (max-width: 800px) {
+@media (max-width: 820px) {
     .tabs .tab .i { display: none; }
 }
 
