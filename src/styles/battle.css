@@ -884,7 +884,7 @@ html.arena-open { overflow: hidden; }
 /* --- Arena: choice prompt and hand -------------------------------------------------------------------- */
 
 .arena-dock { display: grid; gap: 10px; }
-.arena-prompt:empty { display: none; }
+/* Same space in every state (even empty), so nothing below it moves. */
 .arena-prompt { min-height: 78px; display: grid; }
 .arena-layer .prompt {
     display: flex;
@@ -904,6 +904,7 @@ html.arena-open { overflow: hidden; }
 .arena-layer .prompt-text strong { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold-hi); }
 .arena-layer .prompt-text span { color: var(--muted); font-size: 13.5px; }
 .arena-layer .preview { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px 8px; max-width: 540px; }
+.arena-layer .prompt > .preview:first-child { flex: 1; justify-content: flex-start; max-width: none; }
 .arena-layer .chip .chip-label { color: var(--dim); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .arena-layer .prompt-actions { display: flex; flex-shrink: 0; gap: 8px; }
 .arena-layer .prompt-actions:empty { display: none; }
@@ -1599,12 +1600,16 @@ html.arena-open { overflow: hidden; }
     .arena-layer .stat b small { font-size: 9px; }
     .arena-layer .stat em { font-size: 9px; }
 
-    .arena-prompt { min-height: 0; }
-    .arena-layer .prompt { flex-wrap: wrap; gap: 8px; padding: 10px 10px 10px 12px; border-radius: 14px; }
-    .arena-layer .prompt.idle { padding-block: 8px; }
-    .arena-layer .prompt.idle .prompt-text strong { font-size: 14px; }
-    .arena-layer .prompt-text { flex-basis: 100%; }
-    .arena-layer .preview { justify-content: flex-start; }
+    /* Fixed height with two rows in every state: chips or a title above, buttons or a hint below. */
+    .arena-prompt { height: 92px; min-height: 0; }
+    .arena-layer .prompt { display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; gap: 8px; min-height: 0; padding: 8px 10px; border-radius: 14px; }
+    .arena-layer .prompt.idle { align-content: center; }
+    .arena-layer .prompt-text { flex: none; text-align: center; }
+    .arena-layer .prompt-text strong, .arena-layer .prompt-text span { white-space: nowrap; }
+    .arena-layer .prompt.has-preview .prompt-text strong { display: none; }
+    .arena-layer .prompt.has-preview .preview { order: -1; }
+    .arena-layer .preview { flex-wrap: nowrap; justify-content: center; max-width: none; }
+    .arena-layer .prompt > .preview:first-child { justify-content: center; }
     .arena-layer .prompt-text strong { font-size: 15.5px; }
     .arena-layer .prompt-text span { font-size: 12.5px; }
     .arena-layer .preview { gap: 6px 8px; }

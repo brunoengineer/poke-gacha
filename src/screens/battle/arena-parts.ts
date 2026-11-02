@@ -165,14 +165,15 @@ export function previewHTML(p: Preview): string {
 
 /** The choice bar above the hand: what to do, the matchup preview and the confirm buttons. */
 export function promptHTML(opts: {
-  title: string; sub?: string; preview?: Preview; confirm?: string; keep?: string; idle?: boolean;
+  title?: string; sub?: string; preview?: Preview; confirm?: string; keep?: string; idle?: boolean;
 }): string {
   return `
-    <div class="prompt ${opts.idle ? 'idle' : ''}">
-      <div class="prompt-text">
-        <strong>${esc(opts.title)}</strong>
-        ${opts.sub ? `<span>${esc(opts.sub)}</span>` : ''}
-      </div>
+    <div class="prompt ${opts.idle ? 'idle' : ''} ${opts.preview ? 'has-preview' : ''}">
+      ${opts.title || opts.sub ? `
+        <div class="prompt-text">
+          ${opts.title ? `<strong>${esc(opts.title)}</strong>` : ''}
+          ${opts.sub ? `<span>${esc(opts.sub)}</span>` : ''}
+        </div>` : ''}
       ${opts.preview ? previewHTML(opts.preview) : ''}
       <div class="prompt-actions">
         ${opts.keep ? `<button class="btn btn-ghost" type="button" data-act="keep">${esc(opts.keep)}</button>` : ''}

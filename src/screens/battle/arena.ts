@@ -720,15 +720,17 @@ function renderPrompt(b: Battle) {
   } else {
     const active = s.youActive!;
     const pick = c ?? active;
+    // No text: the field already announces who came out, and the buttons say what can be done.
     node.innerHTML = promptHTML({
-      title: t.prompt.switchTitle(b.config.opponent.name, name(b.opp[s.oppActive])),
-      sub: t.prompt.switchSub(name(b.hand[active])),
       preview: preview(b, pick),
       confirm: pick === active ? t.prompt.keep(name(b.hand[active])) : t.prompt.send(name(b.hand[pick])),
       keep: pick === active ? undefined : t.prompt.keep(name(b.hand[active])),
     });
   }
-  if (!reducedMotion() && choosing(b)) node.firstElementChild?.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: EASE });
+  // Fades in when the phase changes, not on every card tap.
+  const entering = node.dataset.phase !== b.phase;
+  node.dataset.phase = b.phase;
+  if (entering && !reducedMotion() && choosing(b)) node.firstElementChild?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: EASE });
 }
 
 /** Damage number or text popping above a sprite. */

@@ -159,8 +159,6 @@ const battle = {
     prompt: {
       first: 'Escolha seu primeiro Pokémon',
       next: (mon: string) => `${mon} desmaiou! Quem vai agora?`,
-      switchTitle: (trainer: string, mon: string) => `${trainer} enviou ${mon}!`,
-      switchSub: (mon: string) => `Manter ${mon} em campo ou trocar? Quem sai guarda o PS que tem.`,
       pickHint: 'Toque ou arraste um Pokémon do seu time.',
       go: (mon: string) => `Vai, ${mon}!`,
       keep: (mon: string) => `Manter ${mon}`,

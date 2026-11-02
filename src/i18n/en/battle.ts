@@ -159,8 +159,6 @@ const battle: typeof pt = {
     prompt: {
       first: 'Choose your first Pokémon',
       next: (mon: string) => `${mon} fainted! Who's next?`,
-      switchTitle: (trainer: string, mon: string) => `${trainer} sent out ${mon}!`,
-      switchSub: (mon: string) => `Keep ${mon} in or switch? Whoever leaves keeps their HP.`,
       pickHint: 'Tap or drag a Pokémon from your team.',
       go: (mon: string) => `Go, ${mon}!`,
       keep: (mon: string) => `Keep ${mon}`,
