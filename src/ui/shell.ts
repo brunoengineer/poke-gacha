@@ -89,6 +89,9 @@ export function startShell() {
   initMenu();
   document.addEventListener('pointerdown', unlockAudio, { capture: true });
   document.addEventListener('keydown', unlockAudio, { capture: true });
+  // The browser's own drag isn't used anywhere (cards use ui/dnd.ts). Left on, a slip of the mouse while clicking a
+  // link starts dragging it: the click is lost and the page stops responding to the mouse until the drag ends.
+  document.addEventListener('dragstart', event => event.preventDefault());
 
   route();
   addEventListener('hashchange', route);

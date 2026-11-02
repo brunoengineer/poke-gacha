@@ -77,6 +77,20 @@ test('the main menu goes to every screen', async ({ page, isMobile }) => {
   }
 });
 
+test('a menu click still counts when the mouse slips while pressed', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'phones use the side menu');
+  await startGame(page, midGameSave(), 'collection');
+  for (const view of ['capture', 'battle', 'ranking', 'collection']) {
+    const box = (await page.locator(`.tabs .tab[data-view="${view}"]`).boundingBox())!;
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 12, y + 2, { steps: 4 });
+    await page.mouse.up();
+    await expect(page).toHaveURL(new RegExp(`#/${view}`));
+  }
+});
+
 test('the phone menu closes by tapping elsewhere and stays out of battles', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'phones only');
   await startGame(page, withTeam(midGameSave(), 5000), 'battle/training');
