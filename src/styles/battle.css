@@ -862,6 +862,9 @@ html.arena-open { overflow: hidden; }
 }
 .arena-layer .pop small { margin-top: 2px; font-size: 11px; font-weight: 800; letter-spacing: .06em; color: #ffe1a8; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7); }
 .arena-layer .pop-dmg.big { font-size: 40px; color: #ffe08a; text-shadow: 0 3px 0 #8a4b00, 0 0 18px rgba(255, 196, 80, 0.7); }
+.arena-layer .pop-dmg.pop-crit { font-size: 56px; color: #ffe600; text-shadow: 0 4px 0 #8a5a00, 0 0 24px rgba(255, 225, 0, 0.85); }
+.arena-layer .pop-miss { font-size: 26px; color: #d5dbe7; text-shadow: 0 2px 0 #39415a, 0 0 12px rgba(0, 0, 0, 0.7); }
+.arena-layer .pop-block { font-size: 26px; color: #9fd3ff; text-shadow: 0 2px 0 #1d4a7a, 0 0 12px rgba(0, 0, 0, 0.7); }
 
 
 .arena-layer .scene-text {
@@ -1586,6 +1589,8 @@ html.arena-open { overflow: hidden; }
         .arena-layer .scene-text { left: 8px; right: 8px; bottom: 8px; min-height: 0; padding: 6px 10px; font-size: 13px; border-width: 2px; }
     .arena-layer .pop { font-size: 22px; }
     .arena-layer .pop-dmg.big { font-size: 28px; }
+    .arena-layer .pop-dmg.pop-crit { font-size: 40px; }
+    .arena-layer .pop-miss, .arena-layer .pop-block { font-size: 20px; }
     .arena-layer .pop small { font-size: 9px; }
 
     .arena-layer .side { grid-template-columns: var(--card-w) minmax(0, 1fr); align-items: start; gap: 6px; }

@@ -108,6 +108,8 @@ HP battles, 6 against 6 (rules in `src/game/duel.ts`, arena in `src/screens/batt
   they alternate. There are no moves: each hit uses the attacker's better offensive stat (Attack vs. the target's
   Defense, or Sp. Atk vs. Sp. Def, whichever deals more), scaled by **type advantage** (the attacker's best type
   against the target's types): ×1.6 (4×), ×1.3 (2×), ×1, ×0.8 (½), ×0.65 (¼), ×0.5 (immune).
+- **Luck**: every hit, on both sides, has a fixed chance of being a **critical** (10%, double damage, shown as a big
+  yellow number), a **miss** (2%) or **blocked** by the target (1%); a miss or a block deals no damage.
 - The winner stays in with the HP it has left; the opponent sends its team in order, always shown in full once on
   the field (card, stats, exact HP).
 - **The player's decisions**: who goes in first, who replaces a fainted Pokémon, and an optional free switch each

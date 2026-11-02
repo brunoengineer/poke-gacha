@@ -156,6 +156,11 @@ const battle: typeof pt = {
     superEffective: "It's super effective!",
     notEffective: "It's not very effective…",
     noEffect: 'It barely had any effect…',
+    critical: 'A critical hit!',
+    missed: 'The attack missed!',
+    blocked: (name: string) => `${name} blocked the attack!`,
+    missPop: 'Miss!',
+    blockPop: 'Blocked!',
     prompt: {
       first: 'Choose your first Pokémon',
       next: (mon: string) => `${mon} fainted! Who's next?`,

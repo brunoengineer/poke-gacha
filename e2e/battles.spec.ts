@@ -1,5 +1,6 @@
 // Every battle mode, played for real from its lobby to its rewards.
 
+import type { Page } from '@playwright/test';
 import { CARRY_TEAM, closeOverlays, expect, midGameSave, playBattle, startGame, stored, STRONG_TEAM, test, withCarry, withTeam } from './helpers';
 
 const strongSave = () => withTeam(midGameSave(), 5000);
@@ -7,6 +8,46 @@ const strongSave = () => withTeam(midGameSave(), 5000);
 const reputationAtTop = 2001;
 /** Six weak cards: they lose to anything from the Tower's first floor up. */
 const weakSave = () => withTeam(midGameSave(), 1, ['19', '16', '10', '13', '129', '41']);
+
+test.describe('luck', () => {
+  // With reduced motion the numbers vanish as soon as they appear: these tests need to see them.
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+  /** Opens a battle and forces the first hit's roll, so it goes the way the test wants. */
+  async function firstHit(page: Page, roll: number) {
+    // The game keeps its own reference to Math.random, so this has to be in place before the game loads. Only the
+    // battle's rolls are forced: particles and sounds use Math.random too.
+    await page.addInitScript(() => {
+      const real = Math.random;
+      const forced = window as unknown as { forcedRolls?: number[] };
+      Math.random = () => (forced.forcedRolls?.length && new Error().stack?.includes('duel.ts') ? forced.forcedRolls.shift()! : real());
+    });
+    await startGame(page, strongSave(), 'battle/training');
+    await page.locator('[data-friend="joey"]').click();
+    await page.locator('.arena-layer [data-act="start"]').click();
+    await page.locator('.arena-layer .hand-card:not(:disabled)').first().click();
+    await page.evaluate(value => {
+      (window as unknown as { forcedRolls: number[] }).forcedRolls = [value];
+    }, roll);
+    await page.locator('.arena-prompt [data-act="confirm"]').click();
+  }
+
+  test('a critical shows a bigger, yellow number', async ({ page, isMobile }) => {
+    await firstHit(page, 0.05);
+    const number = page.locator('.arena-layer .pop-crit').first();
+    await expect(number).toHaveCSS('color', 'rgb(255, 230, 0)');
+    await expect(number).toHaveCSS('font-size', isMobile ? '40px' : '56px');
+  });
+
+  for (const [what, roll, selector] of [['miss', 0.01, '.pop-miss'], ['block', 0.025, '.pop-block']] as const) {
+    test(`a ${what} says so and the battle carries on`, async ({ page }) => {
+      await firstHit(page, roll);
+      await expect(page.locator(`.arena-layer ${selector}`).first()).toBeVisible();
+      await playBattle(page);
+      expect((await stored(page)).stats.wins).toBeGreaterThan(strongSave().stats.wins);
+    });
+  }
+});
 
 test.describe('training', () => {
   test('a win pays coins and candy, and the team member picked trains', async ({ page }) => {

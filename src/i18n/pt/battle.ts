@@ -156,6 +156,11 @@ const battle = {
     superEffective: 'É super efetivo!',
     notEffective: 'Não é muito efetivo…',
     noEffect: 'Quase não teve efeito…',
+    critical: 'Golpe crítico!',
+    missed: 'O ataque errou!',
+    blocked: (name: string) => `${name} bloqueou o ataque!`,
+    missPop: 'Errou!',
+    blockPop: 'Bloqueou!',
     prompt: {
       first: 'Escolha seu primeiro Pokémon',
       next: (mon: string) => `${mon} desmaiou! Quem vai agora?`,

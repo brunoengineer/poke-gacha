@@ -14,7 +14,7 @@ Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 - **Optional evolution** with real evolution levels, stones and a Link Cable for trade evolutions.
 - **Level caps by rarity**: cards stop at Lv. 100, legendaries at 120, mythicals at 140; shinies never stop growing.
 - **Foil cards**: a card that reaches Lv. 100 turns into a shining gold foil.
-- **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, and you choose who goes in and when to switch.
+- **Battles**: 6-vs-6 HP battles: Speed decides who hits first, type advantage scales damage, any hit can be a critical, miss or get blocked, and you choose who goes in and when to switch.
 - **Saved teams**: up to 8 named teams, loaded in one click; evolved Pokémon come back as their evolved form.
 - **Online ranking**: optional public boards for the Infinity Tower, Power and the Pokédex.
 - **Six modes**: Training (friends), Ranked (a ladder that trains against you, with Ash at the top), Gyms (badges), Shiny Hunt (chain wins on one species

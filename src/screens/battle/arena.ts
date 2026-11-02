@@ -421,29 +421,38 @@ async function strikeFx(b: Battle, seq: Sequence, hit: Hit, target: BattleCard, 
     { transform: 'none' }, { transform: lunge, offset: 0.45 }, { transform: 'none' },
   ], { duration: 340, easing: 'cubic-bezier(.5,0,.5,1)', fill: 'none' });
 
-  if (!seq.skipped) {
-    sfx(hit.mult > 1 ? 'superEffective' : hit.mult < 1 ? 'notEffective' : 'hit');
-    burst(targetMon.querySelector('.mon-sprite'), {
-      color: hit.mult > 1 ? '#ffd166' : hit.mult < 1 ? '#a6adbb' : '#f4dca3', count: hit.mult > 1 ? 22 : 12, distance: hit.mult > 1 ? 110 : 70, duration: 520,
-    });
-    if (hit.mult > 1) void seq.anim(u.scene, shakeFrames(hit.mult >= 1.6 ? 9 : 6), { duration: 380, fill: 'none' });
+  if (hit.outcome === 'miss' || hit.outcome === 'block') {
+    const missed = hit.outcome === 'miss';
+    if (!seq.skipped) sfx('notEffective');
+    floatPop(seq, pop(b, targetMon, missed ? t.missPop : t.blockPop, missed ? 'pop-miss' : 'pop-block'));
+    say(b, missed ? t.missed : t.blocked(name(target)));
+    await seq.wait(620);
+    return;
   }
-  const dmg = pop(b, targetMon, `-${fmt(hit.damage)}`, `pop-dmg ${hit.mult > 1 ? 'big' : ''}`, L().core.statsShort[hit.stat]);
-  void seq.anim(dmg, [
-    { transform: 'translate(-50%, 10px) scale(.4)', opacity: 0 },
-    { transform: 'translate(-50%, -16px) scale(1.15)', opacity: 1, offset: 0.2 },
-    { transform: 'translate(-50%, -22px) scale(1)', opacity: 1, offset: 0.8 },
-    { transform: 'translate(-50%, -34px) scale(1)', opacity: 0 },
-  ], { duration: 1150, easing: EASE }).then(() => dmg.remove());
+
+  const crit = hit.outcome === 'crit';
+  const strong = crit || hit.mult > 1;
+  if (!seq.skipped) {
+    sfx(strong ? 'superEffective' : hit.mult < 1 ? 'notEffective' : 'hit');
+    burst(targetMon.querySelector('.mon-sprite'), {
+      color: crit ? '#ffe600' : hit.mult > 1 ? '#ffd166' : hit.mult < 1 ? '#a6adbb' : '#f4dca3', count: strong ? 22 : 12, distance: strong ? 110 : 70, duration: 520,
+    });
+    if (strong) void seq.anim(u.scene, shakeFrames(crit || hit.mult >= 1.6 ? 9 : 6), { duration: 380, fill: 'none' });
+  }
+  floatPop(seq, pop(b, targetMon, `-${fmt(hit.damage)}`, `pop-dmg ${crit ? 'pop-crit' : hit.mult > 1 ? 'big' : ''}`, L().core.statsShort[hit.stat]));
 
   targetMon.classList.add('hit');
   await Promise.all([
     seq.anim(targetBody, [{ opacity: 1 }, { opacity: 0.2 }, { opacity: 1 }, { opacity: 0.2 }, { opacity: 1 }], { duration: 360, fill: 'none' }),
-    seq.anim(targetBody, shakeFrames(hit.mult > 1 ? 10 : 6), { duration: 360, fill: 'none' }),
+    seq.anim(targetBody, shakeFrames(strong ? 10 : 6), { duration: 360, fill: 'none' }),
     drain(b, seq, targetSide, target, from, hit.hpLeft),
   ]);
   targetMon.classList.remove('hit');
 
+  if (crit) {
+    say(b, t.critical);
+    await seq.wait(420);
+  }
   if (hit.mult !== 1) {
     const text = hit.mult > 1 ? t.superEffective : hit.mult <= 0.5 ? t.noEffect : t.notEffective;
     say(b, text);
@@ -745,6 +754,16 @@ function pop(b: Battle, mon: HTMLElement, text: string, cls: string, small = '')
   node.style.top = `${Math.max(20, r.top - host.top + r.height * 0.2)}px`;
   fx.append(node);
   return node;
+}
+
+/** A number or word rising over a Pokémon, then gone. */
+function floatPop(seq: Sequence, node: HTMLElement) {
+  void seq.anim(node, [
+    { transform: 'translate(-50%, 10px) scale(.4)', opacity: 0 },
+    { transform: 'translate(-50%, -16px) scale(1.15)', opacity: 1, offset: 0.2 },
+    { transform: 'translate(-50%, -22px) scale(1)', opacity: 1, offset: 0.8 },
+    { transform: 'translate(-50%, -34px) scale(1)', opacity: 0 },
+  ], { duration: 1150, easing: EASE }).then(() => node.remove());
 }
 
 const shakeFrames = (px: number): Keyframe[] => [
