@@ -494,6 +494,9 @@ button.lrow-team:hover { background: rgba(255, 255, 255, 0.06); }
 .league-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .league-hero .btn-lg { margin-top: 6px; }
 .btn-price { padding: 2px 8px; border-radius: 999px; background: rgba(43, 35, 24, 0.14); font-size: 13px; font-weight: 800; }
+.master-team { display: grid; gap: 10px; }
+.master-team .view-sub { display: flex; align-items: center; gap: 8px; }
+.master-team .view-sub .i { flex-shrink: 0; color: #ffe29a; }
 .league-warn { color: #ffb9b9; font-size: 13px; }
 .league-hero .league-bosses { grid-area: bosses; justify-content: center; padding-top: 18px; border-top: 1px solid var(--line); }
 

@@ -3,7 +3,8 @@
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
 // A switch (Kanto, Johto, Hoenn, Sinnoh, Master) picks the league; each keeps its own run, titles and Hall of Fame.
 // During a run the registered team is shown with its HP (it carries over between duels), and before each duel after
-// the first the player makes one heal choice (Potion, Revive or Rest); in the Master League, 3 Revives and 4 Potions.
+// the first the player makes one heal choice (Potion, Revive or Rest). The Master League has neither: each duel starts
+// at full HP with the current team, which the player can change between duels (saved teams one click away).
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
@@ -11,7 +12,7 @@ import { trainerSpriteUrl } from '../../data/sprites';
 import { UNLOCK_BADGES } from '../../game/economy';
 import { regionBadges } from '../../game/modes/gyms';
 import {
-  abandonRun, ALL_LEAGUES, applyHeal, MASTER_KIT, masterKitLeft, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
+  abandonRun, ALL_LEAGUES, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, LEAGUE_DUELS,
   leagueFee, leagueRecord, leagueTitles, LEAGUE_REGIONS, leagueUnlocked, MASTER_DAILY_ENTRIES, masterBanned, masterEntriesToday, masterShinyAvailable,
   PLACEMENTS, placementRewards, recordDuel, REST_HP, REVIVE_HP, runBonus, runScale, runTeam, setRunHp, startRun, winRewards, type Bracket,
   type Entrant, type HealKind, type LeagueRegion, type LeagueRun,
@@ -23,7 +24,7 @@ import { getSpecies, hasSpecies } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { hashString } from '../../game/rng';
-import { playerScale } from '../../game/teams';
+import { playerScale, playerTeam } from '../../game/teams';
 import { fmt, itemName, L, locale } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
 import { on, store, update } from '../../state/store';
@@ -35,6 +36,7 @@ import { modeHead, portrait, teamReady, teamStrip, typeBadges } from './competit
 import { bracketHTML, entrantName, entrantTitle } from './league-bracket';
 import { celebrateChampion, TROPHY_SVG } from './league-fx';
 import { clickedRegion, regionSwitchHTML } from './regions';
+import { ensureTeam, teamSummaryHTML } from './team';
 
 let root: HTMLElement | null = null;
 let offs: (() => void)[] = [];
@@ -265,6 +267,8 @@ function runHTML() {
   const info = duelInfo(bracket, run, run.duel, store.save.starter, shownRegion(), runScale(store.save, run));
   const opp = info.opponent;
   const kind = opp.kind;
+  const master = shownRegion() === 'master';
+  const banned = master ? bannedNames() : '';
   return `
     <section class="league-next" data-kind="${kind}">
       <div class="next-portrait">${portrait(opp.sprite, opp.name, 'is-big')}</div>
@@ -275,27 +279,26 @@ function runHTML() {
         <div class="next-meta">${typeBadges(opp.types)}<span class="pill">${esc(L().modes.levelRange(info.levels[0], info.levels[1]))}</span>${info.scaled ? `<span class="pill is-scaled" title="${esc(t().scaledHint)}">${icon('up')} ${esc(info.ace != null ? t().scaledAce(info.ace) : t().scaled)}</span>` : ''}</div>
         <div class="next-team">${teamStrip(info.team)}</div>
         <div class="next-actions">
-          ${healPending(store.save, run, shownRegion()) ? `<p class="heal-first">${icon('sparkle')} ${esc(t().healFirst)}</p>`
+          ${banned ? `<p class="league-warn" data-banned>${esc(m().banned(banned))}</p>` : healPending(store.save, run, shownRegion()) ? `<p class="heal-first">${icon('sparkle')} ${esc(t().healFirst)}</p>`
             : `<button class="btn btn-primary btn-lg" type="button" data-act="fight">${icon('swords')} ${esc(info.final ? t().finalBattle : t().battle)}</button>`}
           <button class="btn btn-ghost" type="button" data-act="abandon">${icon('flag')} ${esc(t().abandon)}</button>
         </div>
       </div>
       ${pathHTML(bracket, run.duel)}
     </section>
+    ${master ? `<section class="master-team"><p class="view-sub">${icon('sparkle')} ${esc(m().teamHint)}</p>${teamSummaryHTML()}</section>` : ''}
     <section class="bracket-section" aria-labelledby="bracket-title">
       <h2 class="section-title" id="bracket-title">${esc(t().bracket)}</h2>
       <div class="bracket-scroll">${bracketHTML(bracket, run.duel, fresh)}</div>
     </section>
-    ${runTeamHTML(run)}`;
+    ${master ? '' : runTeamHTML(run)}`;
 }
 
 /** The registered team with its HP; before a duel (after the first) it hosts the heal choice. */
 function runTeamHTML(run: LeagueRun) {
   const team = runTeam(store.save, run);
-  const shown = shownRegion();
-  const pending = healPending(store.save, run, shown);
-  const targets = pending ? healTargets(store.save, run, shown) : null;
-  const left = masterKitLeft(run);
+  const pending = healPending(store.save, run);
+  const targets = pending ? healTargets(store.save, run) : null;
   const member = (m: ReturnType<typeof runTeam>[number]) => {
     const { id, shiny } = parseKey(m.key);
     const sp = getSpecies(id);
@@ -322,12 +325,7 @@ function runTeamHTML(run: LeagueRun) {
         <span class="label">${icon('lock')} ${esc(t().registered)}</span>
         <small>${esc(t().registeredHint)}</small>
       </header>
-      ${pending && shown === 'master' ? `
-        <div class="heal-choice">
-          <p><b>${esc(m().healTitle(MASTER_KIT.revives, MASTER_KIT.potions))}</b> ${esc(m().healText(Math.round(REVIVE_HP * 100)))}</p>
-          <span class="pill" data-kit-left>${esc(t().revive)}: <b>${fmt(left.revives)}</b> · ${esc(t().potion)}: <b>${fmt(left.potions)}</b></span>
-        </div>` : ''}
-      ${pending && shown !== 'master' ? `
+      ${pending ? `
         <div class="heal-choice">
           <p><b>${esc(t().healTitle)}</b> ${esc(t().healText(Math.round(REVIVE_HP * 100)))}</p>
           <button class="btn btn-secondary btn-sm" type="button" data-heal="rest" ${targets!.rest.length ? '' : 'disabled'}>${icon('sparkle')} ${esc(t().rest(Math.round(REST_HP * 100)))}</button>
@@ -456,7 +454,15 @@ async function fight() {
   const shown = shownRegion();
   const run = rec().run;
   if (!run || busy || healPending(store.save, run, shown)) return;
-  const setup = runBattleSetup(run);
+  const master = shown === 'master';
+  // The Master League fights with the team of the moment, at full HP.
+  if (master && !ensureTeam()) return;
+  if (master && masterBanned(store.save.deck).length) {
+    sfx('error');
+    toast(m().banned(bannedNames()), 'warning');
+    return;
+  }
+  const setup = master ? null : runBattleSetup(run);
   const bracket = currentBracket()!;
   const duel = run.duel;
   const info = duelInfo(bracket, run, duel, store.save.starter, shown, runScale(store.save, run));
@@ -476,13 +482,13 @@ async function fight() {
       },
       music: info.final ? 'champion' : 'league',
       stage: `${rt('title')} · ${t().stages[duel]}`,
-      team: setup.cards,
-      startHp: setup.hp,
+      team: setup?.cards,
+      startHp: setup?.hp,
     });
     const won = outcome.result === 'win';
     region = shown;
     if (won) update(save => setRunHp(save, outcome.hpLeft, shown));
-    const team = runTeamMembers(run);
+    const team = master ? playerTeam(store.save) : runTeamMembers(run);
     const result = update(save => recordDuel(save, won, team, undefined, shown), ['progress']);
     recordBattle(outcome.forfeit ? 'forfeit' : outcome.result);
     if (!result) return;

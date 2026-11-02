@@ -189,8 +189,6 @@ test.describe('master league', () => {
       paid += prize;
       after = await stored(page);
       expect(after.items['master-ball']).toBe(balls + paid);
-      // Use every item that can be used: the next duel waits for it.
-      while (await page.locator('[data-heal]').count()) await page.locator('[data-heal]').first().click();
     }
 
     const shinies = Object.keys(save.cards).filter(key => key.endsWith('s')).length;
@@ -201,6 +199,41 @@ test.describe('master league', () => {
     expect(after.items['master-ball']).toBe(balls + paid + 10);
     expect(after.league.master.run).toBeUndefined();
     expect(Object.keys(after.cards).filter(key => key.endsWith('s'))).toHaveLength(shinies + 1);
+  });
+
+  test('between duels the team recovers and a saved team can take over, within the rules', async ({ page }) => {
+    const save = masterSave();
+    const other = ['1', '2', '4', '5', '7', '20'];
+    for (const key of other) save.cards[key] = { level: 999, copies: 1, obtainedAt: 1 };
+    save.cards['150'] = { level: 100, copies: 1, obtainedAt: 1 };
+    save.teams = [
+      { id: 'a', name: 'Other team', keys: other },
+      { id: 'b', name: 'Not allowed', keys: ['150', '2', '4', '5', '7', '20'] },
+    ];
+    await startGame(page, save, 'battle/league');
+    await page.locator('.region-tab[data-region="master"]').click();
+    await page.locator('[data-act="enter"]').click();
+    await page.locator('.modal-dialog [data-confirm]').click();
+    await page.locator('[data-act="fight"]').click();
+    await playBattle(page);
+    await page.locator('.rewards-continue').click();
+    await expect(page.locator('.modal-rewards')).toHaveCount(0);
+
+    // A team outside the rules can't fight, and says who is the problem.
+    await page.locator('.st-chip[data-load-team="b"]').click();
+    await expect(page.locator('.league-next [data-banned]')).toContainText('Mewtwo');
+    await expect(page.locator('[data-act="fight"]')).toHaveCount(0);
+
+    await page.locator('.st-chip[data-load-team="a"]').click();
+    await page.locator('[data-act="fight"]').click();
+    await page.locator('.arena-layer [data-act="start"]').click();
+    // The new team, all six ready, with no heal choice in between.
+    await expect(page.locator('.arena-layer .hand-card:not(:disabled)')).toHaveCount(6);
+    await playBattle(page);
+    const after = await stored(page);
+    expect(after.deck).toEqual(other);
+    expect(after.league.master.run.duel).toBe(2);
+    expect(after.league.master.run.hp).toEqual({});
   });
 
   test('a loss still uses the entry, and the third one closes the day', async ({ page }) => {
