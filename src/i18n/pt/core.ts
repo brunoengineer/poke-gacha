@@ -12,6 +12,8 @@ const core = {
     capture: 'Capturar',
     battle: 'Batalhar',
     main: 'Navegação principal',
+    openMenu: 'Abrir menu',
+    closeMenu: 'Fechar menu',
     home: 'Início',
   },
 

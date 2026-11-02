@@ -14,6 +14,8 @@ const core: typeof pt = {
     capture: 'Capture',
     battle: 'Battle',
     main: 'Main navigation',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
     home: 'Home',
   },
 

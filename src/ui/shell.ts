@@ -1,4 +1,5 @@
-// App shell: header (tabs, Pokédollars, account menu) and hash routing between the top-level screens.
+// App shell: header (tabs, Pokédollars, account menu), the phone's side menu and hash routing between the top-level
+// screens.
 // Routes: #/collection, #/capture, #/battle[/<mode>]. Screens implement ViewModule (src/screens/types.ts).
 
 import { isMuted, onMuteChange, playMusic, sfx, toggleMute, unlockAudio } from '../audio';
@@ -50,6 +51,7 @@ function route() {
     if ((tab as HTMLElement).dataset.view === name) tab.setAttribute('aria-current', 'page');
     else tab.removeAttribute('aria-current');
   });
+  syncSideNav(name);
   if (changed) {
     window.scrollTo({ top: 0 });
     // Back/Forward during a battle keeps the battle music (the arena restores the screen's music when it closes).
@@ -79,6 +81,7 @@ export function startShell() {
     if ((event.target as Element).closest('.tab')) sfx('tab');
   });
 
+  initSideNav();
   initCoins();
   initMute();
   initMenu();
@@ -87,6 +90,64 @@ export function startShell() {
 
   route();
   addEventListener('hashchange', route);
+}
+
+// --- Side menu (phones) ---------------------------------------------------------------------
+// The top of a phone is hard to reach, so there the tabs live in a small drawer on the right edge: a handle with the
+// current screen's icon that slides the three screens out. It's outside .topbar because backdrop-filter would trap a
+// fixed element inside it. CSS shows either this or the header tabs.
+
+let sideNav: HTMLElement | null = null;
+
+function setSideNav(open: boolean) {
+  if (!sideNav) return;
+  const t = L().core.nav;
+  sideNav.classList.toggle('open', open);
+  const handle = sideNav.querySelector<HTMLElement>('.side-nav-handle')!;
+  handle.setAttribute('aria-expanded', String(open));
+  handle.setAttribute('aria-label', open ? t.closeMenu : t.openMenu);
+  // Closed, the links stay out of the keyboard and screen reader order.
+  sideNav.querySelector<HTMLElement>('.side-nav-tabs')!.inert = !open;
+}
+
+function syncSideNav(view: string) {
+  const current = sideNav?.querySelector('.side-nav-current');
+  if (current) current.innerHTML = icon(VIEWS[view].icon);
+}
+
+function initSideNav() {
+  const t = L().core.nav;
+  sideNav = el(`
+    <nav class="side-nav" aria-label="${esc(t.main)}">
+      <button class="side-nav-handle" type="button" aria-controls="side-nav-tabs">
+        <span class="side-nav-current"></span>${icon('left', 'side-nav-arrow')}
+      </button>
+      <div class="side-nav-tabs" id="side-nav-tabs">
+        ${Object.entries(VIEWS).map(([id, v]) => `<a class="tab" href="#/${id}" data-view="${id}">${icon(v.icon)}<span>${esc(v.label())}</span></a>`).join('')}
+      </div>
+    </nav>`);
+  document.getElementById('toasts')!.before(sideNav);
+  setSideNav(false);
+
+  sideNav.addEventListener('click', event => {
+    const target = event.target as Element;
+    if (target.closest('.side-nav-handle')) {
+      sfx('toggle');
+      setSideNav(!sideNav!.classList.contains('open'));
+    } else if (target.closest('.tab')) {
+      sfx('tab');
+      setSideNav(false);
+    }
+  });
+  document.addEventListener('pointerdown', event => {
+    if (sideNav?.classList.contains('open') && !sideNav.contains(event.target as Node)) setSideNav(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && sideNav?.classList.contains('open')) {
+      setSideNav(false);
+      sideNav.querySelector<HTMLElement>('.side-nav-handle')!.focus();
+    }
+  });
 }
 
 function initCoins() {
