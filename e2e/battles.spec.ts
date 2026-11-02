@@ -116,7 +116,8 @@ test.describe('master league', () => {
       paid += prize;
       after = await stored(page);
       expect(after.items['master-ball']).toBe(balls + paid);
-      if (await page.locator('[data-heal="rest"]').count()) await page.locator('[data-heal="rest"]').click();
+      // Use every item that can be used: the next duel waits for it.
+      while (await page.locator('[data-heal]').count()) await page.locator('[data-heal]').first().click();
     }
 
     const shinies = Object.keys(save.cards).filter(key => key.endsWith('s')).length;

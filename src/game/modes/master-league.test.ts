@@ -7,8 +7,8 @@ import { cardKey } from '../cards';
 import type { Reward } from '../rewards';
 import { teamScale } from '../scaling';
 import {
-  abandonRun, applyHeal, buildBracket, canEnter, championBoss, duelDifficulty, duelInfo, eliteFour, leagueFee, leagueRecord, leagueUnlocked, MASTER_DAILY_ENTRIES,
-  masterBanned, masterEntriesToday, masterShinyAvailable, placementRewards, recordDuel, runTeam, setRunHp, startRun, winRewards,
+  abandonRun, applyHeal, buildBracket, canEnter, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, leagueFee, leagueRecord, leagueUnlocked, MASTER_DAILY_ENTRIES,
+  masterBanned, masterEntriesToday, masterKitLeft, masterShinyAvailable, placementRewards, recordDuel, runTeam, setRunHp, startRun, winRewards,
 } from './league';
 
 const TEAM = ['6', '9', '3', '25', '143', '130'];
@@ -136,15 +136,55 @@ describe('master league duels', () => {
     }
   });
 
-  it('carries HP over and offers the heal choice, like the other leagues', () => {
+  it('carries HP over, and gives 1 Revive and 3 Potions before each duel', () => {
     const save = enter();
-    setRunHp(save, [0.5, 0, 1, 1, 1, 1], 'master');
+    setRunHp(save, [0.5, 0, 0, 0.4, 0.3, 0.2], 'master');
     expect(win(save)).toMatchObject({ kind: 'advance', duel: 1 });
     const run = save.league.master!.run!;
-    expect(runTeam(save, run).map(m => m.hp)).toEqual([0.5, 0, 1, 1, 1, 1]);
+    const hp = () => runTeam(save, run).map(m => m.hp);
+    expect(hp()).toEqual([0.5, 0, 0, 0.4, 0.3, 0.2]);
+    expect(healTargets(save, run, 'master').rest).toEqual([]);
+    expect(applyHeal(save, 'rest', null, 'master')).toBe(false);
+
+    expect(applyHeal(save, 'revive', '9', 'master')).toBe(true);
+    expect(applyHeal(save, 'revive', '3', 'master')).toBe(false); // only one
+    expect(applyHeal(save, 'potion', '9', 'master')).toBe(true); // tops up the one just revived
     expect(applyHeal(save, 'potion', '6', 'master')).toBe(true);
-    expect(runTeam(save, run)[0].hp).toBe(1);
-    expect(applyHeal(save, 'potion', '6', 'master')).toBe(false);
+    expect(applyHeal(save, 'potion', '25', 'master')).toBe(true);
+    expect(applyHeal(save, 'potion', '143', 'master')).toBe(false); // only three
+    expect(hp()).toEqual([1, 1, 0, 1, 0.3, 0.2]);
+    expect(healPending(save, run, 'master')).toBe(false);
+  });
+
+  it('asks for items only while one can be used, and never carries leftovers over', () => {
+    const save = enter();
+    setRunHp(save, [0.5, 1, 1, 1, 1, 1], 'master');
+    win(save);
+    const run = save.league.master!.run!;
+    expect(healPending(save, run, 'master')).toBe(true);
+    applyHeal(save, 'potion', '6', 'master');
+    expect(healPending(save, run, 'master')).toBe(false); // two Potions left, nobody hurt
+    setRunHp(save, [0.5, 1, 1, 1, 1, 1], 'master');
+    win(save);
+    expect(masterKitLeft(run)).toEqual({ potions: 3, revives: 1 });
+  });
+
+  it('a run from before the items keeps going', () => {
+    const save = enter();
+    const run = save.league.master!.run!;
+    Object.assign(run, { duel: 1, healed: 1, hp: { 6: 0.5 } });
+    expect(healPending(save, run, 'master')).toBe(true);
+    expect(applyHeal(save, 'potion', '6', 'master')).toBe(true);
+  });
+
+  it('the other leagues keep their one heal choice', () => {
+    const save = masterSave();
+    save.gyms.badges = ['boulder', 'cascade', 'thunder', 'rainbow', 'soul', 'marsh', 'volcano', 'earth'];
+    startRun(save, 7, NOON);
+    setRunHp(save, [0.5, 0.5, 1, 1, 1, 1]);
+    recordDuel(save, true);
+    expect(applyHeal(save, 'potion', '6')).toBe(true);
+    expect(applyHeal(save, 'potion', '9')).toBe(false);
   });
 });
 
