@@ -10,6 +10,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: CI,
   retries: CI ? 1 : 0,
+  // GitHub's machine has 4 CPU threads: 3 workers beat the default of 2 there, and 4 is no faster. Elsewhere, the default.
+  workers: CI ? 3 : undefined,
   timeout: 90_000,
   reporter: CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
