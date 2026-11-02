@@ -3,7 +3,7 @@
 // advances the bracket, and ends the run with the placement rewards or the champion celebration.
 // A switch (Kanto, Johto, Hoenn, Sinnoh, Master) picks the league; each keeps its own run, titles and Hall of Fame.
 // During a run the registered team is shown with its HP (it carries over between duels), and before each duel after
-// the first the player makes one heal choice (Potion, Revive or Rest); in the Master League, 1 Revive and 3 Potions.
+// the first the player makes one heal choice (Potion, Revive or Rest); in the Master League, 3 Revives and 4 Potions.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';

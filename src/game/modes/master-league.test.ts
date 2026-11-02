@@ -136,23 +136,22 @@ describe('master league duels', () => {
     }
   });
 
-  it('carries HP over, and gives 1 Revive and 3 Potions before each duel', () => {
+  it('carries HP over, and gives 3 Revives and 4 Potions before each duel', () => {
     const save = enter();
-    setRunHp(save, [0.5, 0, 0, 0.4, 0.3, 0.2], 'master');
+    setRunHp(save, [0.5, 0, 0, 0, 0, 0.2], 'master');
     expect(win(save)).toMatchObject({ kind: 'advance', duel: 1 });
     const run = save.league.master!.run!;
     const hp = () => runTeam(save, run).map(m => m.hp);
-    expect(hp()).toEqual([0.5, 0, 0, 0.4, 0.3, 0.2]);
+    expect(hp()).toEqual([0.5, 0, 0, 0, 0, 0.2]);
     expect(healTargets(save, run, 'master').rest).toEqual([]);
     expect(applyHeal(save, 'rest', null, 'master')).toBe(false);
 
-    expect(applyHeal(save, 'revive', '9', 'master')).toBe(true);
-    expect(applyHeal(save, 'revive', '3', 'master')).toBe(false); // only one
-    expect(applyHeal(save, 'potion', '9', 'master')).toBe(true); // tops up the one just revived
-    expect(applyHeal(save, 'potion', '6', 'master')).toBe(true);
-    expect(applyHeal(save, 'potion', '25', 'master')).toBe(true);
-    expect(applyHeal(save, 'potion', '143', 'master')).toBe(false); // only three
-    expect(hp()).toEqual([1, 1, 0, 1, 0.3, 0.2]);
+    for (const key of ['9', '3', '25']) expect(applyHeal(save, 'revive', key, 'master')).toBe(true);
+    expect(applyHeal(save, 'revive', '143', 'master')).toBe(false); // only three
+    expect(applyHeal(save, 'potion', '9', 'master')).toBe(true); // tops up one just revived
+    for (const key of ['6', '3', '25']) expect(applyHeal(save, 'potion', key, 'master')).toBe(true);
+    expect(applyHeal(save, 'potion', '130', 'master')).toBe(false); // only four
+    expect(hp()).toEqual([1, 1, 1, 1, 0, 0.2]);
     expect(healPending(save, run, 'master')).toBe(false);
   });
 
@@ -166,7 +165,7 @@ describe('master league duels', () => {
     expect(healPending(save, run, 'master')).toBe(false); // two Potions left, nobody hurt
     setRunHp(save, [0.5, 1, 1, 1, 1, 1], 'master');
     win(save);
-    expect(masterKitLeft(run)).toEqual({ potions: 3, revives: 1 });
+    expect(masterKitLeft(run)).toEqual({ potions: 4, revives: 3 });
   });
 
   it('a run from before the items keeps going', () => {

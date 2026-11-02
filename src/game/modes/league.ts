@@ -13,7 +13,7 @@
 // lives in `league.johto`, `league.hoenn`, `league.sinnoh`.
 // The Master League (`league.master`) opens with a title in all four: same format at a flat Lv. 100, no shiny, legendary
 // or mythical cards on the team, 3 entries a day, Master Balls for each win and a shiny legendary or mythical for the title.
-// Between its duels the player gets 1 Revive and 3 Potions instead of the one heal choice; what isn't used is lost.
+// Between its duels the player gets 3 Revives and 4 Potions instead of the one heal choice; what isn't used is lost.
 
 import { getSpecies, hasSpecies, speciesList } from '../../data/species';
 import type { PokemonType } from '../../data/types';
@@ -428,7 +428,7 @@ export type HealKind = 'potion' | 'revive' | 'rest';
 export const REVIVE_HP = 0.5;
 export const REST_HP = 0.2;
 /** What the Master League gives between duels. */
-export const MASTER_KIT = { potions: 3, revives: 1 };
+export const MASTER_KIT = { potions: 4, revives: 3 };
 
 /** The Master League items still available before the next duel. */
 export function masterKitLeft(run: LeagueRun) {

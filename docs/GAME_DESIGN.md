@@ -234,7 +234,7 @@ Pick a region (it needs that region's League title), pay the fee and fight a ran
 only when the battle starts: Kanto 5 possible, Johto 6, Hoenn 10, Sinnoh 14. Fees: ₽3,000, ₽6,000, ₽10,000, ₽15,000. Losing,
 giving up or leaving mid-battle keeps nothing (battles aren't saved, so reloading can't save the fee).
 
-- **The boss**: one Pokémon at Lv. 70, 100, 120 or 140 by region (or the team's average, if higher), with **4× HP** that keeps
+- **The boss**: one Pokémon at Lv. 70, 100, 120 or 140 by region (or the team's average, if higher), with **6× HP** that keeps
   its damage as the six fight it in turn. It hits normally, but one hit can't take more than **40%** of a Pokémon's max HP,
   critical hits included. All bosses use the same HP multiplier, so the strongest species are harder for the same fee.
 - **Every win**: 25% of the fee back and Rare Candy ×10, ×20, ×30, ×40 by region.
@@ -329,7 +329,7 @@ Every league adds +5 levels per title (up to +40), so rematch titles go well pas
 **Master League** (a title in all four Leagues, fee ₽10,000): a reason to raise normal cards to Lv. 100. The team can't
 have any shiny, legendary or mythical card (the entry screen names the ones to take off). Blue, Lance, Steven and Cynthia,
 in that order, all at Lv. 100 with no legendaries; titles add no levels and the opponents never train up. HP carries over
-as in the other Leagues, but between duels the player gets **1 Revive and 3 Potions** instead of the one heal choice (a
+as in the other Leagues, but between duels the player gets **3 Revives and 4 Potions** instead of the one heal choice (a
 Potion can top up a Pokémon just revived; what isn't used is lost). **3 entries a day** (device clock), counted on paying, even after a loss. Prizes are paid on
 each win, so a loss keeps them: Master Ball ×2, ×3, ×5, then ×10 for the title. The title also gives a random **shiny
 legendary or mythical** the player doesn't own yet (a duplicate once they own them all), at most one a day; a first title
