@@ -33,7 +33,8 @@ test('the header fits on every screen wide enough to show the tabs', async ({ pa
   test.skip(isMobile, 'phones use the side menu');
   const save = midGameSave();
   save.coins = 12_345_678;
-  await startGame(page, save, 'collection', 'en');
+  // The lightest screen: every resize lays out the whole page, and the Pokédex alone has thousands of elements.
+  await startGame(page, save, 'ranking', 'en');
   for (const lang of ['en', 'pt']) {
     await page.evaluate(l => localStorage.setItem('pg-lang', l), lang);
     await page.reload();

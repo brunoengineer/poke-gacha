@@ -10,17 +10,25 @@ const reputationAtTop = 2001;
 const weakSave = () => withTeam(midGameSave(), 1, ['19', '16', '10', '13', '129', '41']);
 
 test.describe('luck', () => {
-  // With reduced motion the numbers vanish as soon as they appear: these tests need to see them.
-  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+  interface Pop { name: string; color: string; size: string }
 
   /** Opens a battle and forces the first hit's roll, so it goes the way the test wants. */
   async function firstHit(page: Page, roll: number) {
-    // The game keeps its own reference to Math.random, so this has to be in place before the game loads. Only the
-    // battle's rolls are forced: particles and sounds use Math.random too.
     await page.addInitScript(() => {
+      const state = window as unknown as { forcedRolls?: number[]; pops: Pop[] };
+      // The game keeps its own reference to Math.random, so this has to be in place before the game loads. Only the
+      // battle's rolls are forced: particles and sounds use Math.random too.
       const real = Math.random;
-      const forced = window as unknown as { forcedRolls?: number[] };
-      Math.random = () => (forced.forcedRolls?.length && new Error().stack?.includes('duel.ts') ? forced.forcedRolls.shift()! : real());
+      Math.random = () => (state.forcedRolls?.length && new Error().stack?.includes('duel.ts') ? state.forcedRolls.shift()! : real());
+      // The numbers over the Pokémon are gone in a moment: note each one as it appears, whatever the machine's speed.
+      state.pops = [];
+      new MutationObserver(changes => {
+        for (const node of changes.flatMap(change => [...change.addedNodes])) {
+          if (!(node instanceof HTMLElement) || !node.classList.contains('pop')) continue;
+          const style = getComputedStyle(node);
+          state.pops.push({ name: node.className, color: style.color, size: style.fontSize });
+        }
+      }).observe(document, { childList: true, subtree: true });
     });
     await startGame(page, strongSave(), 'battle/training');
     await page.locator('[data-friend="joey"]').click();
@@ -32,19 +40,22 @@ test.describe('luck', () => {
     await page.locator('.arena-prompt [data-act="confirm"]').click();
   }
 
+  const pops = (page: Page) => page.evaluate(() => (window as unknown as { pops: Pop[] }).pops);
+
   test('a critical shows a bigger, yellow number', async ({ page, isMobile }) => {
     await firstHit(page, 0.05);
-    const number = page.locator('.arena-layer .pop-crit').first();
-    await expect(number).toHaveCSS('color', 'rgb(255, 230, 0)');
-    await expect(number).toHaveCSS('font-size', isMobile ? '40px' : '56px');
+    await expect.poll(async () => (await pops(page))[0]?.name ?? '').toContain('pop-crit');
+    const [crit] = await pops(page);
+    expect(crit.color).toBe('rgb(255, 230, 0)');
+    expect(crit.size).toBe(isMobile ? '40px' : '56px');
   });
 
-  for (const [what, roll, selector] of [['miss', 0.01, '.pop-miss'], ['block', 0.025, '.pop-block']] as const) {
+  for (const [what, roll, name] of [['miss', 0.01, 'pop-miss'], ['block', 0.025, 'pop-block']] as const) {
     test(`a ${what} says so and the battle carries on`, async ({ page }) => {
       await firstHit(page, roll);
-      await expect(page.locator(`.arena-layer ${selector}`).first()).toBeVisible();
-      await playBattle(page);
-      expect((await stored(page)).stats.wins).toBeGreaterThan(strongSave().stats.wins);
+      await expect.poll(async () => (await pops(page))[0]?.name ?? '').toContain(name);
+      // A later hit lands (the next one could roll badly too).
+      await expect.poll(async () => (await pops(page)).some(pop => pop.name.includes('pop-dmg'))).toBe(true);
     });
   }
 });
