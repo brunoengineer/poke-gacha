@@ -1,11 +1,57 @@
 // The Pokédex, card details, evolving, passing levels and saved teams.
 
+import type { Page } from '@playwright/test';
 import { closeOverlays, expect, midGameSave, startGame, stored, test, type Save } from './helpers';
+
+/** Plays a finger on the page, as the game's drag code sees it. */
+const finger = (page: Page, type: string, x: number, y: number) => page.evaluate(([kind, px, py]) => {
+  const target = kind === 'pointerdown' ? document.elementFromPoint(px as number, py as number)! : window;
+  target.dispatchEvent(new PointerEvent(kind as string, { bubbles: true, pointerId: 7, pointerType: 'touch', button: 0, clientX: px as number, clientY: py as number }));
+}, [type, x, y]);
 
 const own = (save: Save, key: string, level: number) => {
   save.cards[key] = { level, copies: 2, obtainedAt: 1 };
   save.caught[parseInt(key, 10)] = 1;
 };
+
+test('dragging: on a phone the card shrinks to aim at the deck and still lands there', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'long press is the touch gesture');
+  const save = midGameSave();
+  save.deck = save.deck.slice(0, 5);
+  own(save, '9', 40);
+  await startGame(page, save, 'collection');
+  const tile = page.locator('.dex-tile[data-key="9"]');
+  await tile.evaluate(node => node.scrollIntoView({ block: 'center' })); // clear of the deck bar
+  const card = (await tile.locator('.pcard').boundingBox())!;
+  await finger(page, 'pointerdown', card.x + card.width / 2, card.y + card.height / 2);
+  const ghost = page.locator('.drag-ghost');
+  await expect(ghost).toBeVisible();
+  await expect.poll(async () => (await ghost.boundingBox())!.width).toBeLessThan(card.width * 0.8);
+
+  const slot = (await page.locator('.dock-slot').last().boundingBox())!;
+  await finger(page, 'pointermove', slot.x + slot.width / 2, slot.y + slot.height / 2);
+  await expect(page.locator('.dock-slot.drop-hover, .dock-slots.drop-hover').first()).toBeVisible();
+  await finger(page, 'pointerup', slot.x + slot.width / 2, slot.y + slot.height / 2);
+  await expect(ghost).toHaveCount(0);
+  expect((await stored(page)).deck).toContain('9');
+});
+
+test('dragging: with a mouse the card keeps its size', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'phones have no mouse');
+  const save = midGameSave();
+  own(save, '9', 40);
+  await startGame(page, save, 'collection');
+  const tile = page.locator('.dex-tile[data-key="9"]');
+  await tile.evaluate(node => node.scrollIntoView({ block: 'center' })); // clear of the deck bar
+  const card = (await tile.locator('.pcard').boundingBox())!;
+  await page.mouse.move(card.x + card.width / 2, card.y + card.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(card.x + card.width / 2 + 30, card.y + card.height / 2 - 30);
+  const ghost = page.locator('.drag-ghost');
+  await expect(ghost).toBeVisible();
+  await expect.poll(async () => (await ghost.boundingBox())!.width).toBeGreaterThan(card.width);
+  await page.mouse.up();
+});
 
 /** A save with no pending passes of its own, so the counts below are exact. */
 function cleanSave() {

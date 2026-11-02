@@ -109,7 +109,7 @@ function columnHTML(next: number): string {
   return floors.map(f => {
     const state = f > next ? 'ahead' : f === next ? 'current' : 'cleared';
     return `
-      <li class="tower-step ${state} ${isBossFloor(f) ? 'boss' : ''}">
+      <li class="tower-step ${state} ${isBossFloor(f) ? 'is-boss' : ''}">
         <span class="tower-step-num">${fmt(f)}</span>
         <span class="tower-step-level">${esc(t.level(floorLevel(f)))}</span>
         <span class="tower-step-mark">${state === 'cleared' ? icon('check') : state === 'current' ? icon('swords') : isBossFloor(f) ? icon('crown') : ''}</span>

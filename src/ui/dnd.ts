@@ -33,10 +33,15 @@ interface Active extends Pending {
   offsetY: number;
   lastX: number;
   tilt: number;
+  scale: number;
+  targetScale: number;
   zone: HTMLElement | null;
 }
 
 const LONG_PRESS_MS = 260;
+const LIFT_SCALE = 1.08;
+/** On touch a big card shrinks to about this width while dragged, so the finger can see where it's aiming. */
+const TOUCH_DRAG_WIDTH = 80;
 const zones = new Map<string, ZoneHandler>();
 let pending: Pending | null = null;
 let active: Active | null = null;
@@ -123,6 +128,7 @@ function begin() {
   ghost.style.height = `${rect.height}px`;
   ghost.append(visual.cloneNode(true));
   document.body.append(ghost);
+  const targetScale = pending.touch ? Math.min(LIFT_SCALE, TOUCH_DRAG_WIDTH / rect.width) : LIFT_SCALE;
 
   active = {
     ...pending, ghost, rect,
@@ -130,6 +136,8 @@ function begin() {
     offsetY: pending.y - rect.top,
     lastX: pending.x,
     tilt: 0,
+    scale: reducedMotion() ? targetScale : LIFT_SCALE,
+    targetScale,
     zone: null,
   };
   pending = null;
@@ -161,8 +169,9 @@ function update() {
   const velocity = x - active.lastX;
   active.lastX = x;
   active.tilt += (Math.max(-14, Math.min(14, velocity * 0.9)) - active.tilt) * 0.25;
-  ghost.style.transform = `translate3d(${x - active.offsetX}px, ${y - active.offsetY}px, 0) rotate(${active.tilt.toFixed(2)}deg) scale(1.08)`;
-  if (Math.abs(active.tilt) > 0.2) frame = requestAnimationFrame(update);
+  active.scale += (active.targetScale - active.scale) * 0.25;
+  ghost.style.transform = `translate3d(${x - active.offsetX}px, ${y - active.offsetY}px, 0) rotate(${active.tilt.toFixed(2)}deg) scale(${active.scale.toFixed(3)})`;
+  if (Math.abs(active.tilt) > 0.2 || Math.abs(active.targetScale - active.scale) > 0.004) frame = requestAnimationFrame(update);
 
   const hit = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]');
   const zone = hit && accepts(hit) ? hit : null;

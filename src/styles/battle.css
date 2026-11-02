@@ -1346,7 +1346,7 @@ html.arena-open { overflow: hidden; }
 .tower-step-mark { display: grid; place-items: center; }
 .tower-step-mark .i { width: 16px; height: 16px; }
 .tower-step.ahead { opacity: .55; }
-.tower-step.boss .tower-step-mark { color: var(--ra-legendary); }
+.tower-step.is-boss .tower-step-mark { color: var(--ra-legendary); }
 .tower-step.current {
     padding-block: 13px;
     background: linear-gradient(90deg, rgba(255, 138, 92, 0.22), var(--surface-2));

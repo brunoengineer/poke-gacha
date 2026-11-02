@@ -51,6 +51,19 @@ test('the header fits on every screen wide enough to show the tabs', async ({ pa
   }
 });
 
+test('every floor of the tower lines up, boss floors too', async ({ page }) => {
+  const save = midGameSave();
+  save.tower = { best: 29, wins: 29, losses: 0 };
+  await startGame(page, save, 'battle/tower');
+  await expect(page.locator('.tower-step.current.is-boss')).toHaveCount(1);
+  const rows = await page.locator('.tower-step').evaluateAll(steps => steps.map(step => ({
+    width: Math.round(step.getBoundingClientRect().width),
+    fits: step.scrollWidth <= step.clientWidth,
+  })));
+  expect(new Set(rows.map(row => row.width)).size, 'all rows have the same width').toBe(1);
+  expect(rows.every(row => row.fits), 'nothing sticks out of a row').toBe(true);
+});
+
 test('the main menu goes to every screen', async ({ page, isMobile }) => {
   await startGame(page, midGameSave(), 'collection');
   for (const view of ['capture', 'battle', 'ranking', 'collection']) {
