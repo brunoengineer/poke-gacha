@@ -21,6 +21,7 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
 };
 
 import type { CardKey } from '../game/cards';
+import { defaultOnlineSave, type OnlineSave } from '../game/leaderboard';
 import { normalizeSavedTeams, type SavedTeam } from '../game/saved-teams';
 import { STARTING_COINS } from '../game/economy';
 import { defaultLadderSave, type LadderSave } from '../game/modes/competition';
@@ -74,6 +75,8 @@ export interface SaveData {
   league: LeagueSave;
   /** Infinity Tower progress (added after the Johto release; older saves start at floor 1). */
   tower: TowerSave;
+  /** Online ranking: whether the player joined, and their nickname (older saves: not joined). */
+  online: OnlineSave;
   /** Shiny Hunt: target species and chain (added after the Johto release; older saves start with no target). */
   hunt: HuntSave;
   stats: {
@@ -113,6 +116,7 @@ export function defaultSave(): SaveData {
     league: defaultLeagueSave(),
     tower: defaultTowerSave(),
     hunt: defaultHuntSave(),
+    online: defaultOnlineSave(),
     stats: { pulls: 0, shinies: 0, evolutions: 0, battles: 0, wins: 0, losses: 0, coinsEarned: 0, candiesUsed: 0 },
     daily: { last: null, streak: 0 },
     pity: {},
@@ -159,6 +163,7 @@ export function normalizeSave(raw: unknown): SaveData {
     league: merge(d.league, s.league),
     tower: merge(d.tower, s.tower),
     hunt: merge(d.hunt, s.hunt),
+    online: merge(d.online, s.online),
     stats: merge(d.stats, s.stats),
     daily: merge(d.daily, s.daily),
     pity: isObject(s.pity) ? (s.pity as SaveData['pity']) : {},

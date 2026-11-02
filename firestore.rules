@@ -6,5 +6,27 @@ service cloud.firestore {
     match /pokegacha_saves/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+
+    // Online ranking: anyone can read it; each player writes only their own entry, with well-formed values, at most
+    // once every few seconds. The numbers come from the player's own browser, so a determined cheater could still fake
+    // them: these rules keep the boards well-formed, they don't prove the scores.
+    match /pokegacha_leaderboard/{uid} {
+      allow read: if true;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid && validPokegachaEntry();
+      allow update: if request.auth != null && request.auth.uid == uid && validPokegachaEntry()
+        && request.time > resource.data.updatedAt + duration.value(3, 's');
+    }
+
+    function validPokegachaEntry() {
+      let d = request.resource.data;
+      let fields = ['name', 'tower', 'power', 'caught', 'updatedAt'];
+      return d.keys().hasOnly(fields) && d.keys().hasAll(fields)
+        && d.name is string && d.name.matches('^[\\p{L}\\p{N} _.-]{3,16}$')
+        && d.tower is int && d.tower >= 0
+        && d.power is int && d.power >= 0
+        && d.caught is int && d.caught >= 0 && d.caught <= 2000
+        && d.updatedAt == request.time;
+    }
   }
 }

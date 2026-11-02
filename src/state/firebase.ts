@@ -7,6 +7,8 @@ import type { Firestore } from 'firebase/firestore';
 
 /** Firestore collection for saves (named per game, so several games can share one Firebase project). */
 const SAVES = 'pokegacha_saves';
+/** Public online ranking: one entry per player who joined (see firestore.rules). */
+const LEADERBOARD = 'pokegacha_leaderboard';
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
@@ -90,6 +92,37 @@ export async function loadCloudSave(uid: string): Promise<unknown | null> {
   if (!snap.exists()) return null;
   const data = snap.data() as { json?: string };
   return data.json ? JSON.parse(data.json) : null;
+}
+
+export async function writeLeaderboardEntry(uid: string, data: Record<string, unknown>) {
+  const s = await init();
+  if (!s) return;
+  const { doc, setDoc, serverTimestamp } = s.storeLib;
+  await setDoc(doc(s.db, LEADERBOARD, uid), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteLeaderboardEntry(uid: string) {
+  const s = await init();
+  if (!s) return;
+  const { doc, deleteDoc } = s.storeLib;
+  await deleteDoc(doc(s.db, LEADERBOARD, uid));
+}
+
+export async function fetchLeaderboardTop(field: string, size: number): Promise<{ uid: string; data: unknown }[]> {
+  const s = await init();
+  if (!s) return [];
+  const { collection, getDocs, limit, orderBy, query } = s.storeLib;
+  const snap = await getDocs(query(collection(s.db, LEADERBOARD), orderBy(field, 'desc'), limit(size)));
+  return snap.docs.map(d => ({ uid: d.id, data: d.data() }));
+}
+
+/** Place of a score on a board: entries strictly above it + 1. */
+export async function fetchLeaderboardPosition(field: string, value: number): Promise<number> {
+  const s = await init();
+  if (!s) return 0;
+  const { collection, getCountFromServer, query, where } = s.storeLib;
+  const snap = await getCountFromServer(query(collection(s.db, LEADERBOARD), where(field, '>', value)));
+  return snap.data().count + 1;
 }
 
 export async function writeCloudSave(uid: string, save: { updatedAt: number }) {

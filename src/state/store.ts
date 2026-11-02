@@ -287,6 +287,8 @@ export async function resetProgress() {
   const settings = store.save.settings;
   const fresh = defaultSave();
   fresh.settings = settings;
+  // Stays in the online ranking, so the entry follows the new scores instead of being stuck on the boards.
+  fresh.online = store.save.online;
   fresh.updatedAt = Date.now();
   store.save = fresh;
   flushLocal();

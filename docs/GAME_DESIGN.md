@@ -316,6 +316,16 @@ Every league adds +5 levels per title (up to +40), so rematch titles go well pas
 Chimchar); if that's your own starter (already given by the Kanto title), Kanto's of the same type instead
 (`firstTitleStarter`).
 
+## Online ranking
+
+A public board on the Battle hub, with three boards: **Infinity Tower** (best floor), **Power** (combined CP of the six
+strongest cards owned) and **Pokédex** (species caught). Top 50 per board, plus your own place; tied players share a place.
+Anyone can read them. **Joining is optional**, needs a Google account and shows only a nickname of your choice (3–16
+characters); leaving removes your entry. Entries update about 30 seconds after a change, and only when a number changed.
+
+Scores are written by the player's browser, so `firestore.rules` keeps entries well-formed and rate-limited but can't prove
+them: a determined cheater can fake a score. Making them cheat-proof would need a server (Cloud Functions) checking the game.
+
 ## Adding a generation
 
 See "Adding a generation" in the README for the full checklist (data, region id, starters, gyms, league, friends,

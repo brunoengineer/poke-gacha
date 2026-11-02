@@ -15,6 +15,7 @@ import { maybeOnboard } from './screens/onboarding';
 import { bootAuth, on, store } from './state/store';
 import { hideLogin, showLogin } from './ui/login';
 import { toast } from './ui/dom';
+import { initLeaderboardSync } from './state/leaderboard';
 import { startShell } from './ui/shell';
 
 /** Player the game screens were started for (null until the game starts). */
@@ -47,6 +48,7 @@ async function boot() {
       started = store.player?.uid ?? 'guest';
       hideLogin();
       startShell();
+      initLeaderboardSync();
       void maybeOnboard();
     } else if (!started && (store.phase === 'login' || store.phase === 'loading')) {
       showLogin();

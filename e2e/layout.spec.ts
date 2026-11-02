@@ -3,7 +3,7 @@
 import { expect, expectFullyClickable, expectNoSideScroll, midGameSave, startGame, test, withTeam } from './helpers';
 
 const SCREENS = [
-  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league',
+  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league', 'battle/online',
 ];
 
 test('no screen overflows sideways', async ({ page }) => {
@@ -24,7 +24,7 @@ test('the team dock buttons are clickable from edge to edge', async ({ page }) =
 
 test('the Battle hub mode cards are clickable from edge to edge', async ({ page }) => {
   await startGame(page, midGameSave(), 'battle');
-  for (const mode of ['training', 'competition', 'gyms', 'hunt', 'tower', 'league']) {
+  for (const mode of ['training', 'competition', 'gyms', 'hunt', 'tower', 'league', 'online']) {
     await expectFullyClickable(page.locator(`[data-mode="${mode}"]`));
   }
 });
