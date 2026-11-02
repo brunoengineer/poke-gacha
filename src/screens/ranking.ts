@@ -1,17 +1,16 @@
-// Online ranking (#/battle/online): three boards, the player's place and the nickname they chose. Guests can read the
+// Online ranking (#/ranking): three boards, the player's place and the nickname they chose. Guests can read the
 // boards; joining needs a Google account. Names and scores come from other players: readEntry() cleans them, and
 // everything is escaped here. Rules in src/game/leaderboard.ts, network side in src/state/leaderboard.ts.
 
-import { sfx } from '../../audio';
-import { BOARDS, cleanNickname, statsFromSave, validNickname, type Board, type LeaderboardEntry } from '../../game/leaderboard';
-import { fmt, L } from '../../i18n';
+import { sfx } from '../audio';
+import { BOARDS, cleanNickname, statsFromSave, validNickname, type Board, type LeaderboardEntry } from '../game/leaderboard';
+import { fmt, L } from '../i18n';
 import {
   canJoinLeaderboard, fetchPosition, fetchTop, hasJoinedLeaderboard, joinLeaderboard, leaderboardAvailable, leaveLeaderboard, myEntry, syncLeaderboard,
-} from '../../state/leaderboard';
-import { signIn, store } from '../../state/store';
-import { confirmDialog, esc, icon, toast } from '../../ui/dom';
-import type { ModeModule } from '../types';
-import { modeHead } from './competition-ui';
+} from '../state/leaderboard';
+import { signIn, store } from '../state/store';
+import { confirmDialog, esc, icon, toast } from '../ui/dom';
+import type { ViewModule } from './types';
 
 const ICONS: Record<Board, string> = { tower: 'tower', power: 'bolt', caught: 'cards' };
 /** The boards don't change that fast: reopening within this time uses what was already read. */
@@ -30,18 +29,17 @@ let loadId = 0;
 
 const t = () => L().modes.online;
 
-export const onlineMode: ModeModule = {
-  render(container) {
-    root = container;
+export const rankingView: ViewModule = {
+  mount(section) {
+    root = section;
+    section.addEventListener('click', onClick);
+    section.addEventListener('submit', onSubmit);
+  },
+  show() {
     editing = false;
-    container.addEventListener('click', onClick);
-    container.addEventListener('submit', onSubmit);
     void load();
   },
-  dispose() {
-    root?.removeEventListener('click', onClick);
-    root?.removeEventListener('submit', onSubmit);
-    root = null;
+  hide() {
     loadId++;
   },
 };
@@ -85,8 +83,13 @@ async function load(force = false) {
 function render() {
   if (!root) return;
   root.innerHTML = `
-    <div class="mode online">
-      ${modeHead(t().title, t().subtitle)}
+    <div class="mode">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title">${esc(t().title)}</h1>
+          <p class="view-sub">${esc(t().subtitle)}</p>
+        </div>
+      </div>
       ${leaderboardAvailable() ? `${youHTML()}${tabsHTML()}${listHTML()}` : `<p class="online-state">${esc(t().unavailable)}</p>`}
     </div>`;
 }

@@ -11,6 +11,7 @@ const core = {
     collection: 'Coleção',
     capture: 'Capturar',
     battle: 'Batalhar',
+    ranking: 'Ranking',
     main: 'Navegação principal',
     openMenu: 'Abrir menu',
     closeMenu: 'Fechar menu',

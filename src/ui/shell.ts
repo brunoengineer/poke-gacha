@@ -1,12 +1,13 @@
 // App shell: header (tabs, Pokédollars, account menu), the phone's side menu and hash routing between the top-level
 // screens.
-// Routes: #/collection, #/capture, #/battle[/<mode>]. Screens implement ViewModule (src/screens/types.ts).
+// Routes: #/collection, #/capture, #/battle[/<mode>], #/ranking. Screens implement ViewModule (src/screens/types.ts).
 
 import { isMuted, onMuteChange, playMusic, sfx, toggleMute, unlockAudio } from '../audio';
 import { getLang, L, setLang, type Lang } from '../i18n';
 import { battleView } from '../screens/battle';
 import { captureView } from '../screens/capture';
 import { collectionView } from '../screens/collection';
+import { rankingView } from '../screens/ranking';
 import type { ViewModule } from '../screens/types';
 import { isFirebaseEnabled, on, resetProgress, signIn, signOut, store } from '../state/store';
 import { animateNumber, confirmDialog, el, esc, icon } from './dom';
@@ -16,6 +17,7 @@ const VIEWS: Record<string, { module: ViewModule; icon: string; label: () => str
   collection: { module: collectionView, icon: 'cards', label: () => L().core.nav.collection },
   capture: { module: captureView, icon: 'ball', label: () => L().core.nav.capture },
   battle: { module: battleView, icon: 'swords', label: () => L().core.nav.battle },
+  ranking: { module: rankingView, icon: 'trophy', label: () => L().core.nav.ranking },
 };
 export const HOME = 'collection';
 
@@ -94,7 +96,7 @@ export function startShell() {
 
 // --- Side menu (phones) ---------------------------------------------------------------------
 // The top of a phone is hard to reach, so there the tabs live in a small drawer on the right edge: a handle with the
-// current screen's icon that slides the three screens out. It's outside .topbar because backdrop-filter would trap a
+// current screen's icon that slides the screens out. It's outside .topbar because backdrop-filter would trap a
 // fixed element inside it. CSS shows either this or the header tabs.
 
 let sideNav: HTMLElement | null = null;

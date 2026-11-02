@@ -734,6 +734,16 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
 
 /* --- Responsive (header) -------------------------------------------------------- */
 
+/* Between phones and desktops the four tabs share the bar with the logo and the coins. */
+@media (max-width: 960px) {
+    .topbar { gap: 8px; }
+    .brand-text { display: none; }
+    .tabs .tab { gap: 6px; padding: 8px 10px; }
+}
+@media (max-width: 760px) {
+    .tabs .tab .i { display: none; }
+}
+
 @media (max-width: 680px) {
     :root { --header-h: 56px; }
     body { font-size: 14px; }

@@ -13,6 +13,7 @@ const core: typeof pt = {
     collection: 'Collection',
     capture: 'Capture',
     battle: 'Battle',
+    ranking: 'Ranking',
     main: 'Main navigation',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',

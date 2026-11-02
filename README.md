@@ -73,7 +73,7 @@ src/
   game/        Pure game rules (tested): cards, progression, gacha, battle, duel, teams, rewards, economy, modes/
   state/       Save format, store (events + local/cloud persistence), actions, Firebase
   ui/          Shell (header + router), login, card renderer, modals/toasts, drag and drop, effects, rewards, settings
-  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, ranked ("competition"), hunt, tower, league, online)
+  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, ranked ("competition"), hunt, tower, league), Ranking
   audio/       Synthesized sound effects, music sequencer, cries
   i18n/        pt-BR and English strings, one namespace per feature
   styles/      base.css (tokens, layout, shared components) + one CSS file per feature

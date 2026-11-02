@@ -3,7 +3,7 @@
 import { expect, expectFullyClickable, expectNoSideScroll, midGameSave, startGame, test, withTeam } from './helpers';
 
 const SCREENS = [
-  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league', 'battle/online',
+  'collection', 'capture', 'battle', 'battle/training', 'battle/competition', 'battle/gyms', 'battle/hunt', 'battle/tower', 'battle/league', 'ranking',
 ];
 
 test('no screen overflows sideways', async ({ page }) => {
@@ -24,14 +24,33 @@ test('the team dock buttons are clickable from edge to edge', async ({ page }) =
 
 test('the Battle hub mode cards are clickable from edge to edge', async ({ page }) => {
   await startGame(page, midGameSave(), 'battle');
-  for (const mode of ['training', 'competition', 'gyms', 'hunt', 'tower', 'league', 'online']) {
+  for (const mode of ['training', 'competition', 'gyms', 'hunt', 'tower', 'league']) {
     await expectFullyClickable(page.locator(`[data-mode="${mode}"]`));
+  }
+});
+
+test('the header fits on every screen wide enough to show the tabs', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'phones use the side menu');
+  const save = midGameSave();
+  save.coins = 12_345_678;
+  await startGame(page, save, 'collection', 'en');
+  for (const lang of ['en', 'pt']) {
+    await page.evaluate(l => localStorage.setItem('pg-lang', l), lang);
+    await page.reload();
+    await expect(page.locator('.topbar')).toBeVisible();
+    for (const width of [681, 700, 760, 761, 880, 960, 961, 1024]) {
+      await page.setViewportSize({ width, height: 700 });
+      await expectNoSideScroll(page);
+      const [brand, tabs, end] = await Promise.all(['.brand', '.tabs', '.topbar-end'].map(s => page.locator(s).boundingBox()));
+      expect(tabs!.x, `${lang}: tabs clear the logo at ${width}px`).toBeGreaterThanOrEqual(brand!.x + brand!.width);
+      expect(tabs!.x + tabs!.width, `${lang}: tabs clear the coins at ${width}px`).toBeLessThanOrEqual(end!.x);
+    }
   }
 });
 
 test('the main menu goes to every screen', async ({ page, isMobile }) => {
   await startGame(page, midGameSave(), 'collection');
-  for (const view of ['capture', 'battle', 'collection']) {
+  for (const view of ['capture', 'battle', 'ranking', 'collection']) {
     if (isMobile) await page.locator('.side-nav-handle').click();
     const tab = page.locator(`${isMobile ? '.side-nav' : '.tabs'} .tab[data-view="${view}"]`);
     await expect(tab).toBeVisible();

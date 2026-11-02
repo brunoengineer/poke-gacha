@@ -1052,6 +1052,8 @@ button.lrow-team:hover { background: rgba(255, 255, 255, 0.06); }
 
 /* --- Online ranking ---------------------------------------------------------------------------------- */
 
+.mode > .view-head { margin-bottom: 0; }
+
 .online-you {
     display: flex;
     align-items: center;
