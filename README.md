@@ -28,10 +28,23 @@ The full rules and numbers are in [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md).
 npm install
 npm run dev        # http://localhost:5173
 npm test           # game logic tests (Vitest)
+npm run e2e        # plays the real game in a browser (Playwright), desktop and phone
 npm run build      # type check + production build in dist/
 ```
 
 Without Firebase configured, the game runs in guest mode (progress saved in the browser).
+
+### Tests
+
+- `npm test`: the game rules and saves. [difficulty-baseline.test.ts](src/game/modes/difficulty-baseline.test.ts) writes
+  out the designed levels and prizes on purpose: if it fails, either a change broke the balance by accident, or the design
+  changed and the table should change in the same commit.
+- `npm run e2e` (first time: `npx playwright install chromium`): the browser tests in [e2e/](e2e), on a desktop and a phone
+  screen. They play every mode, load every save in `src/state/fixtures/`, and fail on any console error, covered button or
+  sideways overflow. They run in guest mode, with images and audio stubbed, and never touch Firebase. `npx playwright test
+  --ui` shows them running; after a failure, `npx playwright show-report` has screenshots and a step-by-step trace.
+
+Pushing to `main` runs both, and a failure stops the deploy. New features should add to them.
 
 ### Google sign-in (Firebase)
 
@@ -48,7 +61,7 @@ write their own save).
 
 ### Deploy
 
-Pushing to `main` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml): tests, build, and publish to
+Pushing to `main` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml): type check, tests, browser tests, build, and publish to
 GitHub Pages (Settings → Pages → Source: GitHub Actions).
 
 ## Project structure

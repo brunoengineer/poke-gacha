@@ -8,13 +8,15 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "pokedex": "node scripts/build-pokedex.mjs --gen"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e",
+    "pokedex": "node scripts/build-pokedex.mjs --gen",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "firebase": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
