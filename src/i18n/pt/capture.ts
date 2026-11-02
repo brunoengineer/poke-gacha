@@ -142,7 +142,7 @@ const capture = {
     claim: 'Abrir presente',
     day: (day: number) => `Dia ${n(day)}`,
     streak: (days: number) => `Sequência de ${plural(days, 'dia', 'dias')}`,
-    ballEvery: 'Volte todo dia: a cada 7 dias seguidos vem uma Master Ball.',
+    ballEvery: 'Volte todo dia: uma Master Ball por dia a partir do segundo dia seguido, e 5 a cada 7 dias.',
     claimedTitle: 'Presente recebido',
     tomorrow: (coins: string) => `Amanhã: ${coins}`,
     gotTitle: (day: number) => (day > 1 ? `${n(day)} dias seguidos!` : 'Presente do dia!'),

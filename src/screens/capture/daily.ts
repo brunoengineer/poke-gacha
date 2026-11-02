@@ -1,9 +1,10 @@
-// Daily gift card on the Capture screen: shows today's reward and the week track (a Master Ball every 7th day),
+// Daily gift card on the Capture screen: shows today's reward and the week track (Master Balls: 1 a day from the
+// second day of a streak, more on every 7th),
 // opens with a small gift animation, then stays as a compact "come back tomorrow" card.
 
 import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
-import { DAILY_BALL, DAILY_BALL_EVERY, dailyGift } from '../../game/economy';
+import { DAILY_BALL, DAILY_BALL_EVERY, DAILY_BIG_BALLS, dailyGift } from '../../game/economy';
 import { previousDayKey } from '../../game/rng';
 import { fmt, itemName, L } from '../../i18n';
 import { claimDaily, dailyAvailable } from '../../state/actions';
@@ -25,7 +26,7 @@ function trackHTML(day: number, claimed: boolean) {
       ${Array.from({ length: DAILY_BALL_EVERY }, (_, i) => {
         const n = i + 1;
         const state = n < pos || (claimed && n === pos) ? 'done' : n === pos ? 'today' : '';
-        const ball = n === DAILY_BALL_EVERY ? `<img src="${esc(itemSprite(DAILY_BALL))}" alt="" width="24" height="24">` : '';
+        const ball = n === DAILY_BALL_EVERY ? `<img src="${esc(itemSprite(DAILY_BALL))}" alt="" width="24" height="24"><small>×${DAILY_BIG_BALLS}</small>` : '';
         return `<li class="${state}">${ball || (state === 'done' ? icon('check') : `<span>${n}</span>`)}</li>`;
       }).join('')}
     </ol>`;
@@ -36,7 +37,13 @@ function rewardChips(day: number) {
   return `
     <span class="daily-chip">${icon('coin', 'i-coin')}${fmt(gift.coins)}</span>
     <span class="daily-chip"><img src="${esc(itemSprite('rare-candy'))}" alt="" width="22" height="22">${esc(itemName('rare-candy'))} ×${gift.candy}</span>
-    ${gift.ball ? `<span class="daily-chip"><img src="${esc(itemSprite(gift.ball))}" alt="" width="22" height="22">${esc(itemName(gift.ball))}</span>` : ''}`;
+    ${gift.balls ? `<span class="daily-chip"><img src="${esc(itemSprite(DAILY_BALL))}" alt="" width="22" height="22">${esc(itemName(DAILY_BALL))} ×${gift.balls}</span>` : ''}`;
+}
+
+/** What the next day's gift brings, for the "come back tomorrow" line. */
+function tomorrowText(day: number) {
+  const gift = dailyGift(day);
+  return [L().core.coins(gift.coins), ...(gift.balls ? [`${itemName(DAILY_BALL)} ×${gift.balls}`] : [])].join(' + ');
 }
 
 export function dailyHTML() {
@@ -64,7 +71,7 @@ export function dailyHTML() {
       <span class="daily-done" aria-hidden="true">${icon('check')}</span>
       <div class="daily-body">
         <h2 class="daily-title" id="daily-title">${esc(t.claimedTitle)}</h2>
-        <p class="daily-text">${esc(t.streak(streak))} · ${esc(t.tomorrow(L().core.coins(dailyGift(streak + 1).coins)))}</p>
+        <p class="daily-text">${esc(t.streak(streak))} · ${esc(t.tomorrow(tomorrowText(streak + 1)))}</p>
       </div>
       ${trackHTML(streak, true)}
     </section>`;

@@ -74,8 +74,8 @@ hundreds of balls at once.
 - New trainers choose one of twelve starters (Lv. 5): **Bulbasaur, Charmander, Squirtle** (Kanto),
   **Chikorita, Cyndaquil, Totodile** (Johto), **Treecko, Torchic, Mudkip** (Hoenn) or **Turtwig, Chimchar, Piplup**
   (Sinnoh), and start with **₽150 (30 Poké Balls) + Rare Candy ×10**.
-- **Daily gift**: ₽80 + ₽10 per streak day (capped at 10 days) and Rare Candy ×2; every 7th day, a **Master Ball** and
-  Rare Candy ×5 instead.
+- **Daily gift**: ₽80 + ₽10 per streak day (capped at 10 days) and Rare Candy ×2. From the second day of a streak,
+  **a Master Ball a day**; every 7th day, **Master Ball ×5** and Rare Candy ×5 instead. Missing a day restarts the streak.
 - **Shop** (Mart): Rare Candy ₽300, evolution stones ₽2,500 (including Sinnoh's Shiny, Dusk, Dawn and Oval Stones),
   Link Cable ₽3,000, trade and held items ₽3,500 (King's Rock, Metal Coat, Dragon Scale, Up-Grade, Deep Sea Tooth and
   Scale, Protector, Electirizer, Magmarizer, Dubious Disc, Reaper Cloth, Razor Claw, Razor Fang).

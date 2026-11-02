@@ -21,19 +21,21 @@ export const OVERFLOW_CANDY = 1;
 export const DAILY_BASE = 80;
 export const DAILY_STREAK_BONUS = 10;
 export const DAILY_STREAK_CAP = 10;
+/** Every DAILY_BALL_EVERY-th day of the streak is the big one. */
 export const DAILY_BALL_EVERY = 7;
-/** Ball given on every DAILY_BALL_EVERY-th day of the streak. */
+/** Given every day from the second day of a streak: 1, or DAILY_BIG_BALLS on the big day. */
 export const DAILY_BALL = 'master-ball';
+export const DAILY_BIG_BALLS = 5;
 export const DAILY_CANDY = 2;
 export const DAILY_CANDY_BALL_DAY = 5;
 
-export function dailyGift(streak: number): { coins: number; candy: number; ball: string | null } {
+export function dailyGift(streak: number): { coins: number; candy: number; balls: number } {
   const day = Math.max(1, streak);
-  const ballDay = day % DAILY_BALL_EVERY === 0;
+  const bigDay = day % DAILY_BALL_EVERY === 0;
   return {
     coins: DAILY_BASE + DAILY_STREAK_BONUS * (Math.min(day, DAILY_STREAK_CAP) - 1),
-    candy: ballDay ? DAILY_CANDY_BALL_DAY : DAILY_CANDY,
-    ball: ballDay ? DAILY_BALL : null,
+    candy: bigDay ? DAILY_CANDY_BALL_DAY : DAILY_CANDY,
+    balls: bigDay ? DAILY_BIG_BALLS : day >= 2 ? 1 : 0,
   };
 }
 

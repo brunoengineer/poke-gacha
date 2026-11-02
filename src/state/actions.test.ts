@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cardKey } from '../game/cards';
+import { dailyGift } from '../game/economy';
 import { dayKey } from '../game/rng';
 import { claimDaily, grant } from './actions';
 import { defaultSave } from './save';
@@ -18,6 +19,20 @@ describe('actions', () => {
     expect(store.save.caught[4]).toBeTruthy();
     // The Charmander tile must refresh (now registered), not only Charmeleon's.
     expect(changed).toEqual(expect.arrayContaining([cardKey(5), cardKey(4)]));
+  });
+
+  it('gives Master Balls from the second day of a streak: 1 a day, 5 on every 7th', () => {
+    expect([1, 2, 3, 6, 7, 8, 13, 14, 15].map(day => dailyGift(day).balls)).toEqual([0, 1, 1, 1, 5, 1, 1, 5, 1]);
+    expect(dailyGift(7).candy).toBe(5);
+    expect(dailyGift(6).candy).toBe(2);
+    store.save = defaultSave();
+    store.save.daily = { last: '2026-03-08', streak: 6 };
+    expect(claimDaily(new Date(2026, 2, 9, 12))).toMatchObject({ streak: 7, balls: 5 });
+    expect(store.save.items['master-ball']).toBe(5);
+    // A missed day restarts the streak: no ball on its first day.
+    store.save.daily = { last: '2026-03-01', streak: 30 };
+    expect(claimDaily(new Date(2026, 2, 9, 12))).toMatchObject({ streak: 1, balls: 0 });
+    expect(store.save.items['master-ball']).toBe(5);
   });
 
   it('keeps the daily streak on the day after a DST change', () => {

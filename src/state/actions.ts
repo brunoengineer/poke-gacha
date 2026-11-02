@@ -4,7 +4,7 @@
 import { RARE_CANDY } from '../data/items';
 import { getItem } from '../data/items';
 import { cardKey, type CardKey } from '../game/cards';
-import { DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
+import { DAILY_BALL, DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
 import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
 import {
   addItem, evolve as evolveCard, trainAfterBattle, transferLevel as transferCardLevel, useCandies as applyCandies,
@@ -138,7 +138,7 @@ export const items = (item: string) => s().items[item] ?? 0;
 export const candies = () => items(RARE_CANDY);
 
 /** Daily gift, if not claimed today. Returns what was given, or null. */
-export function claimDaily(now = new Date()): { coins: number; candy: number; ball: string | null; streak: number } | null {
+export function claimDaily(now = new Date()): { coins: number; candy: number; balls: number; streak: number } | null {
   const today = dayKey(now);
   const { last, streak } = s().daily;
   if (last === today) return null;
@@ -150,7 +150,7 @@ export function claimDaily(now = new Date()): { coins: number; candy: number; ba
     applyRewards(save, [
       { kind: 'coins', amount: gift.coins },
       { kind: 'item', item: RARE_CANDY, amount: gift.candy },
-      ...(gift.ball ? [{ kind: 'item', item: gift.ball, amount: 1 } as Reward] : []),
+      ...(gift.balls ? [{ kind: 'item', item: DAILY_BALL, amount: gift.balls } as Reward] : []),
     ]);
   }, ['items']);
   return { ...gift, streak: nextStreak };

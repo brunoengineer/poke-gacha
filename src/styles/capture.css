@@ -619,6 +619,7 @@
 @keyframes daily-pop { from { opacity: 0; transform: scale(.4) translateY(10px); } 70% { transform: scale(1.12); } }
 .capture-view .daily-track { list-style: none; display: flex; gap: 6px; margin-top: 10px; }
 .capture-view .daily-track li {
+    position: relative;
     display: grid;
     place-items: center;
     width: 28px;
@@ -632,6 +633,18 @@
 }
 .capture-view .daily-track li .i { width: 14px; height: 14px; }
 .capture-view .daily-track li img { width: 22px; height: 22px; image-rendering: pixelated; }
+.capture-view .daily-track li small {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    padding: 0 3px;
+    border-radius: 6px;
+    background: var(--gold-hi);
+    color: var(--gold-ink);
+    font-size: 9.5px;
+    font-weight: 800;
+    line-height: 1.35;
+}
 .capture-view .daily-track li.done { background: rgba(79, 209, 139, 0.18); border-color: rgba(79, 209, 139, 0.5); color: var(--success); }
 .capture-view .daily-track li.today { border-color: var(--gold-hi); color: var(--gold-hi); box-shadow: 0 0 0 3px rgba(244, 220, 163, 0.15); animation: blink 1.6s ease-in-out infinite; }
 .capture-view .daily.is-claimed { grid-template-columns: auto minmax(0, 1fr) auto; padding: 12px 18px; background: rgba(255, 255, 255, 0.025); border-color: var(--line); box-shadow: none; }
