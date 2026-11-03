@@ -11,6 +11,7 @@ import type { PokemonType } from '../../data/types';
 import type { SaveData } from '../../state/save';
 import type { TeamMember } from '../battle';
 import { DECK_SIZE } from '../economy';
+import { activeChapter, opponentCanUse } from '../journey';
 import type { Reward } from '../rewards';
 import type { AshRecord } from './ash';
 import { hashString, pick, seeded, shuffle, type Rng } from '../rng';
@@ -196,13 +197,13 @@ export interface LadderTrainer {
 
 /** Strong non-legendary species (fully evolved, rare to catch): one shows up on each Elite team. */
 function rareSpecies(): number[] {
-  return speciesList.filter(s => !s.legendary && !s.mythical && !s.baby && s.captureRate <= 45
+  return speciesList.filter(s => opponentCanUse(s.id) && !s.legendary && !s.mythical && !s.baby && s.captureRate <= 45
     && !canEverEvolve(s.id) && baseStatTotal(s) >= 480).map(s => s.id);
 }
 
 /** Legendaries the #1 trainer may own (the very strongest ones stay out of reach). */
 function ladderLegendaries(): number[] {
-  return speciesList.filter(s => s.legendary && !s.mythical && baseStatTotal(s) < 600).map(s => s.id);
+  return speciesList.filter(s => opponentCanUse(s.id) && s.legendary && !s.mythical && baseStatTotal(s) < 600).map(s => s.id);
 }
 
 /** Generates a team, topping it up with any family when the favorite types don't have enough Pokémon. */
@@ -241,11 +242,13 @@ export function trainerTeam(trainer: Pick<LadderTrainer, 'rank' | 'types'>, leve
 export const rankedTeam = (trainer: Pick<LadderTrainer, 'rank' | 'types'>, level: number, seed: number): TeamMember[] =>
   trainerTeam(trainer, [level, level], seeded(seed ^ hashString(`ladder-${trainer.rank}`)));
 
-const ladderCache = new Map<number, LadderTrainer[]>();
+// Per chapter too: the teams depend on what the active chapter allows.
+const ladderCache = new Map<string, LadderTrainer[]>();
 
 /** The whole ladder for a seed (cached): 100 trainers, rank 1 first. */
 export function generateLadder(seed: number): LadderTrainer[] {
-  const cached = ladderCache.get(seed);
+  const cacheKey = `${activeChapter()}:${seed}`;
+  const cached = ladderCache.get(cacheKey);
   if (cached) return cached;
   const rng = seeded(seed ^ 0x5eed1add);
   const names = { m: shuffle(NAMES.m, rng), f: shuffle(NAMES.f, rng) };
@@ -268,7 +271,7 @@ export function generateLadder(seed: number): LadderTrainer[] {
       types: favorite, level, elite, reputation: reputationAt(rank), team,
     });
   }
-  ladderCache.set(seed, ladder);
+  ladderCache.set(cacheKey, ladder);
   return ladder;
 }
 

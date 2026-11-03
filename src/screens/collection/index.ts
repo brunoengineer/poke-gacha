@@ -7,11 +7,14 @@ import { GENERATIONS, regionName } from '../../data/generations';
 import { hasSpecies } from '../../data/species';
 import { TYPES, type PokemonType } from '../../data/types';
 import { parseKey, RARITIES, type CardKey, type Rarity } from '../../game/cards';
+import { activeRegion, playerCanUse } from '../../game/journey';
 import { fmt, L } from '../../i18n';
 import { on, store } from '../../state/store';
+import { trackLocalKey } from '../../state/track';
 import { bindTiltGroup, rarityPips } from '../../ui/card';
 import { draggable } from '../../ui/dnd';
 import { esc, icon } from '../../ui/dom';
+import { regionLabel } from '../battle/regions';
 import type { ViewModule } from '../types';
 import { openDetails } from './details';
 import { initDock, setDockVisible } from './dock';
@@ -20,7 +23,7 @@ import { evolveFlow } from './evolution';
 import { applyFilters, counts, mountGrid, normalize, updateFlags, updateTiles, type Filters, type Mode, type SortId } from './grid';
 import { toggleTeam } from './team';
 
-const FILTERS_KEY = 'pg-collection-filters';
+const FILTERS_KEY = () => trackLocalKey('pg-collection-filters');
 const MODES: Mode[] = ['all', 'owned', 'missing', 'evolve', 'shiny'];
 const SORTS: SortId[] = ['dex', 'name', 'level', 'power', 'rarity', 'recent'];
 
@@ -30,6 +33,10 @@ let gridEl: HTMLElement;
 let visibleKeys: CardKey[] = [];
 let lastPointer = 'mouse';
 let dirty = false;
+/** Region filter saved in Classic or the World, kept untouched while a region chapter ignores it. */
+let savedRegion = 0;
+/** Whether the region dropdown and progress chips exist: not in a region chapter, where the Pokédex is that one region. */
+const regionFilters = () => GENERATIONS.length > 1 && !activeRegion();
 
 export const collectionView: ViewModule = {
   mount(section) {
@@ -54,7 +61,7 @@ export const collectionView: ViewModule = {
     setDockVisible(true);
     if (dirty) refresh(true);
     // #/collection/25 (or 25s) opens that card's details.
-    if (/^\d+s?$/.test(arg) && hasSpecies(parseKey(arg).id)) {
+    if (/^\d+s?$/.test(arg) && hasSpecies(parseKey(arg).id) && playerCanUse(parseKey(arg).id)) {
       history.replaceState(null, '', '#/collection');
       openDetails(arg, visibleKeys);
     }
@@ -75,7 +82,7 @@ function render() {
       <div class="dex-progress" data-progress-box>
         <div class="dex-progress-label"><span data-region-name></span><b data-progress-count></b></div>
         <div class="progress" role="progressbar" aria-valuemin="0" data-progressbar><i data-progress></i></div>
-        ${GENERATIONS.length > 1 ? `
+        ${regionFilters() ? `
           <div class="dex-regions" role="group" aria-label="${esc(t.regionProgress)}">
             ${GENERATIONS.map(g => `
               <button type="button" class="dex-region" data-region-pick="${g.id}" aria-pressed="false">
@@ -104,7 +111,7 @@ function render() {
         ${RARITIES.map(r => `<button type="button" class="rarity-chip" data-rarity-filter="${r}" data-rarity="${r}" aria-pressed="false" title="${esc(L().core.rarity[r])}" aria-label="${esc(L().core.rarity[r])}">${rarityPips(r, 'chip-pips')}</button>`).join('')}
       </div>
       <div class="dex-selects">
-        ${GENERATIONS.length > 1 ? `
+        ${regionFilters() ? `
           <label class="select"><span class="sr-only">${esc(t.regionLabel)}</span>
             <select data-region>
               <option value="0">${esc(t.allRegions)}</option>
@@ -290,7 +297,10 @@ function refresh(regrid: boolean) {
   const c = counts(filters.region);
   const region = GENERATIONS.find(g => g.id === filters.region);
   view.querySelector('[data-stats]')!.innerHTML = t.stats(fmt(c.caught), fmt(c.total), fmt(c.shinies));
-  view.querySelector('[data-region-name]')!.textContent = region ? region.region : GENERATIONS.length > 1 ? t.allRegions : GENERATIONS[0].region;
+  const fixed = activeRegion();
+  view.querySelector('[data-region-name]')!.textContent = fixed
+    ? L().journey.collection.regionDex(regionLabel(fixed))
+    : region ? region.region : GENERATIONS.length > 1 ? t.allRegions : GENERATIONS[0].region;
   view.querySelector('[data-progress-count]')!.textContent = `${Math.round((c.caught / Math.max(1, c.total)) * 100)}%`;
   const bar = view.querySelector<HTMLElement>('[data-progressbar]')!;
   bar.setAttribute('aria-valuemax', String(c.total));
@@ -322,12 +332,13 @@ function refresh(regrid: boolean) {
 
 function loadFilters() {
   try {
-    const saved = JSON.parse(localStorage.getItem(FILTERS_KEY) ?? '{}') as Partial<Filters>;
+    const saved = JSON.parse(localStorage.getItem(FILTERS_KEY()) ?? '{}') as Partial<Filters>;
     if (MODES.includes(saved.mode as Mode)) filters.mode = saved.mode!;
     if (SORTS.includes(saved.sort as SortId)) filters.sort = saved.sort!;
     if (TYPES.includes(saved.type as PokemonType)) filters.type = saved.type!;
     if (Array.isArray(saved.rarities)) filters.rarities = saved.rarities.filter(r => RARITIES.includes(r));
-    if (GENERATIONS.some(g => g.id === saved.region)) filters.region = saved.region!;
+    if (GENERATIONS.some(g => g.id === saved.region)) savedRegion = saved.region!;
+    if (!activeRegion()) filters.region = savedRegion;
   } catch { /* defaults */ }
 }
 
@@ -335,6 +346,7 @@ function saveFilters() {
   try {
     const { query, ...persisted } = filters;
     void query;
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(persisted));
+    if (activeRegion()) persisted.region = savedRegion;
+    localStorage.setItem(FILTERS_KEY(), JSON.stringify(persisted));
   } catch { /* storage blocked */ }
 }

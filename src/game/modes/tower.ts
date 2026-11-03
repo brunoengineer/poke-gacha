@@ -7,6 +7,7 @@
 
 import { RARE_CANDY } from '../../data/items';
 import type { TeamMember } from '../battle';
+import { modeInChapter } from '../journey';
 import type { Reward } from '../rewards';
 import { hashString, pick, seeded } from '../rng';
 import { generateTeam } from '../teams';
@@ -32,7 +33,7 @@ export const FLOOR_CANDY = 3;
 export const COINS_PER_LEVEL = 20;
 export const BOSS_COINS = 2000;
 
-export const towerUnlocked = (badges: number) => badges >= TOWER_UNLOCK_BADGES;
+export const towerUnlocked = (badges: number) => badges >= TOWER_UNLOCK_BADGES && modeInChapter('tower');
 export const nextFloor = (tower: TowerSave) => tower.best + 1;
 export const floorLevel = (floor: number) => FIRST_FLOOR_LEVEL + LEVELS_PER_FLOOR * (floor - 1);
 export const isBossFloor = (floor: number) => floor % BOSS_EVERY === 0;

@@ -9,10 +9,11 @@ import { spriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { cardKey } from '../../game/cards';
 import {
-  canRaid, finishRaid, raidBossCard, raidBossKind, raidLevel, raidPool, raidRecord, raidUnlocked, raidWinRewards, RAID_CATCH_CHANCE, RAID_FEES, RAID_HP_MULT,
+  canRaid, finishRaid, raidBossCard, raidBossKind, raidLevel, raidPool, raidRecord, raidUnlocked, raidWinRewards, RAID_CATCH_CHANCE, raidFee, RAID_HP_MULT,
   RAID_PITY, RAID_SHINY_CHANCE, startRaid,
 } from '../../game/modes/raid';
-import { REGION_IDS, type RegionId } from '../../game/regions';
+import { visibleRegions } from '../../game/journey';
+import type { RegionId } from '../../game/regions';
 import { playerScale } from '../../game/teams';
 import { fmt, itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
@@ -26,13 +27,13 @@ import { ensureTeam, teamSummaryHTML } from './team';
 
 let host: HTMLElement | null = null;
 let offs: (() => void)[] = [];
-/** Region on screen (null: the newest unlocked one). */
+/** Region on screen (null: the newest unlocked one of those shown). */
 let region: RegionId | null = null;
 
 const t = () => L().battle.raid;
 
 const shownRegion = (): RegionId =>
-  region ?? [...REGION_IDS].reverse().find(r => raidUnlocked(store.save, r)) ?? 'kanto';
+  region ?? [...visibleRegions()].reverse().find(r => raidUnlocked(store.save, r)) ?? visibleRegions()[0];
 
 export const raidMode: ModeModule = {
   render(container) {
@@ -51,7 +52,8 @@ export const raidMode: ModeModule = {
 };
 
 function tabs() {
-  return regionSwitchHTML(shownRegion(), REGION_IDS.map(r => {
+  if (visibleRegions().length < 2) return '';
+  return regionSwitchHTML(shownRegion(), visibleRegions().map(r => {
     const open = raidUnlocked(store.save, r);
     const pool = raidPool(r);
     return {
@@ -105,7 +107,7 @@ function lockedHTML(shown: RegionId) {
 }
 
 function panelHTML(shown: RegionId) {
-  const fee = RAID_FEES[shown];
+  const fee = raidFee(shown);
   const record = raidRecord(store.save, shown);
   const left = RAID_PITY - record.sinceCatch;
   const broke = store.save.coins < fee;
@@ -145,7 +147,7 @@ function panelHTML(shown: RegionId) {
 
 function onClick(event: Event) {
   const picked = clickedRegion(event) as RegionId | undefined;
-  if (picked) {
+  if (picked && visibleRegions().includes(picked)) {
     if (picked !== shownRegion()) {
       sfx('toggle');
       region = picked;
@@ -159,7 +161,7 @@ function onClick(event: Event) {
 
 async function challenge() {
   const shown = shownRegion();
-  const fee = RAID_FEES[shown];
+  const fee = raidFee(shown);
   const check = canRaid(store.save, shown);
   if (battleActive() || check === 'locked') return;
   if (check === 'coins') {

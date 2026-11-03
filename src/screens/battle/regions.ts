@@ -2,13 +2,18 @@
 // (`[data-region]`) and remembers the region it shows.
 
 import { regionName } from '../../data/generations';
+import { WORLD, type ChapterId } from '../../game/journey';
 import { REGION_IDS, regionGeneration, type RegionId } from '../../game/regions';
+import { L } from '../../i18n';
 import { esc, icon } from '../../ui/dom';
 
 export type Region = RegionId;
 export const REGIONS: Region[] = REGION_IDS;
 
 export const regionLabel = (region: Region) => regionName(regionGeneration(region));
+
+/** Name of a Journey chapter: its region's, or the World. */
+export const chapterLabel = (chapter: ChapterId) => (chapter === WORLD ? L().journey.world : regionLabel(chapter));
 
 export interface RegionTab {
   /** A region, or a league that isn't one (it then brings its own `label`). */

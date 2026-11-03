@@ -21,6 +21,7 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
 };
 
 import type { CardKey } from '../game/cards';
+import { normalizeJourney, type JourneySave } from '../game/journey';
 import { defaultOnlineSave, type OnlineSave } from '../game/leaderboard';
 import { normalizeSavedTeams, type SavedTeam } from '../game/saved-teams';
 import { STARTING_COINS } from '../game/economy';
@@ -82,6 +83,8 @@ export interface SaveData {
   hunt: HuntSave;
   /** Legendary Battle: wins, losses and the guaranteed-catch counter per region (older saves: none yet). */
   raid: RaidSave;
+  /** Region Journey: the chapters' progress. Only Journey games have it; a Classic save never does. */
+  journey?: JourneySave;
   stats: {
     pulls: number;
     shinies: number;
@@ -176,6 +179,7 @@ export function normalizeSave(raw: unknown): SaveData {
     seen: isObject(s.seen) ? (s.seen as SaveData['seen']) : {},
     updatedAt: Number.isFinite(s.updatedAt) ? s.updatedAt! : 0,
     v: Math.max(SAVE_VERSION, Number(s.v) || SAVE_VERSION),
+    ...(s.journey ? { journey: normalizeJourney(s.journey) } : {}),
   };
 }
 

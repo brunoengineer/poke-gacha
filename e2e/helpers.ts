@@ -64,23 +64,34 @@ export function withTeam(save: Save, level: number, keys = STRONG_TEAM): Save {
   return save;
 }
 
-/** Opens the game as a guest with this save (none: a brand-new player). */
-export async function startGame(page: Page, save: Save | null, path = 'collection', lang: 'en' | 'pt' = 'en') {
-  await page.addInitScript(([json, language]) => {
+/** The two games of the app: Classic, and the Region Journey (its own save and its own storage). */
+export type Track = 'classic' | 'journey';
+export const SAVE_KEY: Record<Track, string> = { classic: 'pg-save-guest', journey: 'pg-journey-save-guest' };
+
+/** Opens the game as a guest with this save (none: a brand-new player). It plays Classic unless the track says otherwise. */
+export async function startGame(page: Page, save: Save | null, path = 'collection', lang: 'en' | 'pt' = 'en', track: Track = 'classic') {
+  await page.addInitScript(([json, language, game, key]) => {
     if (sessionStorage.getItem('e2e-seeded')) return;
     sessionStorage.setItem('e2e-seeded', '1');
     localStorage.setItem('pg-guest', '1');
     localStorage.setItem('pg-lang', language!);
     localStorage.setItem('pg-battle-speed', '2');
-    if (json) localStorage.setItem('pg-save-guest', json);
-  }, [save && JSON.stringify(save), lang]);
+    localStorage.setItem('pg-track', game!);
+    if (json) localStorage.setItem(key!, json);
+  }, [save && JSON.stringify(save), lang, track, SAVE_KEY[track]]);
   await page.goto(`/#/${path}`);
   await expect(page.locator('.topbar')).toBeVisible();
 }
 
 /** The save as the game stored it (the game writes on the next tick, so this reads after that). */
-export const stored = (page: Page): Promise<Save> =>
-  page.evaluate(() => new Promise<Save>(resolve => setTimeout(() => resolve(JSON.parse(localStorage.getItem('pg-save-guest')!)))));
+export const stored = (page: Page, track: Track = 'classic'): Promise<Save> =>
+  page.evaluate(key => new Promise<Save>(resolve => setTimeout(() => resolve(JSON.parse(localStorage.getItem(key)!)))), SAVE_KEY[track]);
+
+/** The Journey's save as the game stored it. */
+export const storedJourney = (page: Page) => stored(page, 'journey');
+
+/** The raw text kept under a localStorage key (null: nothing there), for checks that a save was not touched. */
+export const rawItem = (page: Page, key: string): Promise<string | null> => page.evaluate(k => localStorage.getItem(k), key);
 
 const visible = (locator: Locator) => locator.isVisible().catch(() => false);
 const tryClick = async (locator: Locator) => {

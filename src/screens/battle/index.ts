@@ -5,9 +5,11 @@
 import { sfx } from '../../audio';
 import { playerRank } from '../../game/modes/competition';
 import { currentGymRegion, GYM_REGIONS, REGION_GYMS, regionBadges, regionGymsOpen } from '../../game/modes/gyms';
+import { huntTargetHere } from '../../game/modes/hunt';
 import { LEAGUE_REGIONS, leagueRecord, leagueUnlocked, type LeagueRegion } from '../../game/modes/league';
 import { anyRaidUnlocked, raidPool, raidUnlocked } from '../../game/modes/raid';
 import { cardKey } from '../../game/cards';
+import { chapterLeague, inWorld, isJourney, modeInChapter, visibleRegions } from '../../game/journey';
 import { FRIENDS } from '../../game/modes/training';
 import { getSpecies } from '../../data/species';
 import { trainerSpriteUrl } from '../../data/sprites';
@@ -40,6 +42,10 @@ const MODES: Record<ModeId, { module: ModeModule; icon: string; art: string[]; c
 };
 const ORDER: ModeId[] = ['training', 'competition', 'gyms', 'hunt', 'tower', 'league', 'raid'];
 
+/** A Legendary Battle opens with a title in the League of any region shown here. */
+/** Friends of the regions shown here (all of them in Classic and in the World). */
+const shownFriends = () => FRIENDS.filter(f => visibleRegions().includes(f.region));
+
 let section: HTMLElement;
 let current: ModeId | null = null;
 let visible = false;
@@ -62,6 +68,8 @@ export const battleView: ViewModule = {
     // Replace (not push) the locked league's entry, so Back doesn't bounce straight back here.
     if (mode === 'league' && !leagueOpen()) return void location.replace('#/battle');
     if (mode === 'raid' && !anyRaidUnlocked(store.save)) return void location.replace('#/battle');
+    // Modes of another chapter are teasers on the hub only.
+    if (mode && !modeInChapter(mode)) return void location.replace('#/battle');
     if (mode && mode === current) return;
     leaveMode();
     if (mode) renderMode(mode);
@@ -83,6 +91,11 @@ function onClick(event: Event) {
   const mode = target.closest<HTMLElement>('[data-mode]');
   if (mode && !current) {
     const id = mode.dataset.mode as ModeId;
+    if (!modeInChapter(id)) {
+      sfx('error');
+      toast(inWorld() ? L().journey.locked.gymsToast : L().journey.locked.worldToast, 'warning');
+      return;
+    }
     if (id === 'league' && !leagueOpen()) {
       sfx('error');
       toast(L().battle.hub.leagueLocked, 'warning');
@@ -123,13 +136,22 @@ function renderHub() {
     <div class="mode-grid">${ORDER.map(modeCardHTML).join('')}</div>`;
 }
 
+/** A mode's description: in the Journey, Gyms and League talk about the chapter, not every region. */
+function modeDesc(id: ModeId): string {
+  const j = L().journey.hub;
+  if (isJourney() && id === 'gyms') return j.gyms;
+  if (isJourney() && id === 'league') return inWorld() ? j.leagueWorld : j.league;
+  return L().battle.hub.modes[id].desc;
+}
+
 function modeCardHTML(id: ModeId): string {
   const t = L().battle.hub;
   const m = MODES[id];
   const s = store.save;
-  const locked = (id === 'league' && !leagueOpen()) || (id === 'tower' && !towerOpen()) || (id === 'raid' && !anyRaidUnlocked(s));
+  const away = !modeInChapter(id);
+  const locked = away || (id === 'league' && !leagueOpen()) || (id === 'tower' && !towerOpen()) || (id === 'raid' && !anyRaidUnlocked(s));
   let status = '';
-  if (id === 'training') status = `<span class="mode-pill">${icon('users')} ${esc(t.friendsCount(FRIENDS.length))}</span>`;
+  if (id === 'training') status = `<span class="mode-pill">${icon('users')} ${esc(t.friendsCount(shownFriends().length))}</span>`;
   if (id === 'competition') {
     const rank = playerRank(s);
     status = `<span class="mode-pill">${icon('trophy')} ${esc(rank == null ? t.unranked : t.rank(rank))}</span>`;
@@ -137,7 +159,8 @@ function modeCardHTML(id: ModeId): string {
   if (id === 'gyms') {
     // One pill per region (open ones, plus the next locked one) and the badge row of the region in progress.
     const shown = REGION_GYMS[currentGymRegion(s.gyms)];
-    const regions = GYM_REGIONS.filter((_, i) => i === 0 || regionGymsOpen(s.gyms, GYM_REGIONS[i - 1]));
+    const here = visibleRegions();
+    const regions = GYM_REGIONS.filter((r, i) => here.includes(r) && (i === 0 || here.length === 1 || regionGymsOpen(s.gyms, GYM_REGIONS[i - 1])));
     status = regions.map(r => {
       const open = regionGymsOpen(s.gyms, r);
       return `<span class="mode-pill${open ? '' : ' locked'}">${icon(open ? 'medal' : 'lock')} ${esc(t.regionBadges(regionLabel(r), regionBadges(s.gyms, r)))}</span>`;
@@ -145,7 +168,8 @@ function modeCardHTML(id: ModeId): string {
       <span class="mode-badges">${shown.map(g => badgeSVG(g.badge, { earned: s.gyms.badges.includes(g.badge), label: false })).join('')}</span>`;
   }
   if (id === 'hunt') {
-    const { target, chain } = s.hunt;
+    const { chain } = s.hunt;
+    const target = huntTargetHere(s.hunt);
     status = `<span class="mode-pill">${icon('sparkle')} ${esc(target != null ? t.huntStatus(getSpecies(target).name, chain) : t.huntNone)}</span>`
       + (s.hunt.shinies ? `<span class="mode-pill">${esc(t.huntFound(s.hunt.shinies))}</span>` : '');
   }
@@ -158,20 +182,25 @@ function modeCardHTML(id: ModeId): string {
       const league = leagueRecord(s, region);
       return league.best >= 0 ? t.placements[league.best] ?? '' : t.leagueNever;
     };
-    // Unlocked leagues, then the next locked one.
-    const open = LEAGUE_REGIONS.filter(r => leagueUnlocked(s, r));
-    const nextLocked = LEAGUE_REGIONS.find(r => !leagueUnlocked(s, r));
+    // Unlocked leagues, then the next locked one. A region has only its own League; the World, only the Master League.
+    const chapter = chapterLeague();
+    const leagues = chapter ? LEAGUE_REGIONS.filter(r => r === chapter) : LEAGUE_REGIONS;
+    const open = leagues.filter(r => leagueUnlocked(s, r));
+    const nextLocked = chapter ? undefined : leagues.find(r => !leagueUnlocked(s, r));
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.leagueLocked)}</span>`
       : open.map(r => `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(regionLabel(r), best(r)))}</span>`).join('')
         + (nextLocked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.regionStatus(regionLabel(nextLocked), t.leagueRegionLocked))}</span>` : '')
-        + (leagueUnlocked(s, 'master') ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(L().modes.league.masterRules.tab, best('master')))}</span>` : '');
+        + ((!chapter || chapter === 'master') && leagueUnlocked(s, 'master') ? `<span class="mode-pill">${icon('crown')} ${esc(t.regionStatus(L().modes.league.masterRules.tab, best('master')))}</span>` : '');
   }
 
   if (id === 'raid') {
-    const pool = LEAGUE_REGIONS.filter(r => raidUnlocked(s, r)).flatMap(r => raidPool(r));
+    const pool = visibleRegions().filter(r => raidUnlocked(s, r)).flatMap(r => raidPool(r));
     status = locked ? `<span class="mode-pill locked">${icon('lock')} ${esc(t.raidLocked)}</span>`
       : `<span class="mode-pill">${icon('bolt')} ${esc(t.raidCaught(pool.filter(sp => cardKey(sp.id) in s.cards).length, pool.length))}</span>`;
   }
+
+  // A mode of another chapter is a locked teaser saying where it opens.
+  if (away) status = `<span class="mode-pill locked">${icon('lock')} ${esc(inWorld() ? L().journey.locked.gymsInRegions : L().journey.locked.world)}</span>`;
 
   return `
     <button class="mode-card ${locked ? 'locked' : ''}" type="button" data-mode="${id}" style="--mc:${m.color}" ${locked ? 'aria-disabled="true"' : ''}>
@@ -181,7 +210,7 @@ function modeCardHTML(id: ModeId): string {
       </span>
       <span class="mode-body">
         <span class="mode-name">${icon(m.icon)} ${esc(t.modes[id].name)}</span>
-        <span class="mode-desc">${esc(t.modes[id].desc)}</span>
+        <span class="mode-desc">${esc(modeDesc(id))}</span>
         <span class="mode-status">${status}</span>
       </span>
       <span class="mode-go" aria-hidden="true">${icon(locked ? 'lock' : 'right')}</span>

@@ -1,6 +1,8 @@
 // Opponent team generation. Trainers "evolve" their Pokémon like the player would: a Lv. 40 Charmander line
 // shows up as Charizard, a Lv. 20 one as Charmeleon. Works for any species pool, so modes only describe
 // what a trainer likes (types, specific species, level range).
+// In the Region Journey opponents only use species up to their region's generation (opponentCanUse): they don't evolve
+// past it, and a fixed roster's newer species comes back as its nearest usable pre-evolution, or stays home if it has none.
 
 import { evolutionsOf, getSpecies, preEvolution, speciesList, stage, type Species } from '../data/species';
 import type { PokemonType } from '../data/types';
@@ -8,6 +10,7 @@ import type { SaveData } from '../state/save';
 import { evolutionLevel, parseKey, requiredLevel } from './cards';
 import type { TeamMember } from './battle';
 import { DECK_SIZE } from './economy';
+import { opponentCanUse } from './journey';
 import { defaultRng, randInt, shuffle, type Rng } from './rng';
 import { teamScale, type PlayerScale } from './scaling';
 
@@ -40,10 +43,17 @@ export function trainerLevelFor(id: number): number {
 export function evolveForLevel(id: number, level: number, rng: Rng = defaultRng): number {
   let current = id;
   for (;;) {
-    const options = evolutionsOf(current).filter(e => trainerLevelFor(e.to) <= level);
+    const options = evolutionsOf(current).filter(e => trainerLevelFor(e.to) <= level && opponentCanUse(e.to));
     if (!options.length) return current;
     current = options[Math.floor(rng() * options.length)].to;
   }
+}
+
+/** The form of a fixed roster's species the opponent can use now: itself or its nearest usable pre-evolution (null: none). */
+export function usableForm(id: number): number | null {
+  let form: number | null = id;
+  while (form != null && !opponentCanUse(form)) form = preEvolution(form);
+  return form;
 }
 
 const rollLevel = (level: TeamSpec['level'], rng: Rng) => (Array.isArray(level) ? randInt(level[0], level[1], rng) : level);
@@ -57,13 +67,13 @@ export function generateTeam(spec: TeamSpec, rng: Rng = defaultRng): TeamMember[
   const shiny = () => rng() < (spec.shinyChance ?? 0);
 
   if (spec.species?.length) {
-    return spec.species.slice(0, size).map(id => {
+    return spec.species.flatMap(id => usableForm(id) ?? []).slice(0, size).map(id => {
       const level = rollLevel(spec.level, rng);
       return { id: spec.exact ? id : evolveForLevel(id, level, rng), level, shiny: shiny() };
     });
   }
 
-  const bases = speciesList.filter(s => stage(s.id) === 1
+  const bases = speciesList.filter(s => stage(s.id) === 1 && opponentCanUse(s.id)
     && (spec.allowLegendary || (!s.legendary && !s.mythical))
     && (!spec.types?.length || familyMatches(s, spec.types)));
   const team: TeamMember[] = [];
@@ -76,7 +86,7 @@ export function generateTeam(spec: TeamSpec, rng: Rng = defaultRng): TeamMember[
     let id = evolveForLevel(base.id, level, rng);
     // With a type filter, prefer the family member that actually has the type (Eevee -> Flareon for a fire trainer).
     if (spec.types?.length && !getSpecies(id).types.some(t => spec.types!.includes(t))) {
-      const typed = speciesList.find(s => s.family === base.family && s.types.some(t => spec.types!.includes(t)) && trainerLevelFor(s.id) <= level);
+      const typed = speciesList.find(s => s.family === base.family && s.types.some(t => spec.types!.includes(t)) && trainerLevelFor(s.id) <= level && opponentCanUse(s.id));
       if (!typed) {
         families.delete(base.family);
         continue;

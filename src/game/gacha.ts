@@ -1,11 +1,13 @@
 // Captures (the gacha). Each ball is a banner with its own odds. Weights come from the species' catch rate and
 // evolution stage, so commons (Rattata, Pidgey) show up constantly, evolved forms are rarer, and legendaries
 // are a real event. Works for any generation without hand-tuned tables.
+// In a Region Journey chapter every capture comes from that region, whatever region the screen asks for (captureRegion).
 
 import { getSpecies, speciesList, stage, type Species } from '../data/species';
 import type { SaveData } from '../state/save';
-import { rarity, rarityRank, type Rarity } from './cards';
-import { UNLOCK_BADGES } from './economy';
+import { parseKey, rarity, rarityRank, type Rarity } from './cards';
+import { DECK_SIZE, UNLOCK_BADGES } from './economy';
+import { capturable, capturePool, captureRegion, isJourney, playerCanUse } from './journey';
 import { addCopy, itemCount, addItem, type CopyResult } from './progression';
 import { dayKey, defaultRng, hashString, seeded, shuffle, weightedPick, type Rng } from './rng';
 
@@ -101,9 +103,11 @@ export type Region = number;
 const inRegion = (s: Species, region: Region) => !region || s.generation === region;
 
 /** Today's featured families for the Safari banner (same for every player on the same day). Base species ids. */
-export function safariFeatured(day = dayKey(), region: Region = 0): number[] {
+export function safariFeatured(day = dayKey(), picked: Region = 0): number[] {
+  const region = captureRegion(picked);
   const rng = seeded(hashString(region ? `safari:${day}:${region}` : `safari:${day}`));
-  const bases = speciesList.filter(s => stage(s.id) === 1 && !s.legendary && !s.mythical && inRegion(s, region));
+  const open = new Set(capturePool().map(s => s.id));
+  const bases = speciesList.filter(s => stage(s.id) === 1 && !s.legendary && !s.mythical && inRegion(s, region) && open.has(s.id));
   const out: number[] = [];
   const families = new Set<number>();
   for (const s of shuffle(bases, rng)) {
@@ -115,12 +119,14 @@ export function safariFeatured(day = dayKey(), region: Region = 0): number[] {
   return out;
 }
 
+// Keyed by the region's generation, which callers resolve first (captureRegion), so a chapter can't get another's table.
 const tables = new Map<string, [number, number][]>();
 
 function table(banner: BannerDef, region: Region = 0, filter?: (s: Species) => boolean): [number, number][] {
-  const id = `${banner.id}:${region}:${speciesList.length}`;
+  const open = banner.id === 'master' ? speciesList : capturePool();
+  const id = `${banner.id}:${region}:${speciesList.length}:${open.length}`;
   if (!filter && tables.has(id)) return tables.get(id)!;
-  const entries = speciesList
+  const entries = open
     .filter(s => inRegion(s, region) && (!filter || filter(s)))
     .map(s => [s.id, banner.weight(s)] as [number, number])
     .filter(([, w]) => w > 0);
@@ -130,7 +136,7 @@ function table(banner: BannerDef, region: Region = 0, filter?: (s: Species) => b
 
 /** Probability of each species on a banner (for the odds screen). */
 export function bannerOdds(id: BannerId, region: Region = 0): { id: number; chance: number }[] {
-  const entries = table(BANNERS[id], region);
+  const entries = table(BANNERS[id], captureRegion(region));
   const total = entries.reduce((sum, [, w]) => sum + w, 0);
   return entries.map(([species, w]) => ({ id: species, chance: w / total })).sort((a, b) => b.chance - a.chance);
 }
@@ -149,7 +155,7 @@ export interface Roll {
 
 export function roll(bannerId: BannerId, rng: Rng = defaultRng, opts: { minRarity?: Rarity; featured?: number[]; region?: Region } = {}): Roll {
   const banner = BANNERS[bannerId];
-  const region = opts.region ?? 0;
+  const region = captureRegion(opts.region ?? 0);
   let entries: [number, number][];
   if (opts.minRarity) {
     const min = rarityRank(opts.minRarity);
@@ -157,7 +163,7 @@ export function roll(bannerId: BannerId, rng: Rng = defaultRng, opts: { minRarit
   } else if (bannerId === 'safari' && rng() < SAFARI_FEATURED_CHANCE) {
     const families = new Set((opts.featured ?? safariFeatured(dayKey(), region)).map(id => getSpecies(id).family));
     entries = speciesList
-      .filter(s => families.has(s.family) && inRegion(s, region))
+      .filter(s => families.has(s.family) && inRegion(s, region) && capturable(s.id))
       .map(s => [s.id, stageMult(STAGE_POKE, s)] as [number, number]);
   } else {
     entries = table(banner, region);
@@ -178,11 +184,43 @@ export function canUseBanner(save: SaveData, id: BannerId) {
   return save.gyms.badges.length >= BANNERS[id].badges;
 }
 
+/**
+ * Region Journey's prices, by batch size: coins carry over between chapters, so captures have to cost real money or the
+ * next region gets bought on arrival. A ×10 is a bundle, except for the Poké Ball, the one that fills a Pokédex cheapest.
+ */
+const JOURNEY_PRICES: Partial<Record<BannerId, Record<number, number>>> = {
+  poke: { 1: 50, 10: 500 },
+  safari: { 1: 100, 10: 800 },
+  great: { 1: 150, 10: 1200 },
+  ultra: { 1: 250, 10: 2000 },
+};
+
+/** Batch sizes a banner offers now. */
+export function bannerCounts(id: BannerId): number[] {
+  const prices = isJourney() ? JOURNEY_PRICES[id] : undefined;
+  return prices ? Object.keys(prices).map(Number) : BANNERS[id].counts;
+}
+
 /** Cost of a batch, or null when it can't be paid that way. */
 export function batchCost(id: BannerId, count: number, payWith: Payment): { coins: number; tickets: number } | null {
   const banner = BANNERS[id];
   if (payWith === 'ticket') return banner.ticket ? { coins: 0, tickets: count } : null;
+  if (isJourney()) {
+    const coins = JOURNEY_PRICES[id]?.[count];
+    return coins == null ? null : { coins, tickets: 0 };
+  }
   return banner.cost == null ? null : { coins: banner.cost * count, tickets: 0 };
+}
+
+/**
+ * Battles need six cards and are the way to earn coins, so at these prices a player could spend their way out of the game.
+ * Tops them up to one Poké Ball whenever they have too few cards here and can't buy one (mutates the save).
+ */
+export function rescueBrokePlayer(save: SaveData) {
+  if (!isJourney()) return;
+  const price = batchCost('poke', 1, 'coins')!.coins;
+  const usable = Object.keys(save.cards).filter(key => playerCanUse(parseKey(key).id)).length;
+  if (usable < DECK_SIZE && save.coins < price) save.coins = price;
 }
 
 export function canAfford(save: SaveData, id: BannerId, count: number, payWith: Payment): boolean {
@@ -194,7 +232,8 @@ export function canAfford(save: SaveData, id: BannerId, count: number, payWith: 
 
 /**
  * Pays for and performs `count` captures, applying every copy to the save.
- * Returns null when the banner is locked or the player can't pay. `region` limits captures to one region (0: all).
+ * Returns null when the banner is locked or the player can't pay. `region` limits captures to one region (0: all); in a
+ * Journey chapter safariFeatured() and roll() replace it with the chapter's.
  */
 export function pull(
   save: SaveData, id: BannerId, count: number, payWith: Payment, rng: Rng = defaultRng, now = Date.now(), region: Region = 0,

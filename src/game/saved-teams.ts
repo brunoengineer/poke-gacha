@@ -3,11 +3,12 @@
 //     progression.ts), so a saved Charmander comes back as the Charmeleon it became.
 //   - Loading resolves each key again anyway: a card that is no longer owned becomes its owned evolved form, and
 //     duplicates (two saved cards that merged into one) collapse. Whatever can't be found is skipped and reported.
+//   - In a Region Journey chapter, a card the player can't use there counts as not found.
 
-import { descendants } from '../data/species';
 import type { SaveData } from '../state/save';
-import { cardKey, parseKey, type CardKey } from './cards';
+import type { CardKey } from './cards';
 import { DECK_SIZE } from './economy';
+import { resolveForChapter } from './journey';
 
 export interface SavedTeam {
   id: string;
@@ -20,10 +21,7 @@ export const TEAM_NAME_MAX = 24;
 
 /** The card a saved key stands for now: itself if owned, else its nearest owned evolved form (never for shinies). */
 export function resolveKey(save: Pick<SaveData, 'cards'>, key: CardKey): CardKey | null {
-  if (save.cards[key]) return key;
-  const { id, shiny } = parseKey(key);
-  if (shiny) return null;
-  return descendants(id).map(d => cardKey(d)).find(k => save.cards[k]) ?? null;
+  return resolveForChapter(save, key);
 }
 
 /** A saved team as it would load now: resolved, without duplicates, and how many cards couldn't be found. */

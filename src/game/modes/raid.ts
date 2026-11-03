@@ -5,12 +5,15 @@
 //   - The fee pays for the attempt: a loss, a forfeit or leaving mid-battle keeps nothing (battles aren't saved).
 //   - Each win pays coins and Rare Candy, then rolls for the boss: 1% shiny, 10% the normal card. RAID_PITY wins in a row
 //     in a region with neither guarantee the normal card. A boss the player already owns gives a Master Ball instead.
+//   - In the Region Journey a region's battle is only open in its chapter or the World, and its level follows the region's
+//     place in the story (Kanto's plus journeyLevelOffset).
 
 import { getSpecies, speciesList } from '../../data/species';
 import type { SaveData } from '../../state/save';
 import { toBattleCard, type BattleCard } from '../battle';
 import { cardKey } from '../cards';
 import { DECK_SIZE } from '../economy';
+import { isJourney, journeyLevelOffset, visibleRegions } from '../journey';
 import { REGION_IDS, regionGeneration, type RegionId } from '../regions';
 import type { Reward } from '../rewards';
 import { defaultRng, pick, type Rng } from '../rng';
@@ -30,6 +33,8 @@ export type RaidSave = Partial<Record<RegionId, RaidRecord>>;
 export const defaultRaidSave = (): RaidSave => ({});
 
 export const RAID_FEES: Record<RegionId, number> = { kanto: 3000, johto: 6000, hoenn: 10000, sinnoh: 15000 };
+/** A region's fee: the Journey charges Kanto's everywhere, as its prizes are Kanto's too. */
+export const raidFee = (region: RegionId) => RAID_FEES[isJourney() ? 'kanto' : region];
 const RAID_LEVELS: Record<RegionId, number> = { kanto: 70, johto: 100, hoenn: 120, sinnoh: 140 };
 /** Boss HP, times a normal Pokémon's of its species and level. */
 export const RAID_HP_MULT = 5;
@@ -50,11 +55,13 @@ export const raidRecord = (save: Pick<SaveData, 'raid'>, region: RegionId): Raid
 export const raidPool = (region: RegionId) =>
   speciesList.filter(s => s.generation === regionGeneration(region) && (s.legendary || s.mythical));
 
-export const raidUnlocked = (save: Pick<SaveData, 'league'>, region: RegionId) => leagueRecord(save, region).titles > 0;
+export const raidUnlocked = (save: Pick<SaveData, 'league'>, region: RegionId) =>
+  leagueRecord(save, region).titles > 0 && visibleRegions().includes(region);
 export const anyRaidUnlocked = (save: Pick<SaveData, 'league'>) => REGION_IDS.some(region => raidUnlocked(save, region));
 
 /** The boss's level against this team: its strongest Pokémon's, never below the region's. */
-export const raidLevel = (region: RegionId, scale?: PlayerScale) => Math.max(RAID_LEVELS[region], scale?.max ?? 0);
+export const raidLevel = (region: RegionId, scale?: PlayerScale) =>
+  Math.max(isJourney() ? RAID_LEVELS.kanto + journeyLevelOffset(region) : RAID_LEVELS[region], scale?.max ?? 0);
 
 /** The boss as a battle card: huge HP, and hits capped so it can't knock out a Pokémon at once. */
 export function raidBossCard(id: number, level: number): BattleCard {
@@ -66,7 +73,7 @@ export type RaidCheck = 'ok' | 'locked' | 'coins' | 'team';
 
 export function canRaid(save: Pick<SaveData, 'league' | 'coins' | 'deck'>, region: RegionId): RaidCheck {
   if (!raidUnlocked(save, region)) return 'locked';
-  if (save.coins < RAID_FEES[region]) return 'coins';
+  if (save.coins < raidFee(region)) return 'coins';
   if (save.deck.length < DECK_SIZE) return 'team';
   return 'ok';
 }
@@ -74,7 +81,7 @@ export function canRaid(save: Pick<SaveData, 'league' | 'coins' | 'deck'>, regio
 /** Pays the fee and draws the boss (mutates the save). Returns its species id, or null when not allowed. */
 export function startRaid(save: SaveData, region: RegionId, rng: Rng = defaultRng): number | null {
   if (canRaid(save, region) !== 'ok') return null;
-  save.coins -= RAID_FEES[region];
+  save.coins -= raidFee(region);
   return pick(raidPool(region), rng).id;
 }
 
@@ -82,7 +89,7 @@ const item = (id: string, amount: number): Reward => ({ kind: 'item', item: id, 
 
 /** What every win pays, before the roll for the boss. */
 export const raidWinRewards = (region: RegionId): Reward[] =>
-  [{ kind: 'coins', amount: Math.round(RAID_FEES[region] * WIN_REFUND) }, item('rare-candy', WIN_CANDY[region])];
+  [{ kind: 'coins', amount: Math.round(raidFee(region) * WIN_REFUND) }, item('rare-candy', WIN_CANDY[region])];
 
 export type RaidCatch = 'none' | 'normal' | 'shiny' | 'duplicate';
 

@@ -8,21 +8,37 @@ import { animatedSpriteUrl, spriteUrl, trainerSpriteUrl } from '../data/sprites'
 import { evolutionsOf, getSpecies } from '../data/species';
 import { TYPE_COLOR } from '../data/types';
 import { STARTER_LEVEL, STARTERS, STARTING_COINS } from '../game/economy';
-import { BANNERS } from '../game/gacha';
+import { batchCost } from '../game/gacha';
+import { activeChapter, activeRegion, CHAPTER_START_COINS, CHAPTERS, chapterSpecies, isJourney, modeInChapter, playerCanUse } from '../game/journey';
 import { L } from '../i18n';
 import { chooseStarter } from '../state/actions';
 import { store } from '../state/store';
 import { cardHTML, typeBadge } from '../ui/card';
 import { esc, icon, openModal, reducedMotion, type Modal } from '../ui/dom';
 import { burst } from '../ui/fx';
+import { regionLabel } from './battle/regions';
 import { ballHTML } from './capture/common';
 
 type Scene = 'intro' | 'choose' | 'picked' | 'tips';
 
+/** The starters this chapter offers: all of them in Classic, only the region's own in a region. */
+const availableStarters = () => STARTERS.filter(playerCanUse);
+
+/** A region chapter after the first: the player knows the game, so the welcome is shorter and the tips are skipped. */
+const laterChapter = () => activeRegion() != null && activeChapter() !== CHAPTERS[0];
+
+/** The professor's lines: the Classic welcome, or the Journey's for the region (the first chapter's, or a later one's). */
+function introLines(): string[] {
+  const region = activeRegion();
+  if (!region) return L().capture.onboarding.intro;
+  const j = L().journey.onboarding;
+  return (laterChapter() ? j.introNext : j.intro)(regionLabel(region), chapterSpecies().length);
+}
+
 /** Starters grouped by region (one row each), in STARTERS order. */
 function starterGroups(): { generation: number; ids: number[] }[] {
   const groups: { generation: number; ids: number[] }[] = [];
-  for (const id of STARTERS) {
+  for (const id of availableStarters()) {
     const generation = getSpecies(id).generation;
     const group = groups.find(g => g.generation === generation);
     if (group) group.ids.push(id);
@@ -88,16 +104,17 @@ class Onboarding {
       <div class="onb-bubble">
         <p class="onb-speaker">${esc(t.professor)}</p>
         <p class="onb-line"><span class="sr-only" data-full></span><span aria-hidden="true" data-typed></span><i class="onb-caret" aria-hidden="true"></i></p>
-        <div class="onb-dots" aria-hidden="true">${t.intro.map((_, i) => `<i class="${i === this.line ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="onb-dots" aria-hidden="true">${introLines().map((_, i) => `<i class="${i === this.line ? 'on' : ''}"></i>`).join('')}</div>
       </div>
       <button class="btn btn-primary btn-lg onb-next" type="button" data-next data-focus>${esc(t.next)} ${icon('right')}</button>`;
   }
 
   private chooseHTML() {
     const t = L().capture.onboarding;
+    const region = activeRegion();
     return `
       <h2 class="fx-title">${esc(t.chooseTitle)}</h2>
-      <p class="onb-sub">${esc(t.chooseSub)}</p>
+      <p class="onb-sub">${esc(region ? L().journey.onboarding.chooseSub(regionLabel(region)) : t.chooseSub)}</p>
       <div class="onb-starters" role="radiogroup" aria-label="${esc(t.chooseTitle)}">
         ${starterGroups().map(group => `
           <div class="onb-group" role="group" aria-label="${esc(regionName(group.generation))}">
@@ -114,10 +131,11 @@ class Onboarding {
   private starterHTML(id: number) {
     const t = L().capture.onboarding;
     const s = getSpecies(id);
-    const i = STARTERS.indexOf(id);
+    const starters = availableStarters();
+    const i = starters.indexOf(id);
     const focus = this.picked == null ? i === 0 : this.picked === id;
     return `
-      <button class="onb-starter" type="button" role="radio" aria-checked="${this.picked === id}" tabindex="${(this.picked ?? STARTERS[0]) === id ? 0 : -1}"
+      <button class="onb-starter" type="button" role="radio" aria-checked="${this.picked === id}" tabindex="${(this.picked ?? availableStarters()[0]) === id ? 0 : -1}"
         data-starter="${id}" style="--tc:${TYPE_COLOR[s.types[0]]};--i:${i}" ${focus ? 'data-focus' : ''}>
         <span class="onb-starter-stage" aria-hidden="true">
           <img src="${esc(animatedSpriteUrl(id) ?? spriteUrl(id))}" alt="" width="96" height="96">
@@ -148,13 +166,18 @@ class Onboarding {
         ${cardHTML({ id, level: STARTER_LEVEL }, { size: 'sm', animated: true, eager: true })}
       </div>
       <h2 class="fx-title">${esc(t.picked(getSpecies(id).name))}</h2>
-      <p class="onb-sub">${esc(t.pickedSub)}</p>
-      <button class="btn btn-primary btn-lg" type="button" data-to-tips data-focus>${esc(t.next)} ${icon('right')}</button>`;
+      <p class="onb-sub">${esc(laterChapter() ? L().journey.onboarding.pickedSubNext : t.pickedSub)}</p>
+      ${laterChapter()
+        ? `<button class="btn btn-red btn-lg onb-finish" type="button" data-finish data-focus>${icon('ball')} ${esc(t.finish)}</button>`
+        : `<button class="btn btn-primary btn-lg" type="button" data-to-tips data-focus>${esc(t.next)} ${icon('right')}</button>`}`;
   }
 
   private tipsHTML() {
     const t = L().capture.onboarding;
-    const slide = t.slides[this.slide];
+    const pokeBall = batchCost('poke', 1, 'coins')!.coins;
+    // The first tip says captures are cheap, which the Journey's aren't.
+    const slide = isJourney() && this.slide === 0 ? { ...t.slides[0], ...L().journey.onboarding.capturesTip(L().core.coins(pokeBall)) } : t.slides[this.slide];
+    const startCoins = isJourney() ? CHAPTER_START_COINS : STARTING_COINS;
     const last = this.slide === t.slides.length - 1;
     return `
       <p class="onb-count">${esc(t.slideOf(this.slide + 1, t.slides.length))}</p>
@@ -170,17 +193,17 @@ class Onboarding {
           ? `<button class="btn btn-red btn-lg onb-finish" type="button" data-finish data-focus>${icon('ball')} ${esc(t.finish)}</button>`
           : `<button class="btn btn-primary btn-lg" type="button" data-tip="1" data-focus>${esc(t.next)} ${icon('right')}</button>`}
       </div>
-      ${last ? `<p class="onb-note">${icon('coin', 'i-coin')}${esc(t.finishNote(L().core.coins(STARTING_COINS), Math.floor(STARTING_COINS / BANNERS.poke.cost!)))}</p>` : ''}`;
+      ${last ? `<p class="onb-note">${icon('coin', 'i-coin')}${esc(t.finishNote(L().core.coins(startCoins), Math.floor(startCoins / pokeBall)))}</p>` : ''}`;
   }
 
   private modesHTML() {
     const m = L().capture.onboarding.modes;
     const chip = (iconName: string, label: string) => `<li>${icon(iconName)}<span>${esc(label)}</span></li>`;
-    return `<ul class="onb-modes">${chip('users', m.training)}${chip('trophy', m.competition)}${chip('medal', m.gyms)}${chip('crown', m.league)}</ul>`;
+    return `<ul class="onb-modes">${chip('users', m.training)}${modeInChapter('competition') ? chip('trophy', m.competition) : ''}${chip('medal', m.gyms)}${chip('crown', m.league)}</ul>`;
   }
 
   private tipArt(index: number) {
-    const id = this.picked ?? STARTERS[0];
+    const id = this.picked ?? availableStarters()[0];
     const t = L();
     switch (index) {
       case 0:
@@ -224,7 +247,7 @@ class Onboarding {
   // --- Behavior ----------------------------------------------------------------------
 
   private typeLine() {
-    const text = L().capture.onboarding.intro[this.line];
+    const text = introLines()[this.line];
     const typed = this.host.querySelector<HTMLElement>('[data-typed]')!;
     this.host.querySelector<HTMLElement>('[data-full]')!.textContent = text;
     if (reducedMotion()) {
@@ -246,14 +269,14 @@ class Onboarding {
     if (this.typing) clearInterval(this.typing);
     this.typing = null;
     const typed = this.host.querySelector<HTMLElement>('[data-typed]');
-    if (typed && this.scene === 'intro') typed.textContent = L().capture.onboarding.intro[this.line];
+    if (typed && this.scene === 'intro') typed.textContent = introLines()[this.line];
     this.host.querySelector('.onb-line')?.classList.remove('is-typing');
   }
 
   private nextLine() {
     if (this.typing) return this.stopTyping();
     sfx('click');
-    const lines = L().capture.onboarding.intro;
+    const lines = introLines();
     if (this.line < lines.length - 1) {
       this.line += 1;
       this.show('intro');
@@ -333,11 +356,12 @@ class Onboarding {
   /** Arrow keys on the starter grid: left/right walk through every starter, up/down switch region rows. */
   private onKey(event: KeyboardEvent) {
     if (this.scene !== 'choose' || !event.key.startsWith('Arrow')) return;
-    const currentId = this.picked ?? STARTERS[0];
+    const starters = availableStarters();
+    const currentId = this.picked ?? starters[0];
     let next: number;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       const step = event.key === 'ArrowRight' ? 1 : -1;
-      next = STARTERS[(STARTERS.indexOf(currentId) + step + STARTERS.length) % STARTERS.length];
+      next = starters[(starters.indexOf(currentId) + step + starters.length) % starters.length];
     } else {
       const groups = starterGroups();
       const row = groups.findIndex(g => g.ids.includes(currentId));

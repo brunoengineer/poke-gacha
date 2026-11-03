@@ -4,6 +4,7 @@
 import { sfx } from '../../audio';
 import { teamPower, toBattleCard } from '../../game/battle';
 import { DECK_SIZE } from '../../game/economy';
+import { chapterLeague } from '../../game/journey';
 import { leagueUnlocked } from '../../game/modes/league';
 import { playerTeam } from '../../game/teams';
 import { fmt, L } from '../../i18n';
@@ -15,8 +16,8 @@ import { savedTeamChipsHTML } from '../collection/saved-teams';
 /** True when the team has all six cards (battles are blocked otherwise). */
 export const teamReady = () => playerTeam(store.save).length >= DECK_SIZE;
 
-/** The League screen opens with the Kanto League (Johto's shows inside it, locked until its badges). */
-export const leagueOpen = () => leagueUnlocked(store.save);
+/** The League screen opens with the Kanto League (Johto's shows inside it, locked until its badges). In the Journey it opens with the chapter's own League. */
+export const leagueOpen = () => leagueUnlocked(store.save, chapterLeague() ?? undefined);
 
 /** Shows the "team incomplete" warning (modes call it before starting a battle). */
 export function ensureTeam(): boolean {

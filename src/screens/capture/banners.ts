@@ -7,7 +7,7 @@ import { getSpecies } from '../../data/species';
 import { spriteUrl } from '../../data/sprites';
 import { rarity, rarityRank, RARITIES, RARITY_COLOR, type Rarity } from '../../game/cards';
 import {
-  BANNERS, bannerOdds, canAfford, canUseBanner, rarityOdds, safariFeatured, type BannerId, type Payment, type Region,
+  BANNERS, bannerCounts, bannerOdds, canAfford, canUseBanner, rarityOdds, safariFeatured, type BannerId, type Payment, type Region,
 } from '../../game/gacha';
 import { itemCount } from '../../game/progression';
 import { dayKey, hashString, seeded, shuffle } from '../../game/rng';
@@ -52,11 +52,11 @@ function actionsHTML(id: BannerId) {
   const t = L().capture;
   const banner = BANNERS[id];
   const coinRow = banner.cost != null
-    ? `<div class="pull-row" role="group" aria-label="${esc(t.payCoins)}">${banner.counts.map(c => pullButton(id, c, 'coins')).join('')}</div>`
+    ? `<div class="pull-row" role="group" aria-label="${esc(t.payCoins)}">${bannerCounts(id).map(c => pullButton(id, c, 'coins')).join('')}</div>`
     : '';
   const ticketRow = banner.ticket
     ? `<div class="pull-row-label" data-ticket-label></div>
-       <div class="pull-row" role="group" data-ticket-row>${banner.counts.map(c => pullButton(id, c, 'ticket')).join('')}</div>`
+       <div class="pull-row" role="group" data-ticket-row>${bannerCounts(id).map(c => pullButton(id, c, 'ticket')).join('')}</div>`
     : '';
   return coinRow + ticketRow;
 }

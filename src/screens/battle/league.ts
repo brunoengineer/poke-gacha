@@ -10,6 +10,7 @@ import { sfx } from '../../audio';
 import { itemSprite } from '../../data/items';
 import { trainerSpriteUrl } from '../../data/sprites';
 import { UNLOCK_BADGES } from '../../game/economy';
+import { activeRegion, chapterLeague, nextChapter, WORLD } from '../../game/journey';
 import { regionBadges } from '../../game/modes/gyms';
 import {
   abandonRun, ALL_LEAGUES, applyHeal, buildBracket, canEnter, CHAMPION, championBoss, duelDifficulty, duelInfo, eliteFour, healPending, healTargets, kitLeft, LEAGUE_DUELS,
@@ -27,7 +28,7 @@ import { hashString } from '../../game/rng';
 import { playerScale, playerTeam } from '../../game/teams';
 import { fmt, itemName, L, locale } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
-import { on, store, update } from '../../state/store';
+import { on, store, travelTo, update } from '../../state/store';
 import { confirmDialog, esc, icon, reducedMotion, shakeCoins, toast } from '../../ui/dom';
 import { showRewards } from '../../ui/rewards';
 import type { ModeModule } from '../types';
@@ -35,7 +36,7 @@ import { runBattle } from './arena';
 import { modeHead, portrait, teamReady, teamStrip, typeBadges } from './competition-ui';
 import { bracketHTML, entrantName, entrantTitle } from './league-bracket';
 import { celebrateChampion, TROPHY_SVG } from './league-fx';
-import { clickedRegion, regionSwitchHTML } from './regions';
+import { chapterLabel, clickedRegion, regionSwitchHTML } from './regions';
 import { ensureTeam, teamSummaryHTML } from './team';
 
 let root: HTMLElement | null = null;
@@ -50,6 +51,9 @@ const t = () => L().modes.league;
 const m = () => t().masterRules;
 
 function shownRegion(): LeagueRegion {
+  // A Journey chapter has just its own League.
+  const chapter = chapterLeague();
+  if (chapter) return chapter;
   if (region) return region;
   const save = store.save;
   const newestFirst = [...ALL_LEAGUES].reverse();
@@ -114,7 +118,7 @@ function render() {
   const shown = shownRegion();
   const check = canEnter(store.save, shown);
   const body = check === 'locked' ? lockedHTML() : rec().run ? runHTML() : lobbyHTML(check);
-  root.innerHTML = `<div class="mode league league-${shown}">${modeHead(rt('title'), rt('subtitle'), regionTabs())}${body}</div>`;
+  root.innerHTML = `<div class="mode league league-${shown}">${modeHead(rt('title'), rt('subtitle'), chapterLeague() ? '' : regionTabs())}${body}</div>`;
   if (rec().run) {
     const next = root.querySelector<HTMLElement>('.bk-match.is-next');
     const scroller = root.querySelector<HTMLElement>('.bracket-scroll');
@@ -206,7 +210,7 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
       <div class="league-hero-text">
         <span class="label">${esc(rt('plateau'))}</span>
         <h2 class="league-hero-title">${esc(rt('title'))}</h2>
-        <p>${esc(rt('heroText'))}</p>
+        <p>${esc(activeRegion() ? L().journey.league.hero : rt('heroText'))}</p>
         <div class="league-pills">
           <span class="pill">${icon('coin', 'i-coin')} ${esc(t().fee)}: <b>₽ ${fmt(fee)}</b></span>
           <span class="pill">${icon('bolt')} ${esc(t().levels)}: <b>${esc(L().modes.levelRange(min, max))}</b>${bonus ? ` <small>(${esc(t().bonus(bonus))})</small>` : ''}</span>
@@ -229,7 +233,7 @@ function lobbyHTML(check: ReturnType<typeof canEnter>) {
             <li class="prize${i === CHAMPION ? ' is-champion' : ''}${league.best === i ? ' is-best' : ''}">
               <b class="prize-name">${i === CHAMPION ? icon('crown') : ''}${esc(placementName(i))}</b>
               <span class="prize-chips">${rewardChips(placementRewards(i, shown))}</span>
-              ${i === CHAMPION && league.titles === 0 ? `<small class="prize-extra">${icon('sparkle')} ${esc(rt('prizeFirstTitle'))}</small>` : ''}
+              ${i === CHAMPION && league.titles === 0 ? `<small class="prize-extra">${icon('sparkle')} ${esc(activeRegion() ? L().journey.league.prizeFirstTitle : rt('prizeFirstTitle'))}</small>` : ''}
             </li>`).join('')}
         </ol>
       </section>
@@ -372,7 +376,7 @@ function pathHTML(bracket: Bracket, won: number) {
 
 function onClick(event: Event) {
   const picked = clickedRegion(event) as LeagueRegion | undefined;
-  if (picked && !busy) {
+  if (picked && !busy && !chapterLeague()) {
     if (picked !== shownRegion()) {
       sfx('toggle');
       region = picked;
@@ -451,6 +455,22 @@ function opponentLines(e: Entrant) {
   return { intro: at(c.eliteIntro, 'intro'), winLine: at(c.winLine, 'win'), loseLine: at(c.loseLine, 'lose') };
 }
 
+/** The first title of a region's League opens the next chapter of the Journey: offers to go there now. */
+async function offerNextChapter() {
+  const chapter = activeRegion();
+  const next = chapter && nextChapter(chapter);
+  if (!chapter || !next) return;
+  const j = L().journey.complete;
+  const name = chapterLabel(next);
+  const go = await confirmDialog({
+    title: j.title(chapterLabel(chapter)),
+    message: next === WORLD ? j.world : j.next(name),
+    confirmText: j.go(name),
+    cancelText: j.stay,
+  });
+  if (go) await travelTo(next);
+}
+
 async function fight() {
   const shown = shownRegion();
   const run = rec().run;
@@ -509,10 +529,11 @@ async function fight() {
       await celebrateChampion(team, entrantName(opp), rt('championTitle'), rt('title'));
       await showRewards(applied, {
         title: t().championRewards,
-        subtitle: result.firstTitle ? rt('firstTitle') : t().championSub(opp.name),
+        subtitle: result.firstTitle ? (activeRegion() ? L().journey.league.firstTitle : rt('firstTitle')) : t().championSub(opp.name),
 
         tone: 'champion',
       });
+      if (result.firstTitle) await offerNextChapter();
     } else {
       await showRewards(applied, {
         title: t().outTitle(placementName(result.placement)),

@@ -2,6 +2,7 @@
 
 import { sfx } from '../../audio';
 import { cardPower, parseKey, type CardKey } from '../../game/cards';
+import { playerCanUse } from '../../game/journey';
 import { DECK_SIZE } from '../../game/economy';
 import { L, speciesName } from '../../i18n';
 import { addToDeck, autoFillDeck, clearDeck, inDeck, removeFromDeck } from '../../state/actions';
@@ -48,7 +49,7 @@ export function toggleTeam(key: CardKey, { notify = false } = {}) {
 /** Rebuilds the team with the strongest cards by Combat Power. */
 export function autoTeam() {
   const t = L().collection.team;
-  if (!Object.keys(store.save.cards).length) return toast(t.noCards, 'warning');
+  if (!Object.keys(store.save.cards).some(key => playerCanUse(parseKey(key).id))) return toast(t.noCards, 'warning');
   const before = store.save.deck.join();
   clearDeck();
   autoFillDeck(keyPower);

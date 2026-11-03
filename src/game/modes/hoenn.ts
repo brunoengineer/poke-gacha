@@ -30,8 +30,8 @@ export const HOENN_GYMS: Gym[] = [
 /** In Elite Four order: later members are tougher and meet you later. */
 export const HOENN_ELITE_FOUR: LeagueBoss[] = [
   { id: 'sidney', name: 'Sidney', sprite: 'sidney', types: ['dark'], roster: [262, 275, 332, 342, 319, 359] },
-  { id: 'phoebe', name: 'Phoebe', sprite: 'phoebe-gen3', types: ['ghost'], roster: [302, 354, 426, 429, 94, 477] },
-  { id: 'glacia', name: 'Glacia', sprite: 'glacia', types: ['ice'], roster: [460, 471, 478, 362, 473, 365] },
+  { id: 'phoebe', name: 'Phoebe', sprite: 'phoebe-gen3', types: ['ghost'], roster: [302, 354, 426, 429, 94, 477], journeyRoster: [302, 200, 93, 354, 94, 356] },
+  { id: 'glacia', name: 'Glacia', sprite: 'glacia', types: ['ice'], roster: [460, 471, 478, 362, 473, 365], journeyRoster: [124, 221, 131, 364, 362, 365] },
   { id: 'drake', name: 'Drake', sprite: 'drake-gen3', types: ['dragon', 'flying'], roster: [334, 330, 230, 357, 149, 373] },
 ];
 

@@ -8,12 +8,15 @@
 //   - Evolving is optional; it keeps the level (clamped to the new form's cap) and consumes any required item.
 //   - When an evolved form is already owned, the card can pass its level to it instead (no level or item needed):
 //     both merge into the evolved card and the old species stays registered.
+//   - In a Region Journey chapter, evolving, passing levels and routing copies only reach species the player can use there
+//     (Golbat stays Golbat in Kanto; an Eevee evolved in the World gets a new Eevee card back in Kanto).
 
 import { RARE_CANDY } from '../data/items';
 import { descendants, evolutionsOf, getSpecies, preEvolution, type Evolution } from '../data/species';
 import type { SaveData } from '../state/save';
 import { cardKey, levelCap, parseKey, requiredItem, requiredLevel, startLevel, type CardKey } from './cards';
 import { OVERFLOW_CANDY } from './economy';
+import { playerCanUse } from './journey';
 import { replaceInSavedTeams } from './saved-teams';
 
 export interface CopyResult {
@@ -54,7 +57,7 @@ export function addCopy(save: SaveData, id: number, shiny = false, now = Date.no
 
   let key = cardKey(id, shiny);
   if (!owns(save, key) && !shiny && save.evolved[id]) {
-    const evolved = descendants(id).map(d => cardKey(d)).find(k => owns(save, k));
+    const evolved = descendants(id).filter(d => playerCanUse(d)).map(d => cardKey(d)).find(k => owns(save, k));
     if (evolved) key = evolved;
   }
 
@@ -149,8 +152,8 @@ export interface EvolutionOption {
 export function evolutionOptions(save: SaveData, key: CardKey): EvolutionOption[] {
   const card = save.cards[key];
   const { id, shiny } = parseKey(key);
-  if (!card || shiny) return [];
-  return evolutionsOf(id).map(evolution => {
+  if (!card || shiny || !playerCanUse(id)) return [];
+  return evolutionsOf(id).filter(e => playerCanUse(e.to)).map(evolution => {
     const level = requiredLevel(evolution);
     const item = requiredItem(evolution);
     const missing: EvolutionOption['missing'] = {};
@@ -196,8 +199,8 @@ export function evolve(save: SaveData, key: CardKey, to: number, now = Date.now(
 /** Owned evolved forms (any stage) a card can pass its level to, with no level or item needed. Never for shinies. */
 export function transferTargets(save: SaveData, key: CardKey): number[] {
   const { id, shiny } = parseKey(key);
-  if (!save.cards[key] || shiny) return [];
-  return descendants(id).filter(d => owns(save, cardKey(d)));
+  if (!save.cards[key] || shiny || !playerCanUse(id)) return [];
+  return descendants(id).filter(d => owns(save, cardKey(d)) && playerCanUse(d));
 }
 
 /**
@@ -227,14 +230,14 @@ function lineDepth(id: number): number {
 /**
  * Every level pass worth doing at once ("Pass levels"), in Pokédex order. Each card goes to the most evolved form owned
  * (on a tie, the highest level). Left out: `skip`, cards that would lose levels (past the evolved form's cap), passes
- * that gain nothing (the evolved card is at its cap), and cards whose evolved form is also on the team (it would
- * shrink). Nothing is changed here; apply the result with transferMany().
+ * that gain nothing (the evolved card is at its cap), cards whose evolved form is also on the team (it would shrink), and
+ * cards the player can't use in this chapter. Nothing is changed here; apply the result with transferMany().
  */
 export function planTransfers(save: SaveData, skip: ReadonlySet<CardKey> = new Set()): PlannedTransfer[] {
   const levels = new Map<CardKey, number>();
   const deck = new Set(save.deck);
   const plan: PlannedTransfer[] = [];
-  const keys = Object.keys(save.cards).filter(key => !parseKey(key).shiny).sort((a, b) => parseKey(a).id - parseKey(b).id);
+  const keys = Object.keys(save.cards).filter(key => !parseKey(key).shiny && playerCanUse(parseKey(key).id)).sort((a, b) => parseKey(a).id - parseKey(b).id);
   for (const from of keys) {
     if (skip.has(from)) continue;
     const fromLevel = levels.get(from) ?? save.cards[from].level;

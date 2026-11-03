@@ -4,9 +4,10 @@
 // A species tile shows the owned (non-shiny) card at its level; a species caught before whose card evolved
 // away is "registered" (species card, dimmed, with a mark); a species never caught is a locked silhouette.
 
-import { getSpecies, speciesList, type Species } from '../../data/species';
+import { getSpecies, type Species } from '../../data/species';
 import type { PokemonType } from '../../data/types';
 import { cardKey, parseKey, rarity, rarityRank, type CardKey, type Rarity } from '../../game/cards';
+import { chapterSpecies, playerCanUse } from '../../game/journey';
 import { canEvolveNow } from '../../game/progression';
 import { L, locale } from '../../i18n';
 import { store } from '../../state/store';
@@ -54,7 +55,7 @@ export const canEvolveKey = (key: CardKey) => key in s().cards && canEvolveNow(s
 
 export function mountGrid(container: HTMLElement) {
   grid = container;
-  grid.innerHTML = speciesList.map(sp => tileShell(cardKey(sp.id))).join('');
+  grid.innerHTML = chapterSpecies().map(sp => tileShell(cardKey(sp.id))).join('');
   for (const el of grid.querySelectorAll<HTMLElement>('.dex-tile')) addTile(el);
   syncShinyTiles();
   tiles.forEach(updateTile);
@@ -82,7 +83,7 @@ function addTile(el: HTMLElement) {
 /** Creates tiles for shiny cards obtained since the last call. */
 export function syncShinyTiles() {
   for (const key of Object.keys(s().cards)) {
-    if (!key.endsWith('s') || tiles.has(key)) continue;
+    if (!key.endsWith('s') || tiles.has(key) || !playerCanUse(parseKey(key).id)) continue;
     const el = document.createElement('template');
     el.innerHTML = tileShell(key).trim();
     const node = el.content.firstElementChild as HTMLElement;
@@ -191,9 +192,10 @@ export function applyFilters(f: Filters): CardKey[] {
 
 export function counts(region: number) {
   const save = s();
-  const species = speciesList.filter(sp => !region || sp.generation === region);
+  const species = chapterSpecies().filter(sp => !region || sp.generation === region);
   const caught = species.filter(sp => save.caught[sp.id]).length;
-  const shinies = Object.keys(save.cards).filter(key => key.endsWith('s') && (!region || getSpecies(parseKey(key).id).generation === region)).length;
-  const evolvable = Object.keys(save.cards).filter(key => canEvolveNow(save, key)).length;
-  return { total: species.length, caught, shinies, evolvable, cards: Object.keys(save.cards).length };
+  const usable = Object.keys(save.cards).filter(key => playerCanUse(parseKey(key).id));
+  const shinies = usable.filter(key => key.endsWith('s') && (!region || getSpecies(parseKey(key).id).generation === region)).length;
+  const evolvable = usable.filter(key => canEvolveNow(save, key)).length;
+  return { total: species.length, caught, shinies, evolvable, cards: usable.length };
 }

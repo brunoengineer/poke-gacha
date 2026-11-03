@@ -8,6 +8,7 @@ import './styles/capture.css';
 import './styles/battle.css';
 import './styles/modes.css';
 import './styles/settings.css';
+import './styles/journey.css';
 
 import { loadGenerations } from './data/generations';
 import { L } from './i18n';

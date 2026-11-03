@@ -18,6 +18,20 @@ service cloud.firestore {
         && request.time > resource.data.updatedAt + duration.value(3, 's');
     }
 
+    // Region Journey (src/state/track.ts): its own saves and ranking, the same rules as the two above. Only adds access:
+    // the Classic game's collections don't change.
+    match /pokegacha_journey_saves/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /pokegacha_journey_leaderboard/{uid} {
+      allow read: if true;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid && validPokegachaEntry();
+      allow update: if request.auth != null && request.auth.uid == uid && validPokegachaEntry()
+        && request.time > resource.data.updatedAt + duration.value(3, 's');
+    }
+
     function validPokegachaEntry() {
       let d = request.resource.data;
       let fields = ['name', 'tower', 'power', 'caught', 'updatedAt'];

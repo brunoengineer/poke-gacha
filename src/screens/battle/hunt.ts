@@ -8,7 +8,7 @@ import { spriteUrl } from '../../data/sprites';
 import { TYPE_COLOR } from '../../data/types';
 import { cardKey } from '../../game/cards';
 import {
-  CHAIN_MAX, COPY_CHANCE, entryFee, hordeTeam, huntBlock, huntRewards, LEVEL_SPREAD, recordHunt, setTarget, shinyOdds,
+  CHAIN_MAX, COPY_CHANCE, entryFee, hordeTeam, huntBlock, huntRewards, huntTargetHere, LEVEL_SPREAD, recordHunt, setTarget, shinyOdds,
 } from '../../game/modes/hunt';
 import { MIN_LEVEL } from '../../game/modes/training';
 import { playerLevels } from '../../game/teams';
@@ -50,7 +50,7 @@ export async function huntSpecies(id: number): Promise<boolean> {
   const block = huntBlock(id, store.save.caught);
   if (block) {
     sfx('error');
-    toast(block === 'legendary' ? t.legendary : t.notCaught, 'warning');
+    toast(block === 'legendary' ? t.legendary : block === 'other-region' ? L().journey.hunt.otherRegion : t.notCaught, 'warning');
     return false;
   }
   const { target, chain } = store.save.hunt;
@@ -73,6 +73,7 @@ function render() {
   if (!host || battleActive()) return;
   const t = L().battle.hunt;
   const hunt = store.save.hunt;
+  const here = huntTargetHere(hunt);
   host.innerHTML = `
     <div class="view-head">
       <div>
@@ -85,12 +86,12 @@ function render() {
       </div>
     </div>
     ${teamSummaryHTML(true)}
-    ${hunt.target != null && !huntBlock(hunt.target, store.save.caught) ? targetHTML(hunt.target) : `
+    ${here != null && !huntBlock(here, store.save.caught) ? targetHTML(here) : `
       <section class="hunt-empty">
         <span class="hunt-empty-icon">${icon('search')}</span>
         <div>
           <h2>${esc(t.emptyTitle)}</h2>
-          <p>${esc(t.emptyText)}</p>
+          <p>${esc(hunt.target != null && here == null ? L().journey.hunt.targetAway(getSpecies(hunt.target).name) : t.emptyText)}</p>
         </div>
         <a class="btn btn-primary" href="#/collection">${icon('cards')} ${esc(t.pick)}</a>
       </section>`}`;
@@ -160,7 +161,7 @@ function onClick(event: Event) {
 
 async function hunt() {
   const t = L().battle.hunt;
-  const id = store.save.hunt.target;
+  const id = huntTargetHere(store.save.hunt);
   if (id == null || battleActive() || huntBlock(id, store.save.caught)) return;
   const fee = entryFee(id);
   if (store.save.coins < fee) {

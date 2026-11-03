@@ -6,7 +6,24 @@ import { speciesList } from '../data/species';
 import { getLang, L, setLang, type Lang } from '../i18n';
 import { pick } from '../game/rng';
 import { isFirebaseEnabled, playAsGuest, signIn, store } from '../state/store';
+import { currentTrack, saveTrackChoice, type GameTrack } from '../state/track';
 import { esc, icon } from './dom';
+
+const TRACKS: GameTrack[] = ['journey', 'classic'];
+
+/** The game choice: two options like radio buttons; the selected one is the game the next sign-in plays. */
+function trackChoiceHTML() {
+  const j = L().journey.track;
+  return `
+    <div class="track-choice" role="radiogroup" aria-label="${esc(j.label)}">
+      ${TRACKS.map(id => `
+        <button class="track-option" type="button" role="radio" aria-checked="${currentTrack() === id}" data-track="${id}">
+          <b>${esc(j[id].name)}</b>
+          <small>${esc(j[id].desc)}</small>
+        </button>`).join('')}
+    </div>
+    <p class="login-note track-note">${esc(j.separate)}</p>`;
+}
 
 export function showLogin() {
   const root = document.getElementById('login-root')!;
@@ -33,6 +50,7 @@ export function showLogin() {
         <h1 class="login-title">Poké <b>Gacha</b></h1>
         <p class="login-tagline">${esc(t.tagline)}</p>
         ${loading ? `<div class="spinner" aria-label="${esc(t.loading)}"></div>` : `
+          ${trackChoiceHTML()}
           <button class="btn btn-google btn-lg" type="button" data-act="google" ${isFirebaseEnabled() ? '' : 'disabled'}>${icon('google')} ${esc(t.login.signIn)}</button>
           ${isFirebaseEnabled() ? '' : `<p class="login-note">${esc(t.login.notConfigured)}</p>`}
           <button class="btn btn-ghost" type="button" data-act="guest">${esc(t.login.guest)}</button>
@@ -49,6 +67,13 @@ export function showLogin() {
     unlockAudio();
     const lang = target.closest<HTMLElement>('[data-lang]')?.dataset.lang as Lang | undefined;
     if (lang) return setLang(lang);
+    const track = target.closest<HTMLElement>('[data-track]')?.dataset.track as GameTrack | undefined;
+    if (track) {
+      sfx('toggle');
+      if (track === currentTrack()) return;
+      saveTrackChoice(track);
+      return location.reload();
+    }
     const act = target.closest<HTMLElement>('[data-act]')?.dataset.act;
     if (act) sfx('click');
     if (act === 'google') void signIn();

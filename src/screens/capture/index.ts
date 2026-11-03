@@ -7,6 +7,7 @@ import { GENERATIONS, regionName } from '../../data/generations';
 import { BANNERS, BANNER_ORDER, batchCost, canAfford, canUseBanner, type BannerId, type Payment, type Region } from '../../game/gacha';
 import { getSpecies, speciesList } from '../../data/species';
 import { parseKey } from '../../game/cards';
+import { activeRegion, capturePool, chapterSpecies } from '../../game/journey';
 import { dayKey } from '../../game/rng';
 import { fmt, itemName, L } from '../../i18n';
 import { capture } from '../../state/actions';
@@ -29,6 +30,8 @@ let tab: Tab = 'capture';
 let busy = false;
 /** Day the banners were drawn for (the Safari's featured families change daily). */
 let renderedDay = '';
+/** Species captures could bring when the banners were drawn (a badge opens more in a Journey chapter). */
+let renderedPool = 0;
 /** Region captures come from (0: every region). Applies to every banner; pity stays per banner. */
 let region: Region = 0;
 
@@ -59,6 +62,16 @@ function regionHintText() {
 /** Region picker: All plus one option per loaded generation, so a new generation shows up on its own. */
 function regionHTML() {
   const t = L().capture.region;
+  const fixed = activeRegion();
+  if (fixed) {
+    return `
+    <section class="cap-region" aria-labelledby="cap-region-title">
+      <div class="cap-region-text">
+        <h2 class="cap-region-title" id="cap-region-title">${icon('globe')}<span>${esc(t.title)}</span></h2>
+        <p class="cap-region-hint">${esc(L().journey.capture.regionFixed(regionName(region), capturePool().length, chapterSpecies().length))}</p>
+      </div>
+    </section>`;
+  }
   const options = [{ id: 0, label: t.all }, ...GENERATIONS.map(g => ({ id: g.id, label: g.region }))];
   return `
     <section class="cap-region" aria-labelledby="cap-region-title">
@@ -111,6 +124,7 @@ function historyHTML(entries: HistoryEntry[]) {
 function render() {
   const t = L().capture;
   renderedDay = dayKey();
+  renderedPool = capturePool().length;
   region = readRegion();
   view.innerHTML = `
     ${headHTML()}
@@ -278,7 +292,7 @@ export const captureView: ViewModule = {
     on('progress', refreshBanners);
   },
   show(arg) {
-    if (renderedDay !== dayKey()) render();
+    if (renderedDay !== dayKey() || renderedPool !== capturePool().length) render();
     setTab(arg === 'mart' ? 'mart' : 'capture');
     refreshDaily();
     refreshAll();

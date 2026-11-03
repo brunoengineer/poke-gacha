@@ -9,19 +9,21 @@ import enBattle from './en/battle';
 import enCapture from './en/capture';
 import enCollection from './en/collection';
 import enCore from './en/core';
+import enJourney from './en/journey';
 import enModes from './en/modes';
 import ptAudio from './pt/audio';
 import ptBattle from './pt/battle';
 import ptCapture from './pt/capture';
 import ptCollection from './pt/collection';
 import ptCore from './pt/core';
+import ptJourney from './pt/journey';
 import ptModes from './pt/modes';
 
 export type Lang = 'pt' | 'en';
 
 const BUNDLES = {
-  pt: { core: ptCore, collection: ptCollection, capture: ptCapture, battle: ptBattle, modes: ptModes, audio: ptAudio },
-  en: { core: enCore, collection: enCollection, capture: enCapture, battle: enBattle, modes: enModes, audio: enAudio },
+  pt: { core: ptCore, collection: ptCollection, capture: ptCapture, battle: ptBattle, modes: ptModes, audio: ptAudio, journey: ptJourney },
+  en: { core: enCore, collection: enCollection, capture: enCapture, battle: enBattle, modes: enModes, audio: enAudio, journey: enJourney },
 };
 
 export type Bundle = (typeof BUNDLES)['pt'];

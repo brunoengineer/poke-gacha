@@ -1,19 +1,25 @@
 // App shell: header (tabs, Pokédollars, account menu), the phone's side menu and hash routing between the top-level
 // screens.
-// Routes: #/collection, #/capture, #/battle[/<mode>], #/ranking. Screens implement ViewModule (src/screens/types.ts).
+// Routes: #/collection, #/capture, #/battle[/<mode>], #/ranking, and #/journey on the Region Journey track. Screens implement ViewModule (src/screens/types.ts).
 
 import { isMuted, onMuteChange, playMusic, sfx, toggleMute, unlockAudio } from '../audio';
 import { getLang, L, setLang, type Lang } from '../i18n';
 import { battleView } from '../screens/battle';
 import { captureView } from '../screens/capture';
 import { collectionView } from '../screens/collection';
+import { chapterLabel } from '../screens/battle/regions';
+import { journeyView } from '../screens/journey';
 import { rankingView } from '../screens/ranking';
 import type { ViewModule } from '../screens/types';
-import { isFirebaseEnabled, on, resetProgress, signIn, signOut, store } from '../state/store';
+import { activeChapter } from '../game/journey';
+import { isFirebaseEnabled, on, resetProgress, signIn, signOut, store, switchTrack } from '../state/store';
+import { currentTrack, isJourneyTrack } from '../state/track';
 import { animateNumber, confirmDialog, el, esc, icon } from './dom';
 import { openSettings } from './settings';
 
 const VIEWS: Record<string, { module: ViewModule; icon: string; label: () => string }> = {
+  // The Journey's map comes first; Classic has no such screen (#/journey there falls back to home).
+  ...(isJourneyTrack() ? { journey: { module: journeyView, icon: 'globe', label: () => L().journey.map.nav } } : {}),
   collection: { module: collectionView, icon: 'cards', label: () => L().core.nav.collection },
   capture: { module: captureView, icon: 'ball', label: () => L().core.nav.capture },
   battle: { module: battleView, icon: 'swords', label: () => L().core.nav.battle },
@@ -84,6 +90,7 @@ export function startShell() {
   });
 
   initSideNav();
+  initChapterChip();
   initCoins();
   initMute();
   initMenu();
@@ -155,6 +162,16 @@ function initSideNav() {
   });
 }
 
+/** Journey: the chapter being played, as a small chip linking to the map. */
+function initChapterChip() {
+  const chapter = activeChapter();
+  if (!chapter) return;
+  const name = chapterLabel(chapter);
+  const chip = el<HTMLAnchorElement>(`<a class="chapter-chip jc-${chapter}" href="#/journey" data-chapter-chip="${chapter}" aria-label="${esc(L().journey.chip(name))}">${icon('flag')}<span>${esc(name)}</span></a>`);
+  chip.addEventListener('click', () => sfx('tab'));
+  document.querySelector('.topbar-end')!.before(chip);
+}
+
 function initCoins() {
   const coins = document.getElementById('coins')!;
   const amount = document.getElementById('coin-amount')!;
@@ -200,6 +217,8 @@ function avatarHTML() {
   return icon('user');
 }
 
+const otherTrack = () => (currentTrack() === 'journey' ? 'classic' : 'journey');
+
 function initMenu() {
   const t = L().core.account;
   const button = document.getElementById('menu-btn')!;
@@ -220,6 +239,7 @@ function initMenu() {
       </div>
       ${player?.guest && isFirebaseEnabled() ? `<button class="menu-item" type="button" data-act="sign-in">${icon('google')} ${esc(t.signIn)}</button>` : ''}
       <button class="menu-item" type="button" data-act="settings">${icon('gear')} ${esc(t.settings)}</button>
+      <button class="menu-item" type="button" data-act="switch-track">${icon('swords')} ${esc(L().journey.track.switchTo(L().journey.track[otherTrack()].name))}</button>
       <div class="menu-item menu-lang" role="group" aria-label="${esc(t.language)}">
         ${icon('globe')}
         <span class="lang-switch">
@@ -263,6 +283,12 @@ function initMenu() {
     if (act === 'settings') openSettings();
     if (act === 'sign-in') void signIn();
     if (act === 'sign-out') void signOut();
+    if (act === 'switch-track') {
+      const j = L().journey.track;
+      const other = otherTrack();
+      const ok = await confirmDialog({ title: j.switchTitle(j[other].name), message: j.switchText, confirmText: j.switchConfirm });
+      if (ok) void switchTrack(other);
+    }
     if (act === 'reset') {
       const ok = await confirmDialog({ title: t.resetTitle, message: t.resetText, confirmText: t.resetConfirm, danger: true });
       if (ok) void resetProgress();

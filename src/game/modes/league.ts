@@ -15,6 +15,8 @@
 // or mythical cards on the team, 3 entries a day, Master Balls for each win and a shiny legendary or mythical for the title.
 // It has no attrition: each duel starts at full HP, with no items, and the team isn't registered, so the player can
 // change it (saved teams!) between duels to answer the next opponent, as long as it stays within the rules above.
+// In the Region Journey a chapter's League is the only one open (the Master League's is in the World), the regions' levels
+// are Kanto's plus journeyLevelOffset, and the first title's shiny is the chapter's own starter.
 
 import { getSpecies, hasSpecies, speciesList } from '../../data/species';
 import type { PokemonType } from '../../data/types';
@@ -22,6 +24,7 @@ import type { SaveData } from '../../state/save';
 import type { TeamMember } from '../battle';
 import { cardKey, parseKey, type CardKey } from '../cards';
 import { DECK_SIZE, STARTERS, UNLOCK_BADGES } from '../economy';
+import { activeRegion, inWorld, isJourney, journeyLevelOffset } from '../journey';
 import { REGION_IDS, type RegionId } from '../regions';
 import type { Reward } from '../rewards';
 import { generateTeam } from '../teams';
@@ -105,7 +108,8 @@ const writable = (save: SaveData, region: LeagueRegion): LeagueRecord =>
 const FEES: Record<LeagueRegion, number> = { kanto: 1000, johto: 2500, hoenn: 4000, sinnoh: 6000, master: 10000 };
 export const LEAGUE_FEE = FEES.kanto;
 export const JOHTO_LEAGUE_FEE = FEES.johto;
-export const leagueFee = (region: LeagueRegion = 'kanto') => FEES[region];
+/** In the Journey every region's League costs and pays Kanto's (see gymCoins); the Master League keeps its own. */
+export const leagueFee = (region: LeagueRegion = 'kanto') => FEES[isJourney() && region !== 'master' ? 'kanto' : region];
 export const LEAGUE_DUELS = 4;
 export const TITLE_BONUS = 5;
 export const MAX_BONUS = 40;
@@ -129,6 +133,10 @@ export const titleBonus = (titles: number) => Math.min(MAX_BONUS, titles * TITLE
 /** A new run's level bonus: the Master League stays at Lv. 100 however many titles it has. */
 export const runBonus = (titles: number, region: LeagueRegion = 'kanto') => (region === 'master' ? 0 : titleBonus(titles));
 export const duelLevels = (duel: number, bonus: number, region: LeagueRegion = 'kanto'): [number, number] => {
+  if (isJourney() && region !== 'master') {
+    const [min, max] = DUEL_LEVELS.kanto[duel];
+    return [min + journeyLevelOffset(region) + bonus, max + journeyLevelOffset(region) + bonus];
+  }
   const [min, max] = DUEL_LEVELS[region][duel];
   return [min + bonus, max + bonus];
 };
@@ -140,9 +148,13 @@ export const duelDifficulty = (duel: number, bonus: number, region: LeagueRegion
 /** How many of the regions' leagues the player holds a title in. */
 export const leagueTitles = (save: Pick<SaveData, 'league'>) => LEAGUE_REGIONS.filter(r => leagueRecord(save, r).titles > 0).length;
 
-/** Each league needs its region's 8 badges (which in turn need the region before); the Master League, all four titles. */
+/**
+ * Each league needs its region's 8 badges (which in turn need the region before); the Master League, all four titles.
+ * In the Journey each is also only open in its own chapter (the Master League's is the World).
+ */
 export const leagueUnlocked = (save: Pick<SaveData, 'gyms' | 'league'>, region: LeagueRegion = 'kanto') =>
-  (region === 'master' ? leagueTitles(save) === LEAGUE_REGIONS.length : regionBadges(save.gyms, region) >= UNLOCK_BADGES.league);
+  (!isJourney() || (region === 'master' ? inWorld() : region === activeRegion()))
+  && (region === 'master' ? leagueTitles(save) === LEAGUE_REGIONS.length : regionBadges(save.gyms, region) >= UNLOCK_BADGES.league);
 
 const item = (id: string, amount: number): Reward => ({ kind: 'item', item: id, amount });
 
@@ -165,7 +177,7 @@ export const winRewards = (duel: number, region: LeagueRegion = 'kanto'): Reward
 export function placementRewards(placement: number, region: LeagueRegion = 'kanto'): Reward[] {
   // The Master League has no placement prizes: its wins were already paid.
   if (region === 'master') return placement >= CHAMPION ? winRewards(LEAGUE_DUELS - 1, region) : [];
-  if (region !== 'kanto') {
+  if (region !== 'kanto' && !isJourney()) {
     if (placement >= CHAMPION) return CHAMPION_PRIZES[region]!;
     const scale = PRIZE_SCALE[region];
     return placementRewards(placement).map(r => (r.kind === 'coins' || r.kind === 'item' ? { ...r, amount: r.amount * scale } : r));
@@ -188,7 +200,12 @@ export interface LeagueBoss {
   types: PokemonType[];
   /** Fixed roster, ace last. */
   roster: number[];
+  /** Roster in the Journey's region chapters, when the regular one leans on species newer than the region. */
+  journeyRoster?: number[];
 }
+
+/** The roster a boss brings now. */
+export const bossRoster = (boss: LeagueBoss) => (activeRegion() && boss.journeyRoster) || boss.roster;
 
 /** In Elite Four order: later members are tougher and meet you later. */
 export const ELITE_FOUR: LeagueBoss[] = [
@@ -242,12 +259,13 @@ export function championBoss(starter: number | null, region: LeagueRegion = 'kan
 /**
  * The shiny starter a league's first title gives: your own starter in Kanto; elsewhere, that region's starter of your
  * starter's type (Charmander -> Cyndaquil in Johto, Torchic in Hoenn, Chimchar in Sinnoh). When that is your own
- * starter (which the Kanto title already gave), it's Kanto's of the same type instead.
+ * starter (which the Kanto title already gave), it's Kanto's of the same type instead. In the Journey each chapter has
+ * its own starter, so that's the prize: another region's would be a card the chapter can't use.
  */
 export function firstTitleStarter(starter: number | null, region: RegionId = 'kanto'): number | null {
   const i = STARTERS.indexOf(starter ?? -1);
   if (i < 0) return null;
-  if (region === 'kanto') return starter;
+  if (region === 'kanto' || isJourney()) return starter;
   const prize = STARTERS[REGION_IDS.indexOf(region) * 3 + (i % 3)];
   return prize === starter ? STARTERS[i % 3] : prize;
 }
@@ -353,7 +371,7 @@ export function duelInfo(bracket: Bracket, run: LeagueRun, duel: number, starter
     team = trainerTeam({ rank: opponent.rank!, types: opponent.types }, levels, rng);
   } else {
     const b = opponent.kind === 'champion' ? championBoss(starter, region) : eliteFour(region).find(e => e.id === opponent.id)!;
-    team = generateTeam({ level: levels, species: b.roster, exact: true }, rng);
+    team = generateTeam({ level: levels, species: bossRoster(b), exact: true }, rng);
   }
   // Aces lead from the back: the strongest levels go to the last slots.
   const sorted = team.map(m => m.level).sort((a, b) => a - b);

@@ -6,6 +6,9 @@ tower and four Pokémon Leagues.
 
 Play in Portuguese or English, as a guest or signed in with Google (cloud save).
 
+Two games in one app, each with its own save: **Region Journey**, one generation at a time like the anime
+([docs/REGIONS_MODE.md](docs/REGIONS_MODE.md)), and **Classic**, with everything open from the start.
+
 ## Features
 
 - **One card per Pokémon, plus its shiny**: Black/White (Gen 5) pixel sprites in type-themed, rarity-framed cards.
@@ -55,7 +58,8 @@ Pushing to `main` runs both, and a failure stops the deploy. New features should
 2. Enable **Authentication → Google**, and add your domains (e.g. `localhost`, `<user>.github.io`) under
    Authentication → Settings → Authorized domains.
 3. Create a **Firestore** database and publish [firestore.rules](firestore.rules). If the project already hosts
-   another game, merge the `pokegacha_saves` block into its existing rules instead of replacing them.
+   another game, merge the `pokegacha_*` blocks into its existing rules instead of replacing them. Region Journey has
+   its own collections, so its signed-in players need these rules published.
 4. Copy `.env.example` to `.env.local` and fill in the web app config. On GitHub, add the same four values as
    repository **variables** (Settings → Secrets and variables → Actions → Variables).
 
@@ -75,7 +79,7 @@ src/
   game/        Pure game rules (tested): cards, progression, gacha, battle, duel, teams, rewards, economy, modes/
   state/       Save format, store (events + local/cloud persistence), actions, Firebase
   ui/          Shell (header + router), login, card renderer, modals/toasts, drag and drop, effects, rewards, settings
-  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, ranked ("competition"), hunt, tower, league), Ranking
+  screens/     Collection, Capture (gacha + mart + onboarding), Battle (arena, hub, training, gyms, ranked ("competition"), hunt, tower, league), Ranking, Journey (chapter map)
   audio/       Synthesized sound effects, music sequencer, cries
   i18n/        pt-BR and English strings, one namespace per feature
   styles/      base.css (tokens, layout, shared components) + one CSS file per feature
@@ -99,6 +103,9 @@ Then:
    Its texts go in `src/i18n/*/regions.ts`, its badge artwork in `src/screens/battle/badges.ts`.
 4. Bump `SAVE_VERSION` (see below).
 
+Region Journey adapts on its own: chapters, unlocks and the level curve come from `REGION_IDS`, with a few small touches listed in
+[docs/REGIONS_MODE.md](docs/REGIONS_MODE.md).
+
 Notes from adding Johto, Hoenn and Sinnoh:
 
 - New evolution items need an entry in `src/data/items.ts` (name, description, Mart price), or they get a generic one.
@@ -119,6 +126,8 @@ Every release must load every save from earlier releases, unchanged. The rules (
   meets a newer save reloads itself once.
 - Unknown fields (written by a newer app) are kept, never dropped, so an old tab can't delete new progress.
 - Game-rule changes must not lower existing levels or remove cards.
+- Classic's storage names in `src/state/track.ts` never change: the `main` branch and this one share them. Journey games
+  have their own, so neither version can touch the other's saves.
 - **When you release, add one of its saves to `src/state/fixtures/`** (never edit the old ones).
   [src/state/compat.test.ts](src/state/compat.test.ts) loads every fixture and checks nothing was lost.
 

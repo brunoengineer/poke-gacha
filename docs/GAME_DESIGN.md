@@ -3,6 +3,9 @@
 The rules in this document are implemented in `src/game/` (pure, tested logic). Numbers live in
 `src/game/economy.ts`, `src/game/gacha.ts` and each mode's file in `src/game/modes/`.
 
+This document describes the Classic game. **Region Journey**, which plays one generation at a time on these same rules,
+is in [REGIONS_MODE.md](REGIONS_MODE.md).
+
 ## Cards
 
 - **One card per species**, plus a **shiny** version of each (493 + 493 for Kanto, Johto, Hoenn and Sinnoh).

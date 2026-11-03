@@ -11,6 +11,7 @@ import {
   cardKey, cardPower, isUncapped, levelCap, parseKey, rarity, requiredItem, requiredLevel, STAT_IDS, statsAt, type CardKey,
 } from '../../game/cards';
 import { DECK_SIZE } from '../../game/economy';
+import { playerCanUse } from '../../game/journey';
 import { CHAIN_MAX, entryFee, huntBlock, shinyOdds } from '../../game/modes/hunt';
 import { evolutionOptions, previewEvolution, transferTargets, type EvolutionOption } from '../../game/progression';
 import { fmt, getLang, L } from '../../i18n';
@@ -181,7 +182,7 @@ function lockedHTML() {
 
 function registeredHTML(sp: Species) {
   const t = L().collection.details;
-  const evolved = descendants(sp.id).map(d => cardKey(d)).find(k => k in s().cards);
+  const evolved = descendants(sp.id).filter(playerCanUse).map(d => cardKey(d)).find(k => k in s().cards);
   return `
     <div class="dx-panel dx-registered">
       <p>${esc(evolved ? t.registeredEvolved(sp.name, getSpecies(parseKey(evolved).id).name) : t.registeredText(sp.name))}</p>
@@ -239,7 +240,9 @@ function actionsHTML(key: CardKey) {
   const full = s().deck.length >= DECK_SIZE;
   const options = evolutionOptions(s(), key);
   const transfers = transferTargets(s(), key);
-  const canEver = evolutionsOf(id).length > 0;
+  const canEver = evolutionsOf(id).some(e => playerCanUse(e.to));
+  // Every evolution belongs to another region (only the World has it): say so instead of showing nothing.
+  const laterChapter = !canEver && evolutionsOf(id).length > 0;
 
   const evolveRow = (o: EvolutionOption) => `
     <div class="dx-evo-opt ${o.ready ? 'ready' : ''}" style="--tc:${TYPE_COLOR[getSpecies(o.to).types[0]]}">
@@ -280,7 +283,8 @@ function actionsHTML(key: CardKey) {
         <div class="dx-evolve">
           <h3 class="label">${esc(t.evolveTitle)}</h3>
           ${rows.join('')}
-        </div>` : canEver && shiny ? `<p class="hint">${esc(t.shinyNoEvolve)}</p>` : ''}
+        </div>` : laterChapter ? `<p class="hint">${esc(L().journey.collection.laterChapter)}</p>`
+          : canEver && shiny ? `<p class="hint">${esc(t.shinyNoEvolve)}</p>` : ''}
     </section>`;
 }
 
@@ -291,7 +295,7 @@ function huntHTML(id: number) {
   if (block === 'not-caught') return '';
   const hunt = s().hunt;
   const current = hunt.target === id;
-  const text = block ? t.huntLegendary : current ? t.huntCurrent(hunt.chain, shinyOdds(hunt.chain)) : t.huntText(shinyOdds(0), shinyOdds(CHAIN_MAX));
+  const text = block === 'other-region' ? L().journey.hunt.otherRegion : block ? t.huntLegendary : current ? t.huntCurrent(hunt.chain, shinyOdds(hunt.chain)) : t.huntText(shinyOdds(0), shinyOdds(CHAIN_MAX));
   return `
     <section class="dx-section dx-hunt">
       <div class="dx-hunt-text">

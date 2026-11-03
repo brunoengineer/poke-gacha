@@ -7,9 +7,11 @@ import { getSpecies } from '../../data/species';
 import { cardKey, parseKey, rarityRank, type CardKey, type Rarity } from '../../game/cards';
 import { GENERATIONS, regionName } from '../../data/generations';
 import { BANNERS, batchCost, type BannerId, type Payment, type PullResult, type Region } from '../../game/gacha';
+import { captureRegion, playerCanUse } from '../../game/journey';
 import { canEvolveNow } from '../../game/progression';
 import { fmt, itemName, L } from '../../i18n';
 import { store } from '../../state/store';
+import { trackLocalKey } from '../../state/track';
 import { esc, icon } from '../../ui/dom';
 
 /** Item sprite slug for each banner's ball. */
@@ -120,15 +122,15 @@ export function evolveHintHTML(keys: CardKey[]) {
 // --- Region filter (a UI preference, kept per player in this browser) -------------
 
 const REGION_KEY = 'pg-capture-region';
-const regionKey = () => `${REGION_KEY}-${store.player?.uid ?? 'guest'}`;
+const regionKey = () => `${trackLocalKey(REGION_KEY)}-${store.player?.uid ?? 'guest'}`;
 
 /** Saved capture region (generation id), or 0 (every region) when unset or no longer loaded. */
 export function readRegion(): Region {
   try {
     const value = Number(localStorage.getItem(regionKey()));
-    return GENERATIONS.some(g => g.id === value) ? value : 0;
+    return captureRegion(GENERATIONS.some(g => g.id === value) ? value : 0);
   } catch {
-    return 0;
+    return captureRegion(0);
   }
 }
 
@@ -153,9 +155,9 @@ export interface HistoryEntry {
 const HISTORY_KEY = 'pg-capture-history';
 const HISTORY_SIZE = 30;
 
-const historyKey = () => `${HISTORY_KEY}-${store.player?.uid ?? 'guest'}`;
+const historyKey = () => `${trackLocalKey(HISTORY_KEY)}-${store.player?.uid ?? 'guest'}`;
 
-export function readHistory(): HistoryEntry[] {
+function storedHistory(): HistoryEntry[] {
   try {
     const raw = JSON.parse(localStorage.getItem(historyKey()) ?? '[]');
     return Array.isArray(raw) ? raw.filter(e => e && typeof e.id === 'number').slice(0, HISTORY_SIZE) : [];
@@ -164,13 +166,16 @@ export function readHistory(): HistoryEntry[] {
   }
 }
 
+/** The history shows only this chapter's species; the others stay stored for when the player comes back. */
+export const readHistory = () => storedHistory().filter(e => playerCanUse(e.id));
+
 export function pushHistory(results: PullResult[]) {
   // Big batches: keep the most interesting ones (rarest first) so the row isn't 30 Rattata.
   const sorted = results.length > HISTORY_SIZE ? [...results].sort((a, b) => revealWeight(b) - revealWeight(a)) : [...results].reverse();
   const entries = sorted.map(r => ({ id: r.id, shiny: r.shiny, isNew: r.kind === 'new' }));
-  const next = [...entries, ...readHistory()].slice(0, HISTORY_SIZE);
+  const next = [...entries, ...storedHistory()].slice(0, HISTORY_SIZE);
   try {
     localStorage.setItem(historyKey(), JSON.stringify(next));
   } catch { /* storage blocked: history stays empty */ }
-  return next;
+  return next.filter(e => playerCanUse(e.id));
 }

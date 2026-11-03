@@ -1146,6 +1146,8 @@
 /* Twelve starters (three per region): compact cards with sprite and name, two regions per row on wide screens; the
    picked starter's types and line show under the grid. */
 .onboard .onb-starters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; width: 100%; }
+/* One region (a Journey chapter): its three starters take the whole grid, centered. */
+.onboard .onb-starters:has(> .onb-group:only-child) { grid-template-columns: minmax(0, 1fr); max-width: 640px; margin-inline: auto; }
 .onboard .onb-group { display: grid; gap: 10px; }
 .onboard .onb-region {
     display: flex;

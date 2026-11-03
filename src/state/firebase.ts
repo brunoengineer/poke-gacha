@@ -4,11 +4,12 @@
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth, User } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
+import { trackStorage } from './track';
 
-/** Firestore collection for saves (named per game, so several games can share one Firebase project). */
-const SAVES = 'pokegacha_saves';
+/** Firestore collection for saves (named per game and track, so several games can share one Firebase project). */
+const SAVES = () => trackStorage().saves;
 /** Public online ranking: one entry per player who joined (see firestore.rules). */
-const LEADERBOARD = 'pokegacha_leaderboard';
+const LEADERBOARD = () => trackStorage().leaderboard;
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
@@ -80,7 +81,7 @@ export async function signOutUser() {
 const LOAD_TIMEOUT_MS = 12_000;
 
 /** Saves are stored as a JSON string: avoids Firestore limits on nested maps and undefined values. */
-export async function loadCloudSave(uid: string): Promise<unknown | null> {
+export async function loadCloudSave(uid: string, collection = SAVES()): Promise<unknown | null> {
   const s = await init();
   if (!s) return null;
   const { doc, getDoc } = s.storeLib;
@@ -88,7 +89,7 @@ export async function loadCloudSave(uid: string): Promise<unknown | null> {
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(Object.assign(new Error('Cloud save load timed out'), { code: 'deadline-exceeded' })), LOAD_TIMEOUT_MS);
   });
-  const snap = await Promise.race([getDoc(doc(s.db, SAVES, uid)), timeout]).finally(() => clearTimeout(timer));
+  const snap = await Promise.race([getDoc(doc(s.db, collection, uid)), timeout]).finally(() => clearTimeout(timer));
   if (!snap.exists()) return null;
   const data = snap.data() as { json?: string };
   return data.json ? JSON.parse(data.json) : null;
@@ -98,21 +99,21 @@ export async function writeLeaderboardEntry(uid: string, data: Record<string, un
   const s = await init();
   if (!s) return;
   const { doc, setDoc, serverTimestamp } = s.storeLib;
-  await setDoc(doc(s.db, LEADERBOARD, uid), { ...data, updatedAt: serverTimestamp() });
+  await setDoc(doc(s.db, LEADERBOARD(), uid), { ...data, updatedAt: serverTimestamp() });
 }
 
 export async function deleteLeaderboardEntry(uid: string) {
   const s = await init();
   if (!s) return;
   const { doc, deleteDoc } = s.storeLib;
-  await deleteDoc(doc(s.db, LEADERBOARD, uid));
+  await deleteDoc(doc(s.db, LEADERBOARD(), uid));
 }
 
 export async function fetchLeaderboardTop(field: string, size: number): Promise<{ uid: string; data: unknown }[]> {
   const s = await init();
   if (!s) return [];
   const { collection, getDocs, limit, orderBy, query } = s.storeLib;
-  const snap = await getDocs(query(collection(s.db, LEADERBOARD), orderBy(field, 'desc'), limit(size)));
+  const snap = await getDocs(query(collection(s.db, LEADERBOARD()), orderBy(field, 'desc'), limit(size)));
   return snap.docs.map(d => ({ uid: d.id, data: d.data() }));
 }
 
@@ -121,7 +122,7 @@ export async function fetchLeaderboardPosition(field: string, value: number): Pr
   const s = await init();
   if (!s) return 0;
   const { collection, getCountFromServer, query, where } = s.storeLib;
-  const snap = await getCountFromServer(query(collection(s.db, LEADERBOARD), where(field, '>', value)));
+  const snap = await getCountFromServer(query(collection(s.db, LEADERBOARD()), where(field, '>', value)));
   return snap.data().count + 1;
 }
 
@@ -129,5 +130,5 @@ export async function writeCloudSave(uid: string, save: { updatedAt: number }) {
   const s = await init();
   if (!s) return;
   const { doc, setDoc, serverTimestamp } = s.storeLib;
-  await setDoc(doc(s.db, SAVES, uid), { json: JSON.stringify(save), updatedAt: save.updatedAt, serverTime: serverTimestamp() });
+  await setDoc(doc(s.db, SAVES(), uid), { json: JSON.stringify(save), updatedAt: save.updatedAt, serverTime: serverTimestamp() });
 }

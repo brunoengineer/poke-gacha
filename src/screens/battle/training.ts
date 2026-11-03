@@ -9,7 +9,7 @@ import {
   trainingTeam, winCoins, type Difficulty, type Friend,
 } from '../../game/modes/training';
 import { playerLevels } from '../../game/teams';
-import { REGION_IDS } from '../../game/regions';
+import { visibleRegions } from '../../game/journey';
 import { itemName, L } from '../../i18n';
 import { grant, recordBattle } from '../../state/actions';
 import { on, store, update } from '../../state/store';
@@ -70,7 +70,7 @@ function render() {
         <span><img src="${esc(itemSprite(RARE_CANDY))}" alt="" width="24" height="24"> ${esc(t.firstWin)}</span>
       </div>
     </div>
-    ${REGION_IDS.map(region => {
+    ${visibleRegions().map(region => {
       const friends = FRIENDS.filter(f => f.region === region);
       return `
         <section class="friend-group" aria-label="${esc(t.group(regionLabel(region)))}">

@@ -3,12 +3,14 @@
 //   - Each win may drop a copy of the species, and may drop its shiny. The shiny chance grows with the chain:
 //     consecutive wins on the same species. A loss (or a forfeit) breaks the chain; switching species restarts it.
 //   - Legendary and mythical Pokémon can't be hunted (they stay rare), nor species never caught (captures keep
-//     their surprise).
+//     their surprise). In a Region Journey chapter, neither can species of other regions; a chain on one just waits in
+//     the save until the player is back where it can be hunted.
 //   - The entry fee (by rarity) keeps hunts from being a free source of cards: a copy costs about what a Rare Candy
 //     costs at the Mart.
 
 import { getSpecies } from '../../data/species';
 import type { TeamMember } from '../battle';
+import { playerCanUse } from '../journey';
 import { rarity, type Rarity } from '../cards';
 import type { Reward } from '../rewards';
 import { defaultRng, type Rng } from '../rng';
@@ -45,12 +47,13 @@ export const ENTRY_FEE: Record<Exclude<Rarity, 'legendary' | 'mythical'>, number
   epic: 400,
 };
 
-export type HuntBlock = 'not-caught' | 'legendary';
+export type HuntBlock = 'not-caught' | 'legendary' | 'other-region';
 
 /** Why a species can't be hunted (null when it can). */
 export function huntBlock(id: number, caught: Record<string, number>): HuntBlock | null {
   const sp = getSpecies(id);
   if (sp.legendary || sp.mythical) return 'legendary';
+  if (!playerCanUse(id)) return 'other-region';
   if (!caught[id]) return 'not-caught';
   return null;
 }
@@ -78,6 +81,10 @@ export function huntRewards(id: number, chain: number, rng: Rng = defaultRng): R
   if (rng() < shinyChance(chain)) rewards.push({ kind: 'card', id, shiny: true });
   return rewards;
 }
+
+/** The target if it can be hunted in this chapter, else null (it stays in the save, chain included). */
+export const huntTargetHere = (hunt: Pick<HuntSave, 'target'>): number | null =>
+  (hunt.target != null && playerCanUse(hunt.target) ? hunt.target : null);
 
 /** Picks a new target. Switching to another species restarts the chain (mutates the save slice). */
 export function setTarget(hunt: HuntSave, id: number) {

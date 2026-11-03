@@ -3,9 +3,10 @@
 
 import { RARE_CANDY } from '../data/items';
 import { getItem } from '../data/items';
-import { cardKey, type CardKey } from '../game/cards';
-import { DAILY_BALL, DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS } from '../game/economy';
-import { pull as pullCards, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
+import { cardKey, parseKey, type CardKey } from '../game/cards';
+import { DAILY_BALL, DECK_SIZE, dailyGift, STARTER_CANDY, STARTER_LEVEL, STARTERS, STARTING_COINS } from '../game/economy';
+import { activeChapter, CHAPTERS, CHAPTER_START_COINS, playerCanUse } from '../game/journey';
+import { pull as pullCards, rescueBrokePlayer, type BannerId, type Payment, type PullResult, type Region } from '../game/gacha';
 import {
   addItem, evolve as evolveCard, trainAfterBattle, transferLevel as transferCardLevel, transferMany, useCandies as applyCandies,
   type BattleTraining, type EvolveResult, type PlannedTransfer,
@@ -27,7 +28,11 @@ export const level = (key: CardKey) => s().cards[key]?.level ?? 0;
 
 /** Pays and performs captures, optionally from one region (0: all). Returns null when locked or unaffordable. */
 export function capture(banner: BannerId, count: number, payWith: Payment = 'coins', region: Region = 0): PullResult[] | null {
-  const results = update(save => pullCards(save, banner, count, payWith, undefined, undefined, region), []);
+  const results = update(save => {
+    const pulled = pullCards(save, banner, count, payWith, undefined, undefined, region);
+    rescueBrokePlayer(save);
+    return pulled;
+  }, []);
   if (results) {
     // Routed copies (a Charmander leveling Charmeleon) also register the pulled species.
     emit('cards', [...new Set(results.flatMap(r => [r.key, cardKey(r.id, r.shiny)]))]);
@@ -79,7 +84,7 @@ export const inDeck = (key: CardKey) => s().deck.includes(key);
  * Returns 'added' | 'replaced' | 'full' | 'duplicate' | 'not-owned'.
  */
 export function addToDeck(key: CardKey, index = s().deck.length): 'added' | 'replaced' | 'full' | 'duplicate' | 'not-owned' {
-  if (!owned(key)) return 'not-owned';
+  if (!owned(key) || !playerCanUse(parseKey(key).id)) return 'not-owned';
   if (inDeck(key)) return 'duplicate';
   if (index < s().deck.length) {
     update(save => { save.deck[index] = key; }, ['deck']);
@@ -120,7 +125,7 @@ export const loadTeam = (id: string) => update(save => loadSavedTeam(save, id), 
 /** Fills empty team slots with the strongest owned cards (used after onboarding and by "Auto team"). */
 export function autoFillDeck(score: (key: CardKey) => number) {
   update(save => {
-    const candidates = Object.keys(save.cards).filter(key => !save.deck.includes(key)).sort((a, b) => score(b) - score(a));
+    const candidates = Object.keys(save.cards).filter(key => !save.deck.includes(key) && playerCanUse(parseKey(key).id)).sort((a, b) => score(b) - score(a));
     while (save.deck.length < DECK_SIZE && candidates.length) save.deck.push(candidates.shift()!);
   }, ['deck']);
 }
@@ -140,6 +145,7 @@ export function buyItem(item: string, amount = 1): boolean {
   update(save => {
     save.coins -= price * amount;
     addItem(save, item, amount);
+    rescueBrokePlayer(save);
   }, ['items']);
   return true;
 }
@@ -171,11 +177,16 @@ export const dailyAvailable = (now = new Date()) => s().daily.last !== dayKey(no
 // --- Onboarding ----------------------------------------------------------------
 
 export function chooseStarter(id: number) {
-  if (s().starter != null || !STARTERS.includes(id)) return;
+  if (s().starter != null || !STARTERS.includes(id) || !playerCanUse(id)) return;
   update(save => {
     const now = Date.now();
     save.starter = id;
-    save.cards[cardKey(id)] = { level: STARTER_LEVEL, copies: 1, obtainedAt: now };
+    // A chapter starts with enough for a team, on top of the wallet (a new game's own coins count); a starter already
+    // owned never loses levels.
+    const chapter = activeChapter();
+    if (chapter) save.coins += CHAPTER_START_COINS - (chapter === CHAPTERS[0] ? STARTING_COINS : 0);
+    const have = save.cards[cardKey(id)];
+    save.cards[cardKey(id)] = have ? { ...have, level: Math.max(have.level, STARTER_LEVEL) } : { level: STARTER_LEVEL, copies: 1, obtainedAt: now };
     save.caught[id] = now;
     save.deck = [cardKey(id)];
     addItem(save, RARE_CANDY, STARTER_CANDY);

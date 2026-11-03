@@ -12,6 +12,7 @@ import {
 } from '../../game/modes/gyms';
 import type { Reward } from '../../game/rewards';
 import { seeded } from '../../game/rng';
+import { isJourney, visibleRegions } from '../../game/journey';
 import { previousRegion, REGION_IDS } from '../../game/regions';
 import { MAX_LEVEL } from '../../game/cards';
 import { evolveForLevel, playerScale } from '../../game/teams';
@@ -35,8 +36,8 @@ let region: GymRegion | null = null;
 
 const shownRegion = (): GymRegion => region ?? currentGymRegion(store.save.gyms);
 
-/** The region after this one, if any (for "what's next" texts). */
-const nextRegion = (r: GymRegion): GymRegion | null => REGION_IDS[REGION_IDS.indexOf(r) + 1] ?? null;
+/** The region after this one, if any (for "what's next" texts). In the Journey the League opens the next chapter, not its gyms. */
+const nextRegion = (r: GymRegion): GymRegion | null => (isJourney() ? null : REGION_IDS[REGION_IDS.indexOf(r) + 1] ?? null);
 
 export const gymsMode: ModeModule = {
   render(container) {
@@ -66,13 +67,14 @@ function render() {
   const before = previousRegion(shown);
   const done = count >= list.length;
   const next = nextRegion(shown);
+  const regions = GYM_REGIONS.filter(r => visibleRegions().includes(r));
   host.innerHTML = `
     <div class="view-head gyms-head">
       <div>
         <h1 class="view-title">${esc(t.title)}</h1>
-        <p class="view-sub">${esc(t.sub)}</p>
+        <p class="view-sub">${esc(isJourney() ? L().journey.hub.gymsSub : t.sub)}</p>
       </div>
-      ${regionSwitchHTML(shown, GYM_REGIONS.map(r => ({
+      ${regions.length < 2 ? '' : regionSwitchHTML(shown, regions.map(r => ({
         region: r, note: t.badges(regionBadges(gyms, r)), locked: !regionGymsOpen(gyms, r), done: regionBadges(gyms, r) >= REGION_GYMS[r].length,
       })), t.region)}
     </div>
@@ -104,8 +106,9 @@ function render() {
     <ol class="gym-list">${list.map((g, i) => gymHTML(g, i, shown)).join('')}</ol>`;
 }
 
-/** Regions whose leaders go past the Lv. 100 cap of normal cards say so, pointing at the Shiny Hunt. */
+/** Regions whose leaders go past the Lv. 100 cap of normal cards say so, pointing at the Shiny Hunt (not in the Journey: levels stay under it). */
 function shinyNoteHTML(shown: GymRegion): string {
+  if (isJourney()) return '';
   const max = Math.max(...REGION_GYMS[shown].map(g => g.levels[1]));
   if (max <= MAX_LEVEL) return '';
   const t = L().battle.gyms;
@@ -171,7 +174,7 @@ function gymHTML(gym: Gym, index: number, shown: GymRegion): string {
 function onClick(event: Event) {
   const picked = clickedRegion(event);
   if (picked) {
-    if (picked !== shownRegion()) {
+    if (picked !== shownRegion() && visibleRegions().includes(picked)) {
       sfx('toggle');
       region = picked;
       render();

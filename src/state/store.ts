@@ -6,9 +6,13 @@
 // account adopts this browser's guest progress once; if the cloud can't be reached and there is no local copy,
 // sign-in stops instead of risking an overwrite of a real cloud save.
 
+import { rescueBrokePlayer } from '../game/gacha';
+import { activeRegion, defaultJourneySave, playableChapter, setActiveChapter, setCaptureProgress, travel, type ChapterId } from '../game/journey';
+import { REGION_GYMS, regionBadges } from '../game/modes/gyms';
 import { L } from '../i18n';
 import { firebaseEnabled, loadCloudSave, signInWithGoogle, signOutUser, watchAuth, writeCloudSave } from './firebase';
 import { chooseAccountSave, defaultSave, isFromNewerApp, normalizeSave, type SaveData } from './save';
+import { currentTrack, isJourneyTrack, saveTrackChoice, TRACK_STORAGE, trackStorage, trackWasChosen, type GameTrack } from './track';
 
 export interface Player {
   uid: string;
@@ -72,11 +76,18 @@ export function update<T>(fn: (s: SaveData) => T, events: GameEvent[] = [], deta
   const s = store.save;
   const coins = s.coins;
   const result = fn(s);
+  syncCaptures(s);
   s.updatedAt = Date.now();
   persist();
   if (s.coins !== coins) emit('coins', s.coins - coins);
   for (const event of events) emit(event, detail?.[event]);
   return result;
+}
+
+/** A region's captures open with its badges (src/game/journey.ts). */
+function syncCaptures(s: SaveData) {
+  const region = activeRegion();
+  setCaptureProgress(region ? regionBadges(s.gyms, region) / REGION_GYMS[region].length : 1);
 }
 
 function setPhase(phase: Phase) {
@@ -93,7 +104,7 @@ function setSync(sync: Sync) {
 // --- Persistence ---------------------------------------------------------
 
 const GUEST_FLAG = 'pg-guest';
-const localKey = (uid: string) => `pg-save-${uid}`;
+const localKey = (uid: string) => `${trackStorage().localPrefix}${uid}`;
 
 function readLocal(uid: string): SaveData | null {
   try {
@@ -186,10 +197,29 @@ function enterGame(player: Player, s: SaveData) {
       }
     } catch { /* storage blocked: just continue */ }
   }
+  saveTrackChoice(currentTrack());
+  // The Journey's rules follow the save's chapter; Classic has none, so nothing is restricted.
+  if (isJourneyTrack()) s.journey ??= defaultJourneySave();
+  setActiveChapter(isJourneyTrack() ? playableChapter(s.journey!) : null);
+  syncCaptures(s);
+  rescueBrokePlayer(s);
   store.player = player;
   store.save = s;
   emit('player', player);
   setPhase('game');
+}
+
+/**
+ * Nobody is moved to the Journey by surprise: a player with a Classic save in the cloud who never chose a game goes back
+ * to Classic, even in a new browser. Only reads Classic's save; if it can't be read, the usual load below deals with that.
+ */
+async function hasClassicCloudSave(uid: string): Promise<boolean> {
+  if (!isJourneyTrack() || trackWasChosen()) return false;
+  try {
+    return !!(await loadCloudSave(uid, TRACK_STORAGE.classic.saves));
+  } catch {
+    return false;
+  }
 }
 
 async function loadAccount(user: { uid: string; displayName: string | null; photoURL: string | null }) {
@@ -197,6 +227,11 @@ async function loadAccount(user: { uid: string; displayName: string | null; phot
   // A guest signing in from the game keeps playing (and saving) as a guest if the account can't load.
   const previous = store.phase === 'game' ? store.player : null;
   setPhase('loading');
+  if (await hasClassicCloudSave(user.uid)) {
+    saveTrackChoice('classic');
+    location.reload();
+    return;
+  }
   const player: Player = { uid: user.uid, name: user.displayName ?? 'Trainer', photo: user.photoURL, guest: false };
   const local = readLocal(user.uid);
   let cloud: SaveData | null = null;
@@ -293,6 +328,33 @@ export async function resetProgress() {
   store.save = fresh;
   flushLocal();
   if (store.player && !store.player.guest) await flushCloud();
+  location.hash = '';
+  location.reload();
+}
+
+/** How long a reload waits for the cloud: offline, the write never finishes. The next load sends the newer local save. */
+const RELOAD_FLUSH_MS = 3000;
+
+/** Writes the save everywhere before a page reload. */
+async function flushAllNow() {
+  flushLocal();
+  if (!store.player || store.player.guest) return;
+  await Promise.race([flushCloud(), new Promise(resolve => setTimeout(resolve, RELOAD_FLUSH_MS))]);
+}
+
+/** Moves to another chapter of the Journey and restarts the app there. Resolves false when it can't go there. */
+export async function travelTo(chapter: ChapterId): Promise<boolean> {
+  if (!update(s => travel(s, chapter))) return false;
+  await flushAllNow();
+  location.hash = '';
+  location.reload();
+  return true;
+}
+
+/** Switches between the Journey and Classic: each has its own save, so the other one stays exactly as it was. */
+export async function switchTrack(next: GameTrack) {
+  await flushAllNow();
+  saveTrackChoice(next);
   location.hash = '';
   location.reload();
 }

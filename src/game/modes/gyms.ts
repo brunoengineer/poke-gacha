@@ -4,10 +4,13 @@
 // Rosters are fixed and themed (base forms evolve for the level automatically).
 // Rematches get harder (+10 levels each, up to +40) and pay half the coins plus Rare Candy.
 // A team above a gym's levels makes it train up to match (scaling.ts).
+// In the Region Journey only the active region's gyms are open (none in the World), and every region follows Kanto's level
+// curve plus journeyLevelOffset, by gym position.
 
 import { LINK_CABLE, RARE_CANDY } from '../../data/items';
 import type { PokemonType } from '../../data/types';
 import type { TeamMember } from '../battle';
+import { activeRegion, isJourney, journeyLevelOffset } from '../journey';
 import { mergeRewards, type Reward } from '../rewards';
 import { defaultRng, type Rng } from '../rng';
 import { previousRegion, REGION_IDS, type RegionId } from '../regions';
@@ -102,15 +105,16 @@ export const regionBadges = (gyms: Pick<GymSave, 'badges'>, region: GymRegion) =
 
 /** A region's gyms open once every badge of the region before it is earned (Kanto's are always open). */
 export function regionGymsOpen(gyms: Pick<GymSave, 'badges'>, region: GymRegion): boolean {
+  if (isJourney()) return region === activeRegion();
   const before = previousRegion(region);
   return !before || regionBadges(gyms, before) >= REGION_GYMS[before].length;
 }
 
 export const johtoGymsOpen = (gyms: Pick<GymSave, 'badges'>) => regionGymsOpen(gyms, 'johto');
 
-/** The region whose gyms are in progress: the first one not completed (the last one once all are done). */
+/** The region whose gyms are in progress: the active one, else the first one not completed (the last one once all are done). */
 export const currentGymRegion = (gyms: Pick<GymSave, 'badges'>): GymRegion =>
-  GYM_REGIONS.find(region => regionBadges(gyms, region) < REGION_GYMS[region].length) ?? GYM_REGIONS[GYM_REGIONS.length - 1];
+  activeRegion() ?? GYM_REGIONS.find(region => regionBadges(gyms, region) < REGION_GYMS[region].length) ?? GYM_REGIONS[GYM_REGIONS.length - 1];
 
 export const REMATCH_LEVELS = 10;
 export const REMATCH_MAX = 40;
@@ -140,10 +144,19 @@ export function rematchBonus(gyms: GymSave, gym: Gym): number {
   return Math.min(REMATCH_MAX, REMATCH_LEVELS * wins);
 }
 
+/** A gym's levels as designed for this game (no rematch bonus): its own, or in the Journey Kanto's curve plus the region's offset. */
+export function designedGymLevels(gym: Gym): [number, number] {
+  if (!isJourney()) return gym.levels;
+  const region = gymRegion(gym);
+  const [min, max] = GYMS[REGION_GYMS[region].indexOf(gym)].levels;
+  return [min + journeyLevelOffset(region), max + journeyLevelOffset(region)];
+}
+
 /** The designed levels of the next battle (rematch bonus included). */
 export function gymLevels(gyms: GymSave, gym: Gym): [number, number] {
   const bonus = rematchBonus(gyms, gym);
-  return [gym.levels[0] + bonus, gym.levels[1] + bonus];
+  const [min, max] = designedGymLevels(gym);
+  return [min + bonus, max + bonus];
 }
 
 /** The next battle's levels against this team (`scale`; without it, as designed). */
@@ -158,19 +171,22 @@ export function gymTeam(gyms: GymSave, gym: Gym, rng: Rng = defaultRng, scale?: 
   return team;
 }
 
+/** A gym's prize. In the Journey every region pays Kanto's, like its levels: bigger prizes would buy the next region whole. */
+const gymCoins = (gym: Gym) => (isJourney() ? GYMS[REGION_GYMS[gymRegion(gym)].indexOf(gym)].coins : gym.coins);
+
 /** Rewards for beating a gym: badge + full rewards the first time, half coins + Rare Candy on rematches. */
 export function gymRewards(gyms: GymSave, gym: Gym): Reward[] {
   if (!gyms.badges.includes(gym.badge)) {
     return [
       { kind: 'badge', badge: gym.badge },
-      { kind: 'coins', amount: gym.coins },
+      { kind: 'coins', amount: gymCoins(gym) },
       ...mergeRewards([
         { kind: 'item', item: RARE_CANDY, amount: FIRST_WIN_CANDY },
         ...gym.items.map(({ item, amount }): Reward => ({ kind: 'item', item, amount })),
       ]),
     ];
   }
-  return [{ kind: 'coins', amount: Math.floor(gym.coins / 2) }, { kind: 'item', item: RARE_CANDY, amount: REMATCH_CANDY }];
+  return [{ kind: 'coins', amount: Math.floor(gymCoins(gym) / 2) }, { kind: 'item', item: RARE_CANDY, amount: REMATCH_CANDY }];
 }
 
 /** Updates the gym's record after a battle (mutates the save slice; the badge itself comes from the reward). */

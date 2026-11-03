@@ -1,0 +1,205 @@
+/* Region Journey: the chapter map (src/screens/journey.ts), the header's chapter chip and the game choice on the login
+   screen (src/ui/login.ts). --rc is the chapter's color. */
+
+/* A region without its own color below still gets one. */
+.jc-card, .chapter-chip { --rc: #ff7b6b; }
+.jc-kanto { --rc: #ff7b6b; }
+.jc-johto { --rc: #e8c25a; }
+.jc-hoenn { --rc: #5fd6b0; }
+.jc-sinnoh { --rc: #a993ff; }
+.jc-world { --rc: #6cc7ff; }
+
+/* --- Map ------------------------------------------------------------------------- */
+
+.journey-map { max-width: 820px; margin-inline: auto; width: 100%; }
+.jc-path { list-style: none; display: grid; gap: 0; }
+.jc-step { position: relative; padding-bottom: 26px; }
+.jc-step:last-child { padding-bottom: 0; }
+/* The path between cards: a dotted line from one art to the next. */
+.jc-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(16px + 48px - 1.5px);
+    top: calc(100% - 26px);
+    height: 26px;
+    border-left: 3px dotted var(--line-2);
+}
+.jc-step:has(.jc-card.is-cleared):not(:last-child)::after,
+.jc-step:has(.jc-card.is-here.is-cleared):not(:last-child)::after { border-left-color: var(--gold); }
+
+.jc-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 16px;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line-2);
+}
+.jc-card.is-here {
+    border-color: color-mix(in srgb, var(--rc) 70%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 45%, transparent), 0 10px 30px color-mix(in srgb, var(--rc) 16%, transparent);
+}
+.jc-card.is-cleared { border-color: var(--line-gold); }
+.jc-card.is-locked { background: var(--surface); border-style: dashed; }
+.jc-card.is-locked .jc-art, .jc-card.is-locked .jc-name { opacity: .6; }
+
+.jc-art {
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 30%, transparent), color-mix(in srgb, var(--rc) 6%, transparent) 70%);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rc) 50%, transparent);
+    overflow: hidden;
+}
+.jc-art .sprite { width: 96px; height: 96px; image-rendering: pixelated; }
+.jc-ash { width: 80px; height: 80px; object-fit: contain; image-rendering: pixelated; }
+.jc-art-icon { width: 34px; height: 34px; color: var(--rc); }
+.is-locked .jc-art-icon { color: var(--dim); }
+
+.jc-body { min-width: 0; display: grid; gap: 6px; }
+.jc-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+.jc-num {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--rc) 24%, transparent);
+    color: var(--rc);
+    font-size: 13px;
+    font-weight: 800;
+}
+.jc-status { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; font-weight: 650; }
+.jc-status .i { flex-shrink: 0; width: 16px; height: 16px; color: var(--rc); }
+.is-locked .jc-status .i { color: var(--dim); }
+.is-cleared .jc-status .i { color: var(--gold-hi); }
+.is-here .jc-status { color: var(--text); }
+
+.jc-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.jc-stats li { display: flex; align-items: center; gap: 5px; }
+.jc-stats .i { width: 15px; height: 15px; color: var(--dim); }
+
+.jc-desc { color: var(--muted); font-size: 14px; }
+.jc-unlocks { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.jc-unlocks li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rc) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--rc) 35%, transparent);
+    font-size: 13px;
+    font-weight: 650;
+}
+.jc-unlocks .i { width: 14px; height: 14px; color: var(--rc); }
+.is-locked .jc-unlocks li { background: transparent; border-color: var(--line-2); color: var(--muted); }
+.is-locked .jc-unlocks .i { color: var(--dim); }
+
+.jc-go { min-height: 44px; white-space: normal; text-align: center; }
+.jc-go[aria-busy="true"] .i { animation: jc-spin 1.2s linear infinite; }
+@keyframes jc-spin { to { transform: rotate(360deg); } }
+
+.jc-blocked { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 14px; padding: 10px 14px; border: 1px solid var(--line-gold); border-radius: 10px; color: var(--gold-hi); font-size: 14px; }
+.jc-blocked .i { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+.jc-foot { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 13.5px; }
+.jc-foot .i { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+
+/* --- Header chip ------------------------------------------------------------------ */
+
+.chapter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 150px;
+    min-height: 38px;
+    padding: 0 12px 0 10px;
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    background: color-mix(in srgb, var(--rc) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--rc) 50%, transparent);
+    transition: background-color .2s;
+}
+.chapter-chip:hover { background: color-mix(in srgb, var(--rc) 26%, transparent); }
+.chapter-chip .i { flex-shrink: 0; width: 15px; height: 15px; color: var(--rc); }
+.chapter-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 680px) {
+    .chapter-chip { margin-left: auto; max-width: 112px; min-height: 34px; }
+    .chapter-chip + .topbar-end { margin-left: 0; }
+}
+@media (max-width: 400px) {
+    .chapter-chip { max-width: 80px; padding: 0 9px; }
+    .chapter-chip .i { display: none; }
+}
+
+/* --- Login: game choice ------------------------------------------------------------- */
+
+.track-choice { display: grid; gap: 8px; width: 100%; text-align: left; }
+.track-option {
+    display: grid;
+    gap: 2px;
+    min-height: 44px;
+    padding: 10px 14px 10px 44px;
+    text-align: left;
+    border-radius: 14px;
+    position: relative;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-2);
+    transition: background-color .2s, border-color .2s, color .2s;
+}
+.track-option::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 14px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--dim);
+}
+.track-option b { color: var(--text); font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+.track-option small { font-size: 12.5px; line-height: 1.35; }
+.track-option:hover { background: rgba(255, 255, 255, 0.07); }
+.track-option[aria-checked="true"] {
+    color: var(--text);
+    background: rgba(244, 220, 163, 0.1);
+    border-color: var(--gold);
+}
+.track-option[aria-checked="true"]::before { border-color: var(--gold-hi); background: radial-gradient(circle, var(--gold-hi) 0 4px, transparent 5px); }
+.track-note { margin-top: 0; margin-bottom: 4px; }
+
+/* --- Phones ------------------------------------------------------------------------- */
+
+@media (max-width: 560px) {
+    .jc-card { grid-template-columns: 72px minmax(0, 1fr); padding: 14px; gap: 10px 14px; }
+    .jc-art { width: 72px; height: 72px; }
+    .jc-art .sprite { width: 72px; height: 72px; }
+    .jc-ash { width: 60px; height: 60px; }
+    .jc-name { font-size: 19px; }
+    .jc-go { grid-column: 1 / -1; width: 100%; }
+    .jc-step:not(:last-child)::after { left: calc(14px + 36px - 1.5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jc-go[aria-busy="true"] .i { animation: none; }
+}
