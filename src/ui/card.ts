@@ -4,7 +4,8 @@
 //
 // API contract (used by all screens — keep it stable):
 //   cardHTML(view, options) -> HTML string with a root `.pcard` element.
-//   Root attributes: data-type (primary type), data-rarity, data-shiny ("true"/absent), data-foil (Lv. 100+), data-locked.
+//   Root attributes: data-type (primary type), data-rarity, data-shiny ("true"/absent), data-foil (Lv. 100+), data-locked,
+//   data-live (effects animate while hovered).
 //   Size classes: pcard-xs (team slots, history), pcard-sm (grids), pcard-md (battle), pcard-lg (details/reveals).
 //   bindTilt(el) / bindTiltGroup(root): hover tilt + light glare on pointer devices.
 
@@ -36,6 +37,8 @@ export interface CardOptions {
   extra?: string;
   /** Hides the Combat Power (PC) even when a level is given. */
   hidePower?: boolean;
+  /** The effects (shine, sparkles, star) animate while the card is hovered; elsewhere they stay still, for performance. */
+  live?: boolean;
 }
 
 // --- Type icons ------------------------------------------------------------------
@@ -136,7 +139,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
 
   return `
     <div class="pcard pcard-${opts.size ?? 'sm'} ${opts.className ?? ''}" data-type="${primary}"${secondary ? ` data-type2="${secondary}"` : ''}
-      data-rarity="${r}"${shiny ? ' data-shiny="true"' : ''}${foil ? ' data-foil="true"' : ''}${locked ? ' data-locked="true"' : ''}${level == null && !locked ? ' data-species="true"' : ''}
+      data-rarity="${r}"${shiny ? ' data-shiny="true"' : ''}${foil ? ' data-foil="true"' : ''}${locked ? ' data-locked="true"' : ''}${level == null && !locked ? ' data-species="true"' : ''}${opts.live ? ' data-live="true"' : ''}
       style="--t1:${TYPE_COLOR[primary]};--t2:${TYPE_COLOR[secondary ?? primary]};--rc:${RARITY_COLOR[r]}"
       role="img" aria-label="${esc(label)}">
       <div class="pcard-frame">

@@ -28,7 +28,7 @@ The rules in this document are implemented in `src/game/` (pure, tested logic). 
 - A duplicate of a capped card turns into a Rare Candy. Rare Candy can't be used on a capped card, and the post-battle
   level can't be given to one: a win greys capped cards out of the choice, a loss picks among cards that can still grow
   (only a fully capped team gets Rare Candy instead).
-- **Lv. 100 cards become foil**: a gold sheen sweeps across the card, with glints, a shining frame and a gold level tag
+- **Lv. 100 cards become foil**: a gold sheen across the card, with glints, a shining frame and a gold level tag
   (shinies keep it past 100).
 - **Every card starts at Lv. 1**, evolved forms and legendaries included (only the starter begins at Lv. 5). A pulled
   Charizard or Mewtwo is the better long-term card, since its stats grow faster, but levels always come from duplicates,
