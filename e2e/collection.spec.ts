@@ -244,6 +244,25 @@ test('the Mart sells items for coins', async ({ page }) => {
   expect((await stored(page)).coins).toBe(700);
 });
 
+test('the Mart sells Master Balls, and ten can be thrown at once', async ({ page }) => {
+  const save = cleanSave();
+  save.coins = 10000;
+  save.items = { 'master-ball': 9 };
+  const pulls = save.stats.pulls;
+  await startGame(page, save, 'capture');
+  await page.locator('.cap-tabs .seg-btn').last().click();
+  await page.locator('[data-item="master-ball"] [data-buy]').click();
+  await expect.poll(async () => (await stored(page)).items['master-ball']).toBe(10);
+  expect((await stored(page)).coins).toBe(0);
+
+  await page.locator('.cap-tabs .seg-btn').first().click();
+  await page.locator('[data-pull="master"][data-count="10"][data-pay="ticket"]').click();
+  await closeOverlays(page);
+  const after = await stored(page);
+  expect(after.stats.pulls).toBe(pulls + 10);
+  expect(after.items['master-ball'] ?? 0).toBe(0);
+});
+
 test('the daily gift gives its reward once a day', async ({ page }) => {
   const save = cleanSave();
   save.daily = { last: null, streak: 0 };

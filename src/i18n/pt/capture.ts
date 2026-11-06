@@ -62,7 +62,7 @@ const capture = {
   locked: (badges: number) => `Vença ${plural(badges, 'líder de ginásio', 'líderes de ginásio')} para liberar`,
   lockedProgress: (have: number, need: number) => `${n(have)}/${n(need)} insígnias`,
   goGyms: 'Ir aos ginásios',
-  masterHint: 'Master Balls são prêmios da Ranqueada e da Liga Pokémon.',
+  masterHint: 'Master Balls estão à venda no Poké Mart e são prêmios da Ranqueada e da Liga Pokémon.',
   notEnoughBalls: (name: string) => `Você não tem ${name} suficientes.`,
   bannerLocked: 'Esta captura ainda está bloqueada.',
 
@@ -118,7 +118,7 @@ const capture = {
 
   mart: {
     title: 'Poké Mart',
-    subtitle: 'Doces Raros sobem o nível de qualquer carta; pedras, o Cabo de Troca e itens de troca fazem Pokémon evoluir.',
+    subtitle: 'Doces Raros sobem o nível de qualquer carta; pedras, o Cabo de Troca e itens de troca fazem Pokémon evoluir; a Master Ball garante um Lendário ou Mítico.',
     buy: 'Comprar',
     buyTotal: (cost: string) => `Comprar · ${cost}`,
     inBag: (count: number) => `Na mochila: ${n(count)}`,

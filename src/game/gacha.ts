@@ -80,7 +80,7 @@ export const BANNERS: Record<BannerId, BannerDef> = {
     id: 'master',
     cost: null,
     ticket: 'master-ball',
-    counts: [1],
+    counts: [1, 10],
     shinyRate: 1 / 32,
     badges: 0,
     weight: s => special(s, 2, 1) ?? 0,
