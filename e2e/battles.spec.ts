@@ -293,6 +293,61 @@ test.describe('training', () => {
   });
 });
 
+test.describe('auto battle', () => {
+  /** Notes every line the battle text shows, as it shows it. */
+  const noteLines = (page: Page) => page.addInitScript(() => {
+    const state = window as unknown as { lines: string[]; chose: boolean };
+    state.lines = [];
+    state.chose = false;
+    new MutationObserver(changes => {
+      for (const change of changes) {
+        const node = change.target as HTMLElement;
+        if (node.classList?.contains('scene-text') && node.textContent) state.lines.push(node.textContent);
+        if (node.classList?.contains('arena-layer') && node.classList.contains('choosing')) state.chose = true;
+      }
+    }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
+
+  test('one click, then the highest level goes in after each faint, with no choices, to the result', async ({ page }) => {
+    // Team order is lowest first, so auto-play can't just be following it.
+    const save = weakSave();
+    ['19', '16', '10', '13', '129', '41'].forEach((key, i) => { save.cards[key].level = i + 1; });
+    await noteLines(page);
+    await startGame(page, save, 'battle/training');
+    await page.locator('[data-friend="joey"]').click();
+    await page.locator('.arena-layer [data-act="start-auto"]').click();
+    const end = page.locator('.arena-layer .arena-end');
+    while (!(await end.isVisible())) await page.locator('.arena-layer .scene').click({ timeout: 1000 }).catch(() => {});
+    const { lines, chose } = await page.evaluate(() => {
+      const state = window as unknown as { lines: string[]; chose: boolean };
+      return { lines: state.lines, chose: state.chose };
+    });
+    expect(chose).toBe(false);
+    const sent = [...new Set(lines.filter(line => line.startsWith('Go, ')))];
+    const byLevel = ['Go, Zubat!', 'Go, Magikarp!', 'Go, Weedle!', 'Go, Caterpie!', 'Go, Pidgey!', 'Go, Rattata!'];
+    expect(sent.length).toBeGreaterThan(0);
+    expect(sent).toEqual(byLevel.slice(0, sent.length));
+    expect(await page.evaluate(() => localStorage.getItem('pg-battle-auto'))).toBe('1');
+  });
+
+  test('can take over a waiting choice, and the next battle offers it first', async ({ page }) => {
+    await startGame(page, strongSave(), 'battle/training');
+    await page.locator('[data-friend="joey"]').click();
+    await page.locator('.arena-layer [data-act="start"]').click();
+    const arena = page.locator('.arena-layer');
+    await expect(arena).toHaveClass(/choosing/);
+    await arena.locator('[data-act="auto"]').click();
+    await expect(arena.locator('[data-act="auto"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(arena).not.toHaveClass(/choosing/);
+    await playBattle(page);
+    await page.locator('.rewards-continue').click();
+    await closeOverlays(page);
+
+    await page.locator('[data-friend="joey"]').click();
+    await expect(page.locator('.arena-layer .intro-auto')).toBeFocused();
+  });
+});
+
 test.describe('gyms', () => {
   test('beating Brock gives the badge, its rewards and opens Misty', async ({ page }) => {
     const save = withCarry(midGameSave());

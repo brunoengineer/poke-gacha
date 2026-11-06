@@ -164,6 +164,8 @@ const battle = {
     forfeitConfirm: 'Desistir',
     keepPlaying: 'Continuar batalhando',
     speed: 'Velocidade da batalha',
+    auto: 'Auto',
+    autoHint: 'Batalha automática: entra o Pokémon de nível mais alto que ainda está de pé, sem olhar vantagem de tipo.',
     yourTeam: 'Seu time',
     theirTeam: (name: string) => `Time de ${name}`,
     ball: {
@@ -222,6 +224,7 @@ const battle = {
     intro: {
       challenge: (name: string) => `${name} quer batalhar!`,
       start: 'Batalhar!',
+      auto: 'Batalha automática',
       yourTeam: 'Seu time',
       theirTeam: 'Equipe rival',
     },

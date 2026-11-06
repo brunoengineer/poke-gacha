@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toBattleCard } from './battle';
-import { battleWinner, createBattle, CRIT_MULT, firstStriker, fightDuel, hpFractions, NO_LUCK, playDuel, previewDuel, rollHit, sendIn, strike, summarizeBattle } from './duel';
+import { autoPick, battleWinner, createBattle, CRIT_MULT, firstStriker, fightDuel, hpFractions, NO_LUCK, playDuel, previewDuel, rollHit, sendIn, strike, summarizeBattle } from './duel';
 
 const card = (id: number, level: number) => toBattleCard({ id, level });
 
@@ -155,5 +155,15 @@ describe('battles', () => {
 
   it('keeps at least 1 HP for a sliver above zero', () => {
     expect(createBattle([card(6, 60)], [card(19, 5)], [0.0001]).you[0].hp).toBe(1);
+  });
+
+  it('auto-play sends the highest level still standing, ties in team order, whatever the matchup', () => {
+    // Squirtle would have the type advantage over Charmander; auto-play ignores it.
+    const state = createBattle([card(9, 40), card(6, 70), card(3, 70), card(7, 90)], [card(4, 50)], [1, 1, 1, 0]);
+    expect(autoPick(state)).toBe(1); // Squirtle (Lv. 90) fainted; the first of the two Lv. 70
+    state.you[1].hp = 0;
+    expect(autoPick(state)).toBe(2);
+    state.you[2].hp = 0;
+    expect(autoPick(state)).toBe(0);
   });
 });

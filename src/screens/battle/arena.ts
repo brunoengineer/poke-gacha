@@ -4,6 +4,9 @@
 // the faster Pokémon hits first (players read it from the Speed stats), HP bars drain, the loser faints. When the
 // opponent's Pokémon faints it sends the next one and the player may keep the damaged survivor in or switch; when the player's faints, they pick the
 // next one. Tap the field (or Esc) to skip a duel; 1×/2× speed. The battle ends when one side has no Pokémon left.
+// Auto-play (the intro's Auto button, or the top bar's toggle at any moment) makes those choices instead: the
+// highest-level Pokémon still standing goes in, and a survivor always stays in. It stops at the result screen, and the
+// last choice is remembered on the device, like the speed.
 //
 // API contract:
 //   runBattle(config) -> Promise<BattleOutcome>, resolved when the battle ends (or the player forfeits).
@@ -14,7 +17,7 @@ import { playCry, playMusic, sfx } from '../../audio';
 import { getSpecies } from '../../data/species';
 import { matchup, toBattleCard, type BattleCard, type TeamMember } from '../../game/battle';
 import {
-  battleWinner, createBattle, hpFractions, playDuel, sendIn, standing, strike, summarizeBattle,
+  autoPick, battleWinner, createBattle, hpFractions, playDuel, sendIn, standing, strike, summarizeBattle,
   type BattleState, type DuelLog, type Hit, type HpBattleSummary, type Side,
 } from '../../game/duel';
 import { DECK_SIZE } from '../../game/economy';
@@ -87,6 +90,7 @@ const MODE_ACCENT: Record<BattleConfig['mode'], string> = {
 
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
 const SPEED_KEY = 'pg-battle-speed';
+const AUTO_KEY = 'pg-battle-auto';
 
 interface Battle {
   config: BattleConfig;
@@ -104,6 +108,8 @@ interface Battle {
   /** Opponent Pokémon sent out so far (the rest show as Poké Balls). */
   seen: number;
   fast: boolean;
+  /** Auto-play: the game picks who goes in. */
+  auto: boolean;
   seq: Sequence;
   layer: HTMLElement;
   resolve: (outcome: BattleOutcome) => void;
@@ -144,6 +150,10 @@ function loadFast() {
   try { return localStorage.getItem(SPEED_KEY) === '2'; } catch { return false; }
 }
 
+function loadAuto() {
+  try { return localStorage.getItem(AUTO_KEY) === '1'; } catch { return false; }
+}
+
 export function runBattle(config: BattleConfig): Promise<BattleOutcome> {
   if (battle) return Promise.reject(new Error('A battle is already running'));
   const hand = config.team ?? playerBattleTeam();
@@ -164,7 +174,7 @@ export function runBattle(config: BattleConfig): Promise<BattleOutcome> {
     battle = {
       config, hand, opp, layer, resolve,
       state: createBattle(hand, opp, config.startHp),
-      phase: 'intro', candidate: null, pick: null, fieldYou: null, fieldOpp: null, seen: 0, fast: loadFast(),
+      phase: 'intro', candidate: null, pick: null, fieldYou: null, fieldOpp: null, seen: 0, fast: loadFast(), auto: loadAuto(),
       seq: new Sequence(), inerted: [], outcome: null,
     };
     preload(hand, opp);
@@ -180,6 +190,7 @@ function open(b: Battle) {
     stage: [config.stage, config.opponent.name].filter(Boolean).join(' · '),
     opponentName: config.opponent.name,
     fast: b.fast,
+    auto: b.auto,
   });
   document.body.append(b.layer);
   document.documentElement.classList.add('arena-open');
@@ -235,12 +246,13 @@ async function playIntro(b: Battle) {
   const o = b.config.opponent;
   const intro = el(introHTML({
     name: o.name, title: o.title, portrait: o.portrait, line: o.intro, stage: b.config.stage,
-    oppCount: b.opp.length, team: b.hand,
+    oppCount: b.opp.length, team: b.hand, auto: b.auto,
   }));
   b.layer.append(intro);
   const seq = new Sequence();
   b.seq = seq;
-  requestAnimationFrame(() => $(intro, '.intro-start').focus({ preventScroll: true }));
+  // The way the last battle started is the one a key press repeats.
+  requestAnimationFrame(() => $(intro, b.auto ? '.intro-auto' : '.intro-start').focus({ preventScroll: true }));
   sfx('open');
 
   const balls = $$(intro, '.intro-balls li');
@@ -254,8 +266,10 @@ async function playIntro(b: Battle) {
   void seq.anim($(intro, '.intro-line'), [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 400, delay: 760 });
 }
 
-function startBattle(b: Battle) {
+/** Starts the battle; `auto` (from the intro's two buttons) also sets auto-play. */
+function startBattle(b: Battle, auto = b.auto) {
   if (b.phase !== 'intro') return;
+  if (auto !== b.auto) setAuto(b, auto);
   const intro = $(b.layer, '.arena-intro');
   b.seq.skip();
   sfx('click');
@@ -276,11 +290,11 @@ async function run(b: Battle) {
     if (s.youActive == null) {
       // With one Pokémon left there is nothing to choose.
       const left = standing(s.you);
-      const index = left.length === 1 && s.duels.length ? left[0] : await choose(b, 'choose');
+      const index = left.length === 1 && s.duels.length ? left[0] : b.auto ? autoPick(s) : await choose(b, 'choose');
       if (battle !== b) return;
       sendIn(s, index);
       await goYou(b, index);
-    } else if (entered && standing(s.you).length > 1) {
+    } else if (entered && standing(s.you).length > 1 && !b.auto) {
       const index = await choose(b, 'switch');
       if (battle !== b) return;
       if (index !== s.youActive) {
@@ -531,7 +545,9 @@ function onClick(event: Event) {
   const target = event.target as Element;
   const act = target.closest<HTMLElement>('[data-act]')?.dataset.act;
 
-  if (act === 'start') return startBattle(b);
+  if (act === 'start') return startBattle(b, false);
+  if (act === 'start-auto') return startBattle(b, true);
+  if (act === 'auto') return toggleAuto(b);
   if (act === 'skip-intro') {
     if (b.seq.skipped) return;
     return b.seq.skip();
@@ -566,6 +582,22 @@ function toggleSpeed(b: Battle) {
   button.setAttribute('aria-pressed', String(b.fast));
   $(button, '[data-speed]').textContent = b.fast ? '2×' : '1×';
   sfx('toggle');
+}
+
+function setAuto(b: Battle, auto: boolean) {
+  b.auto = auto;
+  try { localStorage.setItem(AUTO_KEY, auto ? '1' : '0'); } catch { /* storage blocked */ }
+  $(b.layer, '[data-act="auto"]').setAttribute('aria-pressed', String(auto));
+}
+
+/** The top bar's toggle: turning auto-play on while a choice is waiting makes it right away. */
+function toggleAuto(b: Battle) {
+  setAuto(b, !b.auto);
+  sfx('toggle');
+  if (!b.auto || !choosing(b) || !b.pick) return;
+  b.candidate = b.phase === 'switch' ? b.state.youActive : autoPick(b.state);
+  if (b.phase === 'choose') placeMon(b, 'you', b.candidate, true);
+  confirm(b);
 }
 
 async function forfeit(b: Battle) {
