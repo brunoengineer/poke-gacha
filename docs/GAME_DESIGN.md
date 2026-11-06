@@ -238,7 +238,7 @@ giving up or leaving mid-battle keeps nothing (battles aren't saved, so reloadin
   its damage as the six fight it in turn. It hits normally, but one hit can't take more than **40%** of a Pokémon's max HP,
   critical hits included. All bosses use the same HP multiplier, so the strongest species are harder for the same fee.
 - **Every win**: 25% of the fee back and Rare Candy ×10, ×20, ×30, ×40 by region.
-- **Then one roll**: 1% the shiny card, 10% the normal card. **15 wins in a row in a region** without a catch guarantee the normal card.
+- **Then one roll**: 5% the shiny card, 20% the normal card. **15 wins in a row in a region** without a catch guarantee the normal card.
 - **Already owned**: 1 Master Ball instead (the shiny and the normal card count separately). It still counts as a catch.
 
 ### Shiny Hunt: chains on one species

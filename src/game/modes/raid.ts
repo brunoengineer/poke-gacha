@@ -3,7 +3,7 @@
 // never take more than RAID_MAX_HIT of a Pokémon's max HP (critical hits included), so it never knocks one out at once.
 //   - Each region opens with that region's League title. The boss matches the team's highest level, never below its region's.
 //   - The fee pays for the attempt: a loss, a forfeit or leaving mid-battle keeps nothing (battles aren't saved).
-//   - Each win pays coins and Rare Candy, then rolls for the boss: 1% shiny, 10% the normal card. RAID_PITY wins in a row
+//   - Each win pays coins and Rare Candy, then rolls for the boss: 5% shiny, 20% the normal card. RAID_PITY wins in a row
 //     in a region with neither guarantee the normal card. A boss the player already owns gives a Master Ball instead.
 
 import { getSpecies, speciesList } from '../../data/species';
@@ -35,8 +35,8 @@ const RAID_LEVELS: Record<RegionId, number> = { kanto: 70, johto: 100, hoenn: 12
 export const RAID_HP_MULT = 5;
 /** The most one boss hit can take, as a share of the target's max HP. */
 export const RAID_MAX_HIT = 0.4;
-export const RAID_CATCH_CHANCE = 0.1;
-export const RAID_SHINY_CHANCE = 0.01;
+export const RAID_CATCH_CHANCE = 0.2;
+export const RAID_SHINY_CHANCE = 0.05;
 export const RAID_PITY = 15;
 const WIN_CANDY: Record<RegionId, number> = { kanto: 10, johto: 20, hoenn: 30, sinnoh: 40 };
 /** Share of the fee a win gives back. */
@@ -103,7 +103,7 @@ export function finishRaid(save: SaveData, region: RegionId, boss: number, won: 
   record.sinceCatch++;
   const rewards = raidWinRewards(region);
 
-  // One roll, so the shiny's 1% and the normal card's 10% are exact and never come together.
+  // One roll, so the shiny's 5% and the normal card's 20% are exact and never come together.
   const roll = rng();
   const shiny = roll < RAID_SHINY_CHANCE;
   if (!shiny && roll >= RAID_SHINY_CHANCE + RAID_CATCH_CHANCE && record.sinceCatch < RAID_PITY) return { caught: 'none', rewards };

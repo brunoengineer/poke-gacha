@@ -10,9 +10,9 @@ import {
 } from './raid';
 
 const TEAM = ['6', '9', '3', '25', '143', '130'];
-const MISS_THE_ROLL = () => 0.5; // not a shiny (under 1%) and not a catch (under 11%)
-const NORMAL_ROLL = () => 0.05;
-const SHINY_ROLL = () => 0.005;
+const MISS_THE_ROLL = () => 0.5; // not a shiny (under 5%) and not a catch (under 25%)
+const NORMAL_ROLL = () => 0.1;
+const SHINY_ROLL = () => 0.01;
 
 function raidSave() {
   const save = defaultSave();
@@ -128,13 +128,13 @@ describe('legendary battle prizes', () => {
     }
   });
 
-  it('rolls 1% shiny and 10% normal, exactly', () => {
+  it('rolls 5% shiny and 20% normal, exactly', () => {
     const at = (roll: number) => finishRaid(raidSave(), 'kanto', 150, true, () => roll).caught;
     expect(at(0)).toBe('shiny');
-    expect(at(0.0099)).toBe('shiny');
-    expect(at(0.01)).toBe('normal');
-    expect(at(0.1099)).toBe('normal');
-    expect(at(0.11)).toBe('none');
+    expect(at(0.0499)).toBe('shiny');
+    expect(at(0.05)).toBe('normal');
+    expect(at(0.2499)).toBe('normal');
+    expect(at(0.25)).toBe('none');
   });
 
   it('gives the rolled card', () => {
