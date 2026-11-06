@@ -25,7 +25,7 @@ export const multText = (mult: number) => `×${getLang() === 'pt' ? String(mult)
 export const hpPct = (f: Fighter) => Math.max(0, Math.min(100, (f.hp / f.card.stats.hp) * 100));
 export const hpTone = (pct: number) => (pct > 50 ? 'high' : pct > 20 ? 'mid' : 'low');
 
-export function layoutHTML(opts: { stage: string; opponentName: string; fast: boolean }): string {
+export function layoutHTML(opts: { stage: string; opponentName: string; fast: boolean; auto: boolean }): string {
   const t = L().battle.arena;
   return `
     <div class="arena">
@@ -35,8 +35,12 @@ export function layoutHTML(opts: { stage: string; opponentName: string; fast: bo
           <span class="arena-stage">${esc(opts.stage)}</span>
           <span class="arena-round" data-round></span>
         </div>
-        <button class="btn btn-ghost btn-sm arena-speed" type="button" data-act="speed" aria-pressed="${opts.fast}" aria-label="${esc(t.speed)}">
-          ${icon('bolt')}<b data-speed>${opts.fast ? '2×' : '1×'}</b></button>
+        <div class="arena-tools">
+          <button class="btn btn-ghost btn-sm arena-auto" type="button" data-act="auto" aria-pressed="${opts.auto}" aria-label="${esc(t.auto)}" title="${esc(t.autoHint)}">
+            ${icon('auto')}<span>${esc(t.auto)}</span></button>
+          <button class="btn btn-ghost btn-sm arena-speed" type="button" data-act="speed" aria-pressed="${opts.fast}" aria-label="${esc(t.speed)}">
+            ${icon('bolt')}<b data-speed>${opts.fast ? '2×' : '1×'}</b></button>
+        </div>
       </header>
       <div class="arena-teams">
         <ol class="team-balls you" aria-label="${esc(t.yourTeam)}"></ol>
@@ -183,7 +187,7 @@ export function promptHTML(opts: {
 }
 
 export function introHTML(opts: {
-  name: string; title?: string; portrait?: string; line?: string; stage?: string; oppCount: number; team: BattleCard[];
+  name: string; title?: string; portrait?: string; line?: string; stage?: string; oppCount: number; team: BattleCard[]; auto: boolean;
 }): string {
   const t = L().battle.arena;
   return `
@@ -203,7 +207,10 @@ export function introHTML(opts: {
         <ul class="intro-team" aria-label="${esc(t.intro.yourTeam)}">
           ${opts.team.map(c => `<li><img src="${esc(staticFront(c))}" alt="${esc(monName(c))}" draggable="false"></li>`).join('')}
         </ul>
-        <button class="btn btn-primary btn-lg intro-start" type="button" data-act="start">${icon('swords')} ${esc(t.intro.start)}</button>
+        <div class="intro-actions">
+          <button class="btn ${opts.auto ? 'btn-secondary' : 'btn-primary'} btn-lg intro-start" type="button" data-act="start">${icon('swords')} ${esc(t.intro.start)}</button>
+          <button class="btn ${opts.auto ? 'btn-primary' : 'btn-secondary'} btn-lg intro-auto" type="button" data-act="start-auto" title="${esc(t.autoHint)}">${icon('auto')} ${esc(t.intro.auto)}</button>
+        </div>
       </div>
     </div>`;
 }

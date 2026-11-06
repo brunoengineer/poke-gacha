@@ -146,6 +146,10 @@ export const hpFractions = (state: BattleState) => state.you.map(f => f.hp / f.c
 
 export const standing = (fighters: Fighter[]) => fighters.flatMap((f, i) => (f.hp > 0 ? [i] : []));
 
+/** Auto-play's pick: the player's highest-level Pokémon still standing (ties: team order). No type matchups. */
+export const autoPick = (state: BattleState): number =>
+  standing(state.you).reduce((best, i) => (state.you[i].card.level > state.you[best].card.level ? i : best));
+
 /** Puts one of the player's standing Pokémon on the field (also used for the optional switch). */
 export function sendIn(state: BattleState, index: number): boolean {
   if (!state.you[index] || state.you[index].hp <= 0 || battleWinner(state)) return false;

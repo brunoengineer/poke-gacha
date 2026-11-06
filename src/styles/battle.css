@@ -541,7 +541,10 @@ html.arena-open { overflow: hidden; }
     color: var(--gold-hi);
 }
 .arena-round { color: var(--muted); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
-.arena-speed { justify-self: end; gap: 4px; min-width: 64px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.arena-tools { justify-self: end; display: flex; gap: 8px; }
+.arena-auto { gap: 6px; color: var(--muted); }
+.arena-auto[aria-pressed="true"] { color: var(--gold-hi); border-color: var(--line-gold); background: rgba(244, 220, 163, 0.1); }
+.arena-speed { gap: 4px; min-width: 64px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .arena-speed b { font-family: var(--font-display); font-size: 15px; font-weight: 800; }
 .arena-speed[aria-pressed="true"] { color: var(--gold-hi); border-color: var(--line-gold); background: rgba(244, 220, 163, 0.1); }
 .arena-speed[aria-pressed="true"] .i { animation: bolt-pulse 1.4s ease-in-out infinite; }
@@ -1074,7 +1077,8 @@ html.arena-open { overflow: hidden; }
 .intro-line span { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: #5a6380; }
 .intro-team li { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line-2); }
 .intro-team img { width: 64px; height: 64px; max-width: none; image-rendering: pixelated; }
-.intro-start { min-width: 200px; }
+.intro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.intro-start, .intro-auto { min-width: 200px; }
 
 /* --- Arena: end panel ----------------------------------------------------------------------------------- */
 
@@ -1596,6 +1600,12 @@ html.arena-open { overflow: hidden; }
     .arena-forfeit span { display: none; }
     .arena-forfeit { padding: 0 10px; }
     .arena-speed { min-width: 0; padding: 0 10px; }
+    .arena-auto { padding: 0 10px; }
+    .arena-auto span { display: none; }
+    .arena-tools { gap: 6px; }
+    /* Stacked on phones: "Batalha automática" doesn't fit beside "Batalhar!". */
+    .intro-actions { flex-direction: column; align-self: stretch; padding-inline: 16px; }
+    .intro-start, .intro-auto { min-width: 0; }
     .arena-stage { font-size: 14px; }
     .arena-round { font-size: 12px; }
     .arena-teams { gap: 5px; }

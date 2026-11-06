@@ -164,6 +164,8 @@ const battle: typeof pt = {
     forfeitConfirm: 'Forfeit',
     keepPlaying: 'Keep battling',
     speed: 'Battle speed',
+    auto: 'Auto',
+    autoHint: 'Auto battle: the highest-level Pokémon still standing goes in, with no type matchups.',
     yourTeam: 'Your team',
     theirTeam: (name: string) => `${name}'s team`,
     ball: {
@@ -222,6 +224,7 @@ const battle: typeof pt = {
     intro: {
       challenge: (name: string) => `${name} wants to battle!`,
       start: 'Battle!',
+      auto: 'Auto battle',
       yourTeam: 'Your team',
       theirTeam: 'Rival team',
     },
