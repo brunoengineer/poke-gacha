@@ -63,7 +63,7 @@ const capture: typeof pt = {
   locked: (badges: number) => `Beat ${plural(badges, 'Gym Leader', 'Gym Leaders')} to unlock`,
   lockedProgress: (have: number, need: number) => `${n(have)}/${n(need)} badges`,
   goGyms: 'Go to the Gyms',
-  masterHint: 'Master Balls are prizes from Ranked and the Pokémon League.',
+  masterHint: 'Master Balls are sold in the Poké Mart and won in Ranked and the Pokémon League.',
   notEnoughBalls: (name: string) => `You don't have enough ${name}s.`,
   bannerLocked: 'This capture is still locked.',
 
@@ -119,7 +119,7 @@ const capture: typeof pt = {
 
   mart: {
     title: 'Poké Mart',
-    subtitle: 'Rare Candy levels up any card; stones, the Link Cable and trade items make Pokémon evolve.',
+    subtitle: 'Rare Candy levels up any card; stones, the Link Cable and trade items make Pokémon evolve; a Master Ball guarantees a Legendary or Mythical.',
     buy: 'Buy',
     buyTotal: (cost: string) => `Buy · ${cost}`,
     inBag: (count: number) => `In bag: ${n(count)}`,

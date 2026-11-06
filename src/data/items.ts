@@ -96,6 +96,7 @@ export const ITEMS: ItemDef[] = [
     category: 'ball',
     name: { pt: 'Master Ball', en: 'Master Ball' },
     description: { pt: 'Captura garantida de um Pokémon Lendário ou Mítico.', en: 'Guaranteed capture of a Legendary or Mythical Pokémon.' },
+    price: 10000,
   },
 ];
 

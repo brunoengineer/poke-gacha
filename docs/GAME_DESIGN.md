@@ -62,7 +62,7 @@ that Pokémon out.
 | Safari Zone | ₽15 (×1, ×10, ×50) | start | 40% from 3 **featured families of the day** (same for everyone); shiny 1/400 |
 | Great Ball | ₽50 or Great Ball item | 1 badge | flatter odds; 1 Rare+ guaranteed every 10; shiny 1/256 |
 | Ultra Ball | ₽150 or Ultra Ball item | 3 badges | evolved forms and legendaries realistic; 1 Epic+ every 10; shiny 1/128 |
-| Master Ball | item only | start | Legendary or Mythical guaranteed; shiny 1/32 |
+| Master Ball | Master Ball item (×1, ×10) | start | Legendary or Mythical guaranteed; shiny 1/32 |
 
 Pulls are cheap on purpose: levels come from duplicates, so players open hundreds of balls.
 The Safari banner is the targeted way to level a specific family.
@@ -87,7 +87,7 @@ hundreds of balls at once.
   **a Master Ball a day**; every 7th day, **Master Ball ×5** and Rare Candy ×5 instead. Missing a day restarts the streak.
 - **Shop** (Mart): Rare Candy ₽300, evolution stones ₽2,500 (including Sinnoh's Shiny, Dusk, Dawn and Oval Stones),
   Link Cable ₽3,000, trade and held items ₽3,500 (King's Rock, Metal Coat, Dragon Scale, Up-Grade, Deep Sea Tooth and
-  Scale, Protector, Electirizer, Magmarizer, Dubious Disc, Reaper Cloth, Razor Claw, Razor Fang).
+  Scale, Protector, Electirizer, Magmarizer, Dubious Disc, Reaper Cloth, Razor Claw, Razor Fang), Master Ball ₽10,000.
 - Older species gain the evolutions later generations added (Magneton → Magnezone, Togetic → Togekiss, Eevee →
   Leafeon/Glaceon…). Location-based ones use a level (Lv. 30), like Johto's friendship evolutions.
 

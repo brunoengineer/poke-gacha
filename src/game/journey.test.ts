@@ -1393,8 +1393,9 @@ describe('captures cost money and open with the badges', () => {
       expect(batchCost('safari', 50, 'coins')).toBeNull();
       expect(pull(rich(), 'poke', 100, 'coins', seeded(1), 1e12, 0)).toBeNull();
       expect(canAfford(rich(), 'poke', 100, 'coins')).toBe(false);
-      expect(bannerCounts('master')).toEqual([1]);
+      expect(bannerCounts('master')).toEqual([1, 10]);
       expect(batchCost('master', 1, 'ticket')?.tickets).toBe(1);
+      expect(batchCost('master', 10, 'ticket')?.tickets).toBe(10);
     });
     withChapter(WORLD, () => expect(batchCost('poke', 10, 'coins')?.coins).toBe(500));
   });
