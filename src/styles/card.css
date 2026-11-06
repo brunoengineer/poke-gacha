@@ -552,31 +552,37 @@
 .pcard[data-locked] .pcard-name { color: rgba(255, 255, 255, 0.45); letter-spacing: .12em; }
 .pcard[data-locked] .pcard-foot { border-top-color: #3a4260; }
 
-/* --- Shiny: holographic foil, sparkles and star -------------------------------------------------- */
+/* --- Shiny: a reverse holo, sparkles and star ------------------------------------------------------ */
+/* The rainbow foil lives in the background, behind the Pokémon, over a deep night-sky version of the type colors, so the
+   shiny colors stand out at full contrast; the prismatic frame and the star mark it at a glance. */
 
-.pcard[data-shiny] .pcard-art::after {
+.pcard[data-shiny] .pcard-art {
     background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.6) 0 0.3cqw, transparent 0.55cqw) 0 0 / 7cqw 7cqw,
-        radial-gradient(circle, rgba(255, 236, 170, 0.5) 0 0.25cqw, transparent 0.5cqw) 3cqw 4cqw / 11cqw 9cqw,
-        radial-gradient(120% 90% at 50% 38%, transparent 55%, rgba(4, 6, 14, 0.4));
-    mix-blend-mode: normal;
-    opacity: .9;
+        radial-gradient(50% 34% at 50% 36%, color-mix(in srgb, var(--halo) 34%, transparent) 0%, transparent 72%),
+        linear-gradient(172deg, color-mix(in srgb, var(--t1) 52%, #070a1c) 0%, color-mix(in srgb, var(--t1) 24%, #05071a) 60%, color-mix(in srgb, var(--t2) 34%, #05071a) 100%);
 }
+.pcard[data-shiny] .pcard-pattern { opacity: .12; }
+.pcard[data-shiny] .pcard-art::after { background: radial-gradient(120% 90% at 50% 38%, transparent 50%, rgba(3, 4, 12, 0.6)); }
+/* Rainbow rays bursting from behind the Pokémon, faint at its back; on hover the burst leans toward the mouse. */
 .pcard-holo {
+    --at: calc(25% + var(--mx, 50%) / 2) calc(19% + var(--my, 38%) / 2);
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 1;
     pointer-events: none;
-    background:
-        repeating-linear-gradient(115deg, #ff7ad9 0%, #ffd86b 6%, #8dffb1 12%, #7fdcff 18%, #c58cff 24%, #ff7ad9 30%) 0 0 / 300% 300%,
-        linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.55) 45%, transparent 60%) 0 0 / 250% 100%;
-    background-position: var(--mx, 0%) var(--my, 0%), calc(var(--mx, 50%) * 1.5) 0;
-    mix-blend-mode: color-dodge;
-    opacity: .26;
-    -webkit-mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
-    mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
+    background: conic-gradient(from 20deg at var(--at), #ff5fcf, #ffcf4d, #5dffa0, #4fd2ff, #a974ff, #ff5fcf, #ffcf4d, #5dffa0, #4fd2ff, #a974ff, #ff5fcf);
+    -webkit-mask:
+        repeating-conic-gradient(from 0deg at var(--at), #000 0 2.6deg, rgba(0, 0, 0, 0.1) 2.6deg 9deg),
+        radial-gradient(closest-corner at var(--at), rgba(0, 0, 0, 0.12) 18%, #000 60%, rgba(0, 0, 0, 0.5));
+    -webkit-mask-composite: source-in;
+    mask:
+        repeating-conic-gradient(from 0deg at var(--at), #000 0 2.6deg, rgba(0, 0, 0, 0.1) 2.6deg 9deg),
+        radial-gradient(closest-corner at var(--at), rgba(0, 0, 0, 0.12) 18%, #000 60%, rgba(0, 0, 0, 0.5));
+    mask-composite: intersect;
+    mix-blend-mode: screen;
+    opacity: .42;
 }
-.pcard.tilting .pcard-holo { opacity: .42; }
+.pcard.tilting .pcard-holo { opacity: .7; }
 .pcard[data-shiny] .pcard-frame { box-shadow:
         inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.5),
         inset 0 -0.8cqw 1.2cqw rgba(0, 0, 0, 0.25),
@@ -600,7 +606,8 @@
     animation: 6s linear infinite;
 }
 
-.pcard-sparkles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+/* Behind the Pokémon, like the foil. */
+.pcard-sparkles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .pcard-sparkles i {
     position: absolute;
     width: 7cqw;

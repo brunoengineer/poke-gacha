@@ -123,7 +123,8 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
   const [primary, secondary] = s.types;
   const level = locked ? undefined : view.level;
   const uncapped = level != null && isUncapped(view.id, shiny);
-  // Reaching Lv. 100 turns the card into a foil (gold sheen sweeping over it, glints, gold level tag).
+  // Reaching Lv. 100 turns the card into a foil (gold sheen over it, glints, gold level tag). A shiny keeps its own
+  // foil, behind the Pokémon, and only takes the gold tag and frame glow: two sheens over the art washed it out.
   const foil = level != null && level >= MAX_LEVEL;
   const dex = `#${String(s.id).padStart(3, '0')}`;
   const label = locked
@@ -146,6 +147,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
         <div class="pcard-face">
           <div class="pcard-art">
             <span class="pcard-pattern"></span>
+            ${shiny ? '<span class="pcard-holo" aria-hidden="true"></span>' : ''}
             ${spriteImg(view.id, shiny, { animated: opts.animated && !locked, eager: opts.eager })}
             ${shiny ? SPARKLES : foil ? GLINTS : ''}
           </div>
@@ -161,8 +163,7 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
             </span>
             ${locked ? '' : `<span class="pcard-row"><span class="pcard-types">${s.types.map(typeBadge).join('')}</span>${powerTag}</span>`}
           </div>
-          ${shiny ? '<span class="pcard-holo" aria-hidden="true"></span>' : ''}
-          ${foil ? '<span class="pcard-foil" aria-hidden="true"></span>' : ''}
+          ${foil && !shiny ? '<span class="pcard-foil" aria-hidden="true"></span>' : ''}
         </div>
       </div>
       <span class="pcard-glare" aria-hidden="true"></span>
