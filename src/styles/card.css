@@ -4,7 +4,7 @@
 
    Layers:  .pcard (container, size)  >  .pcard-frame (rarity frame)  >  .pcard-face (art, head, foot, foil)
    The art background is themed by the primary type (data-type) and tinted by the second type (--t2);
-   the frame metal is set by data-rarity; data-shiny adds foil, sparkles and a star.
+   the frame metal is set by data-rarity; data-shiny adds a starry sky, a prismatic frame and a star.
 
    The effects are still: a screen full of animated cards made the game slow. Only the card of the details view
    (data-live) brings them to life, while the mouse is on it (.tilting); on any hovered card the foil follows the mouse.
@@ -552,37 +552,33 @@
 .pcard[data-locked] .pcard-name { color: rgba(255, 255, 255, 0.45); letter-spacing: .12em; }
 .pcard[data-locked] .pcard-foot { border-top-color: #3a4260; }
 
-/* --- Shiny: a reverse holo, sparkles and star ------------------------------------------------------ */
-/* The rainbow foil lives in the background, behind the Pokémon, over a deep night-sky version of the type colors, so the
-   shiny colors stand out at full contrast; the prismatic frame and the star mark it at a glance. */
+/* --- Shiny: starry night, sparkles and star ------------------------------------------------------- */
+/* The background turns into a night sky in the type colors, with a few scattered stars and nothing over the Pokémon, so
+   its shiny colors stand out at full contrast; the prismatic frame and the star mark it at a glance. No stripes or
+   repeating patterns: those were tiring to look at across a grid. */
 
 .pcard[data-shiny] .pcard-art {
     background:
-        radial-gradient(50% 34% at 50% 36%, color-mix(in srgb, var(--halo) 34%, transparent) 0%, transparent 72%),
-        linear-gradient(172deg, color-mix(in srgb, var(--t1) 52%, #070a1c) 0%, color-mix(in srgb, var(--t1) 24%, #05071a) 60%, color-mix(in srgb, var(--t2) 34%, #05071a) 100%);
+        radial-gradient(50% 34% at 50% 36%, color-mix(in srgb, var(--halo) 30%, transparent) 0%, transparent 72%),
+        linear-gradient(172deg, color-mix(in srgb, var(--t1) 42%, #070a1c) 0%, color-mix(in srgb, var(--t1) 20%, #05071a) 60%, color-mix(in srgb, var(--t2) 28%, #05071a) 100%);
 }
-.pcard[data-shiny] .pcard-pattern { opacity: .12; }
+/* The stars, in place of the type pattern: one each, at fixed spots around the edges. */
+.pcard[data-shiny] .pcard-pattern {
+    background:
+        radial-gradient(circle at 12% 18%, #fff 0 .45cqw, transparent .7cqw),
+        radial-gradient(circle at 86% 12%, #ffe9a0 0 .55cqw, transparent .8cqw),
+        radial-gradient(circle at 22% 46%, #ffe9a0 0 .35cqw, transparent .6cqw),
+        radial-gradient(circle at 90% 40%, #fff 0 .4cqw, transparent .65cqw),
+        radial-gradient(circle at 8% 70%, #fff 0 .35cqw, transparent .6cqw),
+        radial-gradient(circle at 78% 72%, #ffe9a0 0 .45cqw, transparent .7cqw),
+        radial-gradient(circle at 40% 8%, #fff 0 .3cqw, transparent .55cqw),
+        radial-gradient(circle at 64% 22%, #fff 0 .25cqw, transparent .5cqw),
+        radial-gradient(circle at 30% 82%, #ffe9a0 0 .3cqw, transparent .55cqw),
+        radial-gradient(circle at 58% 90%, #fff 0 .3cqw, transparent .55cqw);
+    opacity: 1;
+    mix-blend-mode: normal;
+}
 .pcard[data-shiny] .pcard-art::after { background: radial-gradient(120% 90% at 50% 38%, transparent 50%, rgba(3, 4, 12, 0.6)); }
-/* Rainbow rays bursting from behind the Pokémon, faint at its back; on hover the burst leans toward the mouse. */
-.pcard-holo {
-    --at: calc(25% + var(--mx, 50%) / 2) calc(19% + var(--my, 38%) / 2);
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: conic-gradient(from 20deg at var(--at), #ff5fcf, #ffcf4d, #5dffa0, #4fd2ff, #a974ff, #ff5fcf, #ffcf4d, #5dffa0, #4fd2ff, #a974ff, #ff5fcf);
-    -webkit-mask:
-        repeating-conic-gradient(from 0deg at var(--at), #000 0 2.6deg, rgba(0, 0, 0, 0.1) 2.6deg 9deg),
-        radial-gradient(closest-corner at var(--at), rgba(0, 0, 0, 0.12) 18%, #000 60%, rgba(0, 0, 0, 0.5));
-    -webkit-mask-composite: source-in;
-    mask:
-        repeating-conic-gradient(from 0deg at var(--at), #000 0 2.6deg, rgba(0, 0, 0, 0.1) 2.6deg 9deg),
-        radial-gradient(closest-corner at var(--at), rgba(0, 0, 0, 0.12) 18%, #000 60%, rgba(0, 0, 0, 0.5));
-    mask-composite: intersect;
-    mix-blend-mode: screen;
-    opacity: .42;
-}
-.pcard.tilting .pcard-holo { opacity: .7; }
 .pcard[data-shiny] .pcard-frame { box-shadow:
         inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.5),
         inset 0 -0.8cqw 1.2cqw rgba(0, 0, 0, 0.25),
@@ -606,7 +602,7 @@
     animation: 6s linear infinite;
 }
 
-/* Behind the Pokémon, like the foil. */
+/* Bigger stars of the sky, behind the Pokémon; they twinkle on the live card. */
 .pcard-sparkles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .pcard-sparkles i {
     position: absolute;
@@ -615,8 +611,8 @@
     background: #fffbe0;
     clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
     filter: drop-shadow(0 0 1cqw #ffd84d);
-    opacity: .8;
-    transform: scale(.7) rotate(45deg);
+    opacity: .9;
+    transform: scale(.6) rotate(45deg);
     animation: 2.6s ease-in-out infinite;
 }
 .pcard-sparkles i:nth-child(1) { left: 14%; top: 20cqw; animation-delay: 0s; }

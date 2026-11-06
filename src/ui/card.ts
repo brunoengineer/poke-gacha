@@ -123,8 +123,8 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
   const [primary, secondary] = s.types;
   const level = locked ? undefined : view.level;
   const uncapped = level != null && isUncapped(view.id, shiny);
-  // Reaching Lv. 100 turns the card into a foil (gold sheen over it, glints, gold level tag). A shiny keeps its own
-  // foil, behind the Pokémon, and only takes the gold tag and frame glow: two sheens over the art washed it out.
+  // Reaching Lv. 100 turns the card into a foil (gold sheen over it, glints, gold level tag). A shiny keeps its starry
+  // sky and only takes the gold tag and frame glow: a sheen over the art washed its colors out.
   const foil = level != null && level >= MAX_LEVEL;
   const dex = `#${String(s.id).padStart(3, '0')}`;
   const label = locked
@@ -147,7 +147,6 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
         <div class="pcard-face">
           <div class="pcard-art">
             <span class="pcard-pattern"></span>
-            ${shiny ? '<span class="pcard-holo" aria-hidden="true"></span>' : ''}
             ${spriteImg(view.id, shiny, { animated: opts.animated && !locked, eager: opts.eager })}
             ${shiny ? SPARKLES : foil ? GLINTS : ''}
           </div>
@@ -196,7 +195,7 @@ function untilt(card: HTMLElement) {
 }
 
 /**
- * Hover tilt with a light glare (and a moving foil on shiny cards) for one card. `target` is the `.pcard`
+ * Hover tilt with a light glare (and a moving foil on Lv. 100 cards) for one card. `target` is the `.pcard`
  * or an element containing it (better: its box doesn't move while the card tilts). Pointer devices only.
  * Returns a cleanup function.
  */
