@@ -96,6 +96,38 @@ test('a Lv. 100 card turns into a foil', async ({ page }) => {
   await expect(page.locator('.dex-tile[data-key="16"] .pcard[data-foil]')).toHaveCount(0);
 });
 
+test.describe('card effects', () => {
+  // The other tests turn motion off; these check what players with motion on get.
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+  /** Looping card effects playing right now (one-off fades don't count). */
+  const playing = (page: Page) => page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running'
+    && a.effect?.getComputedTiming().iterations === Infinity && (a.effect as KeyframeEffect).target?.closest('.pcard')).length);
+
+  test('stay still, so a full Pokédex stays smooth; the details card comes alive under the mouse', async ({ page, isMobile }) => {
+    const save = cleanSave();
+    own(save, '19', 100);
+    own(save, '151', 100);
+    save.cards['150s'] = { level: 100, copies: 1, obtainedAt: 1 };
+    await startGame(page, save, 'collection');
+    await expect(page.locator('.dex-tile[data-key="19"] .pcard[data-foil]')).toBeVisible();
+    expect(await playing(page)).toBe(0);
+
+    await page.goto('/#/collection/150s');
+    const art = page.locator('.dx-art');
+    await expect(art.locator('.pcard[data-live]')).toBeVisible();
+    await page.mouse.move(0, 0);
+    expect(await playing(page)).toBe(0);
+    test.skip(isMobile, 'phones have no hover');
+    const box = (await art.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.3);
+    await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.4);
+    await expect.poll(() => playing(page)).toBeGreaterThan(0);
+    await page.mouse.move(0, 0);
+    await expect.poll(() => playing(page)).toBe(0);
+  });
+});
+
 test('evolving swaps the team slot and leaves the old species registered', async ({ page }) => {
   const save = cleanSave();
   own(save, '4', 20);

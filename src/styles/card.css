@@ -4,7 +4,10 @@
 
    Layers:  .pcard (container, size)  >  .pcard-frame (rarity frame)  >  .pcard-face (art, head, foot, foil)
    The art background is themed by the primary type (data-type) and tinted by the second type (--t2);
-   the frame metal is set by data-rarity; data-shiny adds foil, sparkles and a star.
+   the frame metal is set by data-rarity; data-shiny adds a starry sky, a prismatic frame and a star.
+
+   The effects are still: a screen full of animated cards made the game slow. Only the card of the details view
+   (data-live) brings them to life, while the mouse is on it (.tilting); on any hovered card the foil follows the mouse.
    ========================================================================= */
 
 .pcard {
@@ -68,7 +71,7 @@
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
     pointer-events: none;
-    animation: pcard-frame-shine 3.6s ease-in-out infinite;
+    animation: 3.6s ease-in-out infinite;
 }
 @keyframes pcard-frame-shine {
     0% { background-position: 110% 0; }
@@ -79,7 +82,7 @@
 .pcard[data-rarity="mythical"] .pcard-frame {
     background:
         linear-gradient(115deg, #ff7ad9 0%, #ffd2f1 12%, #9be7ff 26%, #ff9ee6 40%, #c58cff 54%, #ffe39a 68%, #ff7ad9 82%, #ffd2f1 100%) 0 0 / 300% 300%;
-    animation: pcard-prism 9s linear infinite;
+    animation: 9s linear infinite;
 }
 @keyframes pcard-prism { to { background-position: 300% 0; } }
 
@@ -399,7 +402,7 @@
     stroke: #8a5a00;
     stroke-width: 1.2;
     filter: drop-shadow(0 0 1.5cqw rgba(255, 216, 77, 0.9));
-    animation: pcard-star-pulse 2.4s ease-in-out infinite;
+    animation: 2.4s ease-in-out infinite;
 }
 @keyframes pcard-star-pulse {
     50% { transform: scale(1.12) rotate(8deg); filter: drop-shadow(0 0 2.6cqw rgba(255, 236, 160, 1)); }
@@ -549,37 +552,33 @@
 .pcard[data-locked] .pcard-name { color: rgba(255, 255, 255, 0.45); letter-spacing: .12em; }
 .pcard[data-locked] .pcard-foot { border-top-color: #3a4260; }
 
-/* --- Shiny: holographic foil, sparkles and star -------------------------------------------------- */
+/* --- Shiny: starry night, sparkles and star ------------------------------------------------------- */
+/* The background turns into a night sky in the type colors, with a few scattered stars and nothing over the Pokémon, so
+   its shiny colors stand out at full contrast; the prismatic frame and the star mark it at a glance. No stripes or
+   repeating patterns: those were tiring to look at across a grid. */
 
-.pcard[data-shiny] .pcard-art::after {
+.pcard[data-shiny] .pcard-art {
     background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.6) 0 0.3cqw, transparent 0.55cqw) 0 0 / 7cqw 7cqw,
-        radial-gradient(circle, rgba(255, 236, 170, 0.5) 0 0.25cqw, transparent 0.5cqw) 3cqw 4cqw / 11cqw 9cqw,
-        radial-gradient(120% 90% at 50% 38%, transparent 55%, rgba(4, 6, 14, 0.4));
+        radial-gradient(50% 34% at 50% 36%, color-mix(in srgb, var(--halo) 30%, transparent) 0%, transparent 72%),
+        linear-gradient(172deg, color-mix(in srgb, var(--t1) 42%, #070a1c) 0%, color-mix(in srgb, var(--t1) 20%, #05071a) 60%, color-mix(in srgb, var(--t2) 28%, #05071a) 100%);
+}
+/* The stars, in place of the type pattern: one each, at fixed spots around the edges. */
+.pcard[data-shiny] .pcard-pattern {
+    background:
+        radial-gradient(circle at 12% 18%, #fff 0 .45cqw, transparent .7cqw),
+        radial-gradient(circle at 86% 12%, #ffe9a0 0 .55cqw, transparent .8cqw),
+        radial-gradient(circle at 22% 46%, #ffe9a0 0 .35cqw, transparent .6cqw),
+        radial-gradient(circle at 90% 40%, #fff 0 .4cqw, transparent .65cqw),
+        radial-gradient(circle at 8% 70%, #fff 0 .35cqw, transparent .6cqw),
+        radial-gradient(circle at 78% 72%, #ffe9a0 0 .45cqw, transparent .7cqw),
+        radial-gradient(circle at 40% 8%, #fff 0 .3cqw, transparent .55cqw),
+        radial-gradient(circle at 64% 22%, #fff 0 .25cqw, transparent .5cqw),
+        radial-gradient(circle at 30% 82%, #ffe9a0 0 .3cqw, transparent .55cqw),
+        radial-gradient(circle at 58% 90%, #fff 0 .3cqw, transparent .55cqw);
+    opacity: 1;
     mix-blend-mode: normal;
-    opacity: .9;
 }
-.pcard-holo {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    pointer-events: none;
-    background:
-        repeating-linear-gradient(115deg, #ff7ad9 0%, #ffd86b 6%, #8dffb1 12%, #7fdcff 18%, #c58cff 24%, #ff7ad9 30%) 0 0 / 300% 300%,
-        linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.55) 45%, transparent 60%) 0 0 / 250% 100%;
-    background-position: var(--mx, 0%) var(--my, 0%), calc(var(--mx, 50%) * 1.5) 0;
-    mix-blend-mode: color-dodge;
-    opacity: .26;
-    -webkit-mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
-    mask: linear-gradient(#000 55%, rgba(0, 0, 0, 0.3) 75%);
-    animation: pcard-holo-drift 7s linear infinite;
-}
-.pcard.tilting .pcard-holo { animation: none; opacity: .42; }
-@keyframes pcard-holo-drift {
-    0% { background-position: 0% 0%, 120% 0; }
-    50% { background-position: 100% 100%, -20% 0; }
-    100% { background-position: 200% 200%, 120% 0; }
-}
+.pcard[data-shiny] .pcard-art::after { background: radial-gradient(120% 90% at 50% 38%, transparent 50%, rgba(3, 4, 12, 0.6)); }
 .pcard[data-shiny] .pcard-frame { box-shadow:
         inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.5),
         inset 0 -0.8cqw 1.2cqw rgba(0, 0, 0, 0.25),
@@ -600,10 +599,11 @@
     mix-blend-mode: overlay;
     opacity: .85;
     pointer-events: none;
-    animation: pcard-prism 6s linear infinite;
+    animation: 6s linear infinite;
 }
 
-.pcard-sparkles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+/* Bigger stars of the sky, behind the Pokémon; they twinkle on the live card. */
+.pcard-sparkles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .pcard-sparkles i {
     position: absolute;
     width: 7cqw;
@@ -611,8 +611,9 @@
     background: #fffbe0;
     clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
     filter: drop-shadow(0 0 1cqw #ffd84d);
-    opacity: 0;
-    animation: pcard-twinkle 2.6s ease-in-out infinite;
+    opacity: .9;
+    transform: scale(.6) rotate(45deg);
+    animation: 2.6s ease-in-out infinite;
 }
 .pcard-sparkles i:nth-child(1) { left: 14%; top: 20cqw; animation-delay: 0s; }
 .pcard-sparkles i:nth-child(2) { left: 78%; top: 30cqw; width: 5cqw; height: 5cqw; animation-delay: .7s; }
@@ -647,7 +648,7 @@
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
     pointer-events: none;
-    animation: pcard-frame-shine 3.6s ease-in-out infinite;
+    animation: 3.6s ease-in-out infinite;
 }
 .pcard-foil {
     position: absolute;
@@ -657,8 +658,9 @@
     background:
         linear-gradient(115deg, transparent 32%, rgba(255, 226, 140, 0.5) 42%, rgba(255, 255, 255, 0.9) 48%, rgba(160, 225, 255, 0.45) 54%, transparent 64%) 0 0 / 260% 100% no-repeat,
         linear-gradient(115deg, rgba(255, 214, 120, 0.12), rgba(255, 255, 255, 0) 40%, rgba(255, 196, 90, 0.14));
+    /* Still, the band rests near the top-left corner, off the sprite. */
+    background-position: 72% 0, 0 0;
     mix-blend-mode: overlay;
-    animation: pcard-foil-sweep 5s ease-in-out infinite;
 }
 /* Etched diagonal lines, like a printed foil card. */
 .pcard-foil::after {
@@ -668,11 +670,7 @@
     background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0 0.4cqw, transparent 0.4cqw 2cqw);
     mix-blend-mode: overlay;
 }
-.pcard.tilting .pcard-foil { animation: none; background-position: calc(130% - var(--mx, 50%) * 1.6) 0, 0 0; }
-@keyframes pcard-foil-sweep {
-    0% { background-position: 130% 0, 0 0; }
-    45%, 100% { background-position: -30% 0, 0 0; }
-}
+.pcard.tilting .pcard-foil { background-position: calc(130% - var(--mx, 50%) * 1.6) 0, 0 0; }
 .pcard-level.max {
     background: linear-gradient(180deg, #fff1bf, #f2c24f 55%, #b07a12);
     box-shadow: inset 0 0 0 0.45cqw rgba(255, 255, 255, 0.55), 0 0 3cqw rgba(246, 196, 83, 0.55);
@@ -689,13 +687,25 @@
     background: #fff;
     clip-path: polygon(50% 0, 56% 44%, 100% 50%, 56% 56%, 50% 100%, 44% 56%, 0 50%, 44% 44%);
     filter: drop-shadow(0 0 1.2cqw #ffe39a);
-    opacity: 0;
-    animation: pcard-twinkle 3.4s ease-in-out infinite;
+    opacity: .8;
+    transform: scale(.7) rotate(45deg);
+    animation: 3.4s ease-in-out infinite;
 }
 .pcard-glints i:nth-child(1) { left: 16%; top: 24cqw; animation-delay: .2s; }
 .pcard-glints i:nth-child(2) { left: 76%; top: 16cqw; width: 4.5cqw; height: 4.5cqw; animation-delay: 1.1s; }
 .pcard-glints i:nth-child(3) { left: 80%; top: 62cqw; width: 5cqw; height: 5cqw; animation-delay: 2s; }
 .pcard-glints i:nth-child(4) { left: 22%; top: 70cqw; width: 4cqw; height: 4cqw; animation-delay: 2.7s; }
+
+/* --- Live card (details view, while hovered): the effects above come alive ----------------------------- */
+/* Each effect keeps its timing and delay above; only the animation name is switched on here. */
+
+.pcard[data-live].tilting[data-rarity="legendary"] .pcard-frame::before,
+.pcard[data-live].tilting[data-rarity="mythical"] .pcard-frame::before,
+.pcard[data-live].tilting[data-foil] .pcard-frame::before { animation-name: pcard-frame-shine; }
+.pcard[data-live].tilting[data-rarity="mythical"] .pcard-frame,
+.pcard[data-live].tilting[data-shiny] .pcard-frame::after { animation-name: pcard-prism; }
+.pcard[data-live].tilting .pcard-star { animation-name: pcard-star-pulse; }
+.pcard[data-live].tilting :is(.pcard-sparkles, .pcard-glints) i { animation-name: pcard-twinkle; }
 
 /* --- Hover tilt and glare (bindTilt / bindTiltGroup) ----------------------------------------------- */
 
@@ -740,8 +750,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .pcard-frame, .pcard-frame::before, .pcard-frame::after, .pcard-holo, .pcard-foil, .pcard-star, .pcard-sparkles i, .pcard-glints i { animation: none !important; }
-    .pcard-sparkles i, .pcard-glints i { opacity: .8; transform: scale(.7) rotate(45deg); }
-    .pcard-foil { background-position: 50% 0, 0 0; }
     .pcard.tiltable { transform: none; }
 }

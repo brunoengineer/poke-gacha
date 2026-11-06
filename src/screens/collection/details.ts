@@ -139,7 +139,7 @@ function template(key: CardKey, list: CardKey[]): string {
       <div class="dx-stage">
         ${nav ? `<button class="nav-arrow prev" type="button" data-act="prev" aria-label="${esc(t.prev)}">${icon('left')}</button>` : ''}
         <div class="dx-art">
-          ${cardHTML(state === 'owned' ? { id, shiny, level: card.level } : state === 'registered' ? { id } : { id, locked: true }, { size: 'lg', eager: true, animated: state !== 'locked' })}
+          ${cardHTML(state === 'owned' ? { id, shiny, level: card.level } : state === 'registered' ? { id } : { id, locked: true }, { size: 'lg', eager: true, animated: state !== 'locked', live: true })}
           <div class="fx-particles dx-particles"></div>
         </div>
         ${nav ? `<button class="nav-arrow next" type="button" data-act="next" aria-label="${esc(t.next)}">${icon('right')}</button>` : ''}
