@@ -17,6 +17,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A normal run takes about 5 minutes; anything stuck fails here instead of holding the deploy.
+    timeout-minutes: 20
+    # Playwright's own image comes with Chromium and its system libraries, so nothing is downloaded from package
+    # mirrors on each run (that step once took 9 minutes). Keep the tag equal to Playwright's version in package-lock.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,8 +33,12 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       # Plays the real game in a browser. A failure here stops the deploy, so players never get a broken build.
-      - run: npx playwright install --with-deps chromium
+      - name: Check the image has this Playwright's browser
+        run: >-
+          node -e "const { chromium } = require('playwright-core'); try { require('fs').accessSync(chromium.executablePath()) }
+          catch { console.error('Playwright was updated: set the container image in deploy.yml to its version.'); process.exit(1) }"
       - run: npm run e2e
+        timeout-minutes: 10
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
