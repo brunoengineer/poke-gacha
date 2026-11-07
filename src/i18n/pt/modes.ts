@@ -1,14 +1,17 @@
 // Textos em português do namespace "modes" (Ranqueada, Liga Pokémon). Funções recebem parâmetros (contagens, nomes).
 import regions, { masterRules } from './regions';
+import { shortNumber } from '../short';
 
 const n = (value: number) => value.toLocaleString('pt-BR');
+/** Levels and damage, short when big (30k, 1.4m). */
+const lv = (value: number) => shortNumber(value, 'pt-BR');
 
 const modes = {
   editTeam: 'Editar time',
   yourTeam: 'Seu time',
   you: 'Você',
-  level: (lv: number) => `Nv. ${n(lv)}`,
-  levelRange: (min: number, max: number) => (min === max ? `Nv. ${n(min)}` : `Nv. ${n(min)}–${n(max)}`),
+  level: (level: number) => `Nv. ${lv(level)}`,
+  levelRange: (min: number, max: number) => (min === max ? `Nv. ${lv(min)}` : `Nv. ${lv(min)}–${lv(max)}`),
 
   /** Títulos das classes de treinador (ids em src/game/modes/competition.ts). */
   classes: {
@@ -155,7 +158,7 @@ const modes = {
     enterTitle: 'Entrar na Liga Pokémon?',
     enterText: (fee: number, revives: number, potions: number) => `A inscrição custa ₽ ${n(fee)}. São quatro duelos seguidos e a primeira derrota encerra a campanha. Seu time atual fica inscrito durante toda a campanha, e o HP não se recupera entre os duelos: antes de cada duelo você recebe ${n(revives)} Revivers e ${n(potions)} Poções. Você pode sair e voltar depois sem perder o progresso.`,
     scaled: 'Treinaram para enfrentar seu time',
-    scaledAce: (level: number) => `Treinou · principal Nv. ${n(level)}`,
+    scaledAce: (level: number) => `Treinou · principal Nv. ${lv(level)}`,
     scaledHint: 'Seu time passou destes níveis, então os adversários treinaram para dar uma luta de verdade. Os prêmios continuam os mesmos.',
     registered: 'Time inscrito',
     registeredHint: 'Travado nesta campanha. O HP continua de um duelo para o outro.',

@@ -2,8 +2,11 @@
 // Funções recebem parâmetros (contagens, nomes).
 
 import regions from './regions';
+import { shortNumber } from '../short';
 
 const n = (value: number) => value.toLocaleString('pt-BR');
+/** Levels and damage, short when big (30k, 1.4m). */
+const lv = (value: number) => shortNumber(value, 'pt-BR');
 
 const battle = {
   hub: {
@@ -27,7 +30,7 @@ const battle = {
       competition: { name: 'Ranqueada', desc: 'Passe por 100 treinadores que treinam contra o seu time. O Ash espera no topo.' },
       gyms: { name: 'Ginásios', desc: 'Enfrente os Líderes de Ginásio de Kanto, Johto, Hoenn e Sinnoh, em ordem.' },
       hunt: { name: 'Caça Shiny', desc: 'Escolha um Pokémon e enfrente hordas dele. Cada vitória seguida aumenta a chance do shiny.' },
-      tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem 5 níveis mais forte. Até onde você chega?' },
+      tower: { name: 'Torre Infinita', desc: 'Uma subida sem fim: cada andar vem mais forte, e a partir do andar 50 cresce cada vez mais rápido. Até onde você chega?' },
       league: { name: 'Liga Pokémon', desc: 'Quatro duelos eliminatórios até o título de Campeão, em Kanto, Johto, Hoenn e Sinnoh.' },
       raid: { name: 'Batalha Lendária', desc: 'Pague caro para enfrentar um lendário ou mítico de HP enorme. Vença e tente capturá-lo.' },
     },
@@ -96,7 +99,7 @@ const battle = {
     pick: 'Abrir a Pokédex',
     goal: 'O objetivo: a versão shiny',
     target: 'Alvo da caça',
-    owned: (level: number) => `Você tem: Nv. ${n(level)}`,
+    owned: (level: number) => `Você tem: Nv. ${lv(level)}`,
     registered: 'Registrado na Pokédex',
     shinyOwned: 'shiny já capturado',
     change: 'Trocar alvo',
@@ -105,7 +108,7 @@ const battle = {
     oneIn: (odds: number) => `1 em ${n(odds)}`,
     copyChance: 'Chance de uma cópia',
     horde: 'Horda',
-    levels: (lo: number, hi: number) => `Nv. ${n(lo)}–${n(hi)}`,
+    levels: (lo: number, hi: number) => `Nv. ${lv(lo)}–${lv(hi)}`,
     rule: 'Perder quebra a sequência. Trocar de Pokémon começa uma nova.',
     maxed: 'Sequência no máximo: a chance de shiny não sobe mais. Perder ainda quebra a sequência!',
     go: 'Caçar',
@@ -129,7 +132,7 @@ const battle = {
 
   tower: {
     title: 'Torre Infinita',
-    sub: 'Cada andar vencido traz um treinador 5 níveis acima. Não existe topo: o desafio é ver até onde você chega.',
+    sub: 'Cada andar vencido traz um treinador mais forte: 5 níveis acima no começo, e a partir do andar 50 a diferença dobra a cada 30 andares. Não existe topo: o desafio é ver até onde você chega.',
     best: 'Recorde',
     floorShort: (floor: number) => `Andar ${n(floor)}`,
     record: (wins: number, losses: number) => `${n(wins)} V · ${n(losses)} D`,
@@ -138,7 +141,7 @@ const battle = {
     locked: (badges: number) => `A Torre Infinita abre depois da sua ${badges === 1 ? 'primeira insígnia' : `${badges}ª insígnia`}. Vença o Brock primeiro!`,
     floor: (floor: number) => `Andar ${n(floor)}`,
     floorLabel: 'Andar',
-    level: (level: number) => `Nv. ${n(level)}`,
+    level: (level: number) => `Nv. ${lv(level)}`,
     boss: 'Andar do chefe',
     trainerTitle: 'Treinador da Torre',
     bossTitle: 'Mestre da Torre',
@@ -149,7 +152,7 @@ const battle = {
     winLine: 'A torre continua lá. Volte quando estiver mais forte!',
     loseLine: 'Muito bem! A escada é sua, siga em frente.',
     clearedTitle: (floor: number) => `Andar ${n(floor)} vencido!`,
-    clearedSub: (next: number, level: number) => `Próximo: andar ${n(next)}, Nv. ${n(level)}`,
+    clearedSub: (next: number, level: number) => `Próximo: andar ${n(next)}, Nv. ${lv(level)}`,
     lost: (floor: number) => `O andar ${n(floor)} continua esperando. Treine e tente de novo!`,
   },
 
@@ -234,7 +237,7 @@ const battle = {
       perfect: 'Vitória perfeita!',
       log: 'Resumo dos duelos',
       beat: (winner: string, loser: string) => `${winner} venceu ${loser}`,
-      hits: (count: number, damage: number) => `${count} ${count === 1 ? 'golpe' : 'golpes'}, ${n(damage)} de dano`,
+      hits: (count: number, damage: number) => `${count} ${count === 1 ? 'golpe' : 'golpes'}, ${lv(damage)} de dano`,
       chooseTrain: (levels: number) => `Escolha quem treina: +${levels} Nv.`,
       chooseFirst: 'Escolha quem treina antes de continuar.',
       trainCard: (name: string, level: number) => `Treinar ${name}, Nv. ${level}`,
@@ -253,7 +256,7 @@ const battle = {
     title: 'Treino',
     sub: 'Batalhas amistosas, sem pressão. As equipes dos seus amigos acompanham o nível do seu time.',
     difficulty: 'Dificuldade',
-    levels: (lo: number, hi: number) => (lo === hi ? `Nv. ${lo}` : `Nv. ${lo}–${hi}`),
+    levels: (lo: number, hi: number) => (lo === hi ? `Nv. ${lv(lo)}` : `Nv. ${lv(lo)}–${lv(hi)}`),
     coins: (amount: number) => `₽ ${n(amount)} por vitória`,
     gift: (pct: number) => `${pct}% de chance de presente`,
     noGift: 'Sem presentes',
@@ -411,7 +414,7 @@ const battle = {
     shinyNote: (max: number) => `Estes líderes chegam ao Nv. ${max}. Cartas normais param no Nv. 100, lendários no 120 e míticos no 140; só shinies não têm limite. Cace shinies para acompanhar!`,
     goHunt: 'Caça Shiny',
     scaled: 'Treinou para enfrentar seu time',
-    scaledAce: (level: number) => `Treinou · principal Nv. ${n(level)}`,
+    scaledAce: (level: number) => `Treinou · principal Nv. ${lv(level)}`,
     scaledHint: 'Seu time passou do nível deste ginásio, então o líder treinou para dar uma luta de verdade. Os prêmios continuam os mesmos.',
     badges: (count: number) => `${count}/8 insígnias`,
     gymNumber: (num: number) => `Ginásio ${num}`,
@@ -424,7 +427,7 @@ const battle = {
     rematchReward: 'Revanche',
     beaten: 'Insígnia conquistada',
     record: (wins: number, losses: number) => `${wins}V · ${losses}D`,
-    levels: (lo: number, hi: number) => `Nv. ${lo}–${hi}`,
+    levels: (lo: number, hi: number) => `Nv. ${lv(lo)}–${lv(hi)}`,
     next: 'Próximo desafio',
     allDone: (region: string, next: string | null) => next
       ? `Você tem todas as insígnias de ${region}! A Liga de ${region} e os Ginásios de ${next} esperam por você.`

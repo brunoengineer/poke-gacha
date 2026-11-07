@@ -2,8 +2,11 @@
 import type pt from '../pt/battle';
 
 import regions from './regions';
+import { shortNumber } from '../short';
 
 const n = (value: number) => value.toLocaleString('en-US');
+/** Levels and damage, short when big (30k, 1.4m). */
+const lv = (value: number) => shortNumber(value, 'en-US');
 
 const battle: typeof pt = {
   hub: {
@@ -27,7 +30,7 @@ const battle: typeof pt = {
       competition: { name: 'Ranked', desc: 'Climb past 100 trainers who train against your team. Ash waits at the top.' },
       gyms: { name: 'Gyms', desc: 'Take on the Gym Leaders of Kanto, Johto, Hoenn and Sinnoh, in order.' },
       hunt: { name: 'Shiny Hunt', desc: 'Pick a Pokémon and battle hordes of it. Every win in a row raises the shiny chance.' },
-      tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is 5 levels stronger. How far can you go?' },
+      tower: { name: 'Infinity Tower', desc: 'An endless climb: every floor is stronger, and from floor 50 they grow faster and faster. How far can you go?' },
       league: { name: 'Pokémon League', desc: 'Four knockout duels for the Champion title, in Kanto, Johto, Hoenn and Sinnoh.' },
       raid: { name: 'Legendary Battle', desc: 'Pay big to face a legendary or mythical with huge HP. Win, and try to catch it.' },
     },
@@ -96,7 +99,7 @@ const battle: typeof pt = {
     pick: 'Open the Pokédex',
     goal: 'The goal: its shiny',
     target: 'Hunting',
-    owned: (level: number) => `You own it: Lv. ${n(level)}`,
+    owned: (level: number) => `You own it: Lv. ${lv(level)}`,
     registered: 'Registered in your Pokédex',
     shinyOwned: 'shiny already caught',
     change: 'Change target',
@@ -105,7 +108,7 @@ const battle: typeof pt = {
     oneIn: (odds: number) => `1 in ${n(odds)}`,
     copyChance: 'Chance of a copy',
     horde: 'Horde',
-    levels: (lo: number, hi: number) => `Lv. ${n(lo)}–${n(hi)}`,
+    levels: (lo: number, hi: number) => `Lv. ${lv(lo)}–${lv(hi)}`,
     rule: 'A loss breaks the chain. Switching Pokémon starts a new one.',
     maxed: "Chain maxed: the shiny chance won't go higher. A loss still breaks it!",
     go: 'Hunt',
@@ -129,7 +132,7 @@ const battle: typeof pt = {
 
   tower: {
     title: 'Infinity Tower',
-    sub: 'Every floor you clear brings a trainer 5 levels higher. There is no top: the challenge is how far you get.',
+    sub: 'Every floor you clear brings a stronger trainer: 5 levels higher at first, and from floor 50 the gap doubles every 30 floors. There is no top: the challenge is how far you get.',
     best: 'Best',
     floorShort: (floor: number) => `Floor ${n(floor)}`,
     record: (wins: number, losses: number) => `${n(wins)} W · ${n(losses)} L`,
@@ -138,7 +141,7 @@ const battle: typeof pt = {
     locked: (badges: number) => `The Infinity Tower opens after your ${badges === 1 ? 'first badge' : `${badges} badges`}. Beat Brock first!`,
     floor: (floor: number) => `Floor ${n(floor)}`,
     floorLabel: 'Floor',
-    level: (level: number) => `Lv. ${n(level)}`,
+    level: (level: number) => `Lv. ${lv(level)}`,
     boss: 'Boss floor',
     trainerTitle: 'Tower Trainer',
     bossTitle: 'Tower Master',
@@ -149,7 +152,7 @@ const battle: typeof pt = {
     winLine: "The tower isn't going anywhere. Come back stronger!",
     loseLine: 'Well done! The stairs are yours, keep climbing.',
     clearedTitle: (floor: number) => `Floor ${n(floor)} cleared!`,
-    clearedSub: (next: number, level: number) => `Next: floor ${n(next)}, Lv. ${n(level)}`,
+    clearedSub: (next: number, level: number) => `Next: floor ${n(next)}, Lv. ${lv(level)}`,
     lost: (floor: number) => `Floor ${n(floor)} is still waiting. Train and try again!`,
   },
 
@@ -234,7 +237,7 @@ const battle: typeof pt = {
       perfect: 'Perfect victory!',
       log: 'Duel summary',
       beat: (winner: string, loser: string) => `${winner} beat ${loser}`,
-      hits: (count: number, damage: number) => `${count} ${count === 1 ? 'hit' : 'hits'}, ${n(damage)} damage`,
+      hits: (count: number, damage: number) => `${count} ${count === 1 ? 'hit' : 'hits'}, ${lv(damage)} damage`,
       chooseTrain: (levels: number) => `Choose who trains: +${levels} Lv.`,
       chooseFirst: 'Choose who trains before you continue.',
       trainCard: (name: string, level: number) => `Train ${name}, Lv. ${level}`,
@@ -253,7 +256,7 @@ const battle: typeof pt = {
     title: 'Training',
     sub: "Friendly battles, no pressure. Your friends' teams keep up with your team's level.",
     difficulty: 'Difficulty',
-    levels: (lo: number, hi: number) => (lo === hi ? `Lv. ${lo}` : `Lv. ${lo}–${hi}`),
+    levels: (lo: number, hi: number) => (lo === hi ? `Lv. ${lv(lo)}` : `Lv. ${lv(lo)}–${lv(hi)}`),
     coins: (amount: number) => `₽ ${n(amount)} per win`,
     gift: (pct: number) => `${pct}% gift chance`,
     noGift: 'No gifts',
@@ -411,7 +414,7 @@ const battle: typeof pt = {
     shinyNote: (max: number) => `These leaders reach Lv. ${max}. Normal cards stop at Lv. 100, legendaries at 120 and mythicals at 140; only shinies have no cap. Hunt shinies to keep up!`,
     goHunt: 'Shiny Hunt',
     scaled: 'Trained up to your team',
-    scaledAce: (level: number) => `Trained up · ace Lv. ${n(level)}`,
+    scaledAce: (level: number) => `Trained up · ace Lv. ${lv(level)}`,
     scaledHint: 'Your team outgrew this gym, so the leader trained up to give you a real fight. The prizes stay the same.',
     badges: (count: number) => `${count}/8 badges`,
     gymNumber: (num: number) => `Gym ${num}`,
@@ -424,7 +427,7 @@ const battle: typeof pt = {
     rematchReward: 'Rematch',
     beaten: 'Badge earned',
     record: (wins: number, losses: number) => `${wins}W · ${losses}L`,
-    levels: (lo: number, hi: number) => `Lv. ${lo}–${hi}`,
+    levels: (lo: number, hi: number) => `Lv. ${lv(lo)}–${lv(hi)}`,
     next: 'Next challenge',
     allDone: (region: string, next: string | null) => next
       ? `You have every ${region} badge! The ${region} League and the ${next} Gyms await.`
