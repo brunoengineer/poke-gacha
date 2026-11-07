@@ -2,15 +2,18 @@
 import type pt from '../pt/modes';
 
 import regions, { masterRules } from './regions';
+import { shortNumber } from '../short';
 
 const n = (value: number) => value.toLocaleString('en-US');
+/** Levels and damage, short when big (30k, 1.4m). */
+const lv = (value: number) => shortNumber(value, 'en-US');
 
 const modes: typeof pt = {
   editTeam: 'Edit team',
   yourTeam: 'Your team',
   you: 'You',
-  level: (lv: number) => `Lv. ${n(lv)}`,
-  levelRange: (min: number, max: number) => (min === max ? `Lv. ${n(min)}` : `Lv. ${n(min)}–${n(max)}`),
+  level: (level: number) => `Lv. ${lv(level)}`,
+  levelRange: (min: number, max: number) => (min === max ? `Lv. ${lv(min)}` : `Lv. ${lv(min)}–${lv(max)}`),
 
   classes: {
     youngster: 'Youngster', lass: 'Lass', bugcatcher: 'Bug Catcher', picnicker: 'Picnicker', camper: 'Camper',
@@ -156,7 +159,7 @@ const modes: typeof pt = {
     enterTitle: 'Enter the Pokémon League?',
     enterText: (fee: number, revives: number, potions: number) => `The entry fee is ₽ ${n(fee)}. Four duels in a row, and the first loss ends your run. Your current team is registered for the whole run, and HP doesn't heal between duels: before each duel you get ${n(revives)} Revives and ${n(potions)} Potions. You can leave and come back later without losing progress.`,
     scaled: 'Trained up to your team',
-    scaledAce: (level: number) => `Trained up · ace Lv. ${n(level)}`,
+    scaledAce: (level: number) => `Trained up · ace Lv. ${lv(level)}`,
     scaledHint: 'Your team outgrew these levels, so your opponents trained up to give you a real fight. The prizes stay the same.',
     registered: 'Registered team',
     registeredHint: 'Locked for this run. HP carries over between duels.',

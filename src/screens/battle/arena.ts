@@ -23,7 +23,7 @@ import {
 import { DECK_SIZE } from '../../game/economy';
 import { BATTLE_LEVELS, candyRoom, type BattleTraining } from '../../game/progression';
 import { playerTeam } from '../../game/teams';
-import { fmt, L } from '../../i18n';
+import { fmtShort, L } from '../../i18n';
 import { trainTeamAfterBattle } from '../../state/actions';
 import { store } from '../../state/store';
 import { draggable, dropZone } from '../../ui/dnd';
@@ -456,7 +456,7 @@ async function strikeFx(b: Battle, seq: Sequence, hit: Hit, target: BattleCard, 
     });
     if (strong) void seq.anim(u.scene, shakeFrames(crit || hit.mult >= 1.6 ? 9 : 6), { duration: 380, fill: 'none' });
   }
-  floatPop(seq, pop(b, targetMon, `-${fmt(hit.damage)}`, `pop-dmg ${crit ? 'pop-crit' : hit.mult > 1 ? 'big' : ''}`, L().core.statsShort[hit.stat]));
+  floatPop(seq, pop(b, targetMon, `-${fmtShort(hit.damage)}`, `pop-dmg ${crit ? 'pop-crit' : hit.mult > 1 ? 'big' : ''}`, L().core.statsShort[hit.stat]));
 
   targetMon.classList.add('hit');
   await Promise.all([
@@ -491,14 +491,14 @@ function drain(b: Battle, seq: Sequence, side: Side, card: BattleCard, from: num
   meter.dataset.tone = hpTone(toPct);
   meter.setAttribute('aria-valuenow', String(to));
   if (seq.skipped) {
-    num.textContent = fmt(to);
+    num.textContent = fmtShort(to);
     return Promise.resolve();
   }
   const duration = 560 * fxSpeed() * seq.scale;
   const start = performance.now();
   const tick = () => {
     const k = seq.skipped ? 1 : Math.min(1, (performance.now() - start) / duration);
-    num.textContent = fmt(Math.round(from + (to - from) * k));
+    num.textContent = fmtShort(Math.round(from + (to - from) * k));
     if (k < 1 && num.isConnected) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);

@@ -18,6 +18,7 @@ import ptCollection from './pt/collection';
 import ptCore from './pt/core';
 import ptJourney from './pt/journey';
 import ptModes from './pt/modes';
+import { shortNumber } from './short';
 
 export type Lang = 'pt' | 'en';
 
@@ -53,6 +54,8 @@ export function setLang(next: Lang) {
 }
 
 export const fmt = (n: number) => (Number.isFinite(n) ? n.toLocaleString(locale()) : '∞');
+/** A level, HP, damage or power in little room: exact below 1,000, then 1.3k, 240k, 2m, 4b (see short.ts). */
+export const fmtShort = (n: number) => shortNumber(n, locale());
 export const speciesName = (id: number) => getSpecies(id).name;
 export const itemName = (id: string) => getItem(id).name[lang];
 export const itemDescription = (id: string) => getItem(id).description[lang];

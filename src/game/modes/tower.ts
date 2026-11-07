@@ -1,5 +1,9 @@
-// Infinity Tower: an endless climb. Each floor is one battle against a trainer whose whole team is 5 levels above
-// the previous floor's, with no top floor: the only question is how far a player gets.
+// Infinity Tower: an endless climb. Each floor is one battle against a trainer whose whole team is above the previous
+// floor's, with no top floor: the only question is how far a player gets.
+//   - Floors 1–49 add 5 levels each. From floor 50 the climb turns exponential: floor 50 adds 10 levels, and what a floor
+//     adds doubles every 30 floors (+20 at 80, about +100 at 150, +320 at 200…), so no team keeps up forever.
+//   - A floor pays as it did when every floor added 5 levels (rewardLevel), so the prizes don't grow exponentially too:
+//     exponential coins would buy exponential Rare Candy, and one fed Pokémon would outgrow the tower again.
 //   - Progress is kept: a loss doesn't reset the climb, the same floor waits for a retry.
 //   - Each floor pays once (on its first clear), so low floors can't be farmed.
 //   - Floors are fixed: floor N always brings the same team (seeded by N), so a lost floor can be studied.
@@ -23,9 +27,15 @@ export const defaultTowerSave = (): TowerSave => ({ best: 0, wins: 0, losses: 0 
 
 /** Badges needed to enter (the tower opens after Brock, so it doesn't replace Training early on). */
 export const TOWER_UNLOCK_BADGES = 1;
-/** Level of the first floor, and how much each floor adds. */
+/** Level of the first floor, and how much each floor adds before the climb turns exponential. */
 export const FIRST_FLOOR_LEVEL = 15;
 export const LEVELS_PER_FLOOR = 5;
+/** From this floor each floor adds STEEP_STEP levels, doubling every DOUBLE_EVERY floors. */
+export const STEEP_FROM = 50;
+export const STEEP_STEP = 10;
+export const DOUBLE_EVERY = 30;
+/** Floor levels stop growing here, so the battle math stays in safe whole numbers (far beyond anyone's reach). */
+export const MAX_FLOOR_LEVEL = Number.MAX_SAFE_INTEGER;
 export const BOSS_EVERY = 10;
 
 /** Rewards for clearing a floor for the first time. */
@@ -35,7 +45,18 @@ export const BOSS_COINS = 2000;
 
 export const towerUnlocked = (badges: number) => badges >= TOWER_UNLOCK_BADGES && modeInChapter('tower');
 export const nextFloor = (tower: TowerSave) => tower.best + 1;
-export const floorLevel = (floor: number) => FIRST_FLOOR_LEVEL + LEVELS_PER_FLOOR * (floor - 1);
+/** The level a floor would have if every floor added 5: what sets its prize. */
+export const rewardLevel = (floor: number) => FIRST_FLOOR_LEVEL + LEVELS_PER_FLOOR * (floor - 1);
+
+const GROWTH = 2 ** (1 / DOUBLE_EVERY);
+
+export function floorLevel(floor: number): number {
+  if (floor < STEEP_FROM) return rewardLevel(floor);
+  // The steep floors' steps are a geometric series: STEEP_STEP × (GROWTH^k − 1) / (GROWTH − 1) for k floors.
+  const steep = floor - STEEP_FROM + 1;
+  const level = rewardLevel(STEEP_FROM - 1) + Math.round((STEEP_STEP * (GROWTH ** steep - 1)) / (GROWTH - 1));
+  return Number.isFinite(level) ? Math.min(level, MAX_FLOOR_LEVEL) : MAX_FLOOR_LEVEL;
+}
 export const isBossFloor = (floor: number) => floor % BOSS_EVERY === 0;
 
 /** Trainer sprites the floors cycle through (Pokémon Showdown names); bosses use the veterans. */
@@ -69,7 +90,7 @@ export function towerFloor(floor: number): Floor {
 }
 
 export function floorRewards(floor: number): Reward[] {
-  const coins = COINS_PER_LEVEL * floorLevel(floor) + (isBossFloor(floor) ? BOSS_COINS : 0);
+  const coins = COINS_PER_LEVEL * rewardLevel(floor) + (isBossFloor(floor) ? BOSS_COINS : 0);
   return [{ kind: 'coins', amount: coins }, { kind: 'item', item: RARE_CANDY, amount: FLOOR_CANDY }];
 }
 

@@ -4,7 +4,7 @@
 
 import { sfx } from '../../audio';
 import { DECK_SIZE } from '../../game/economy';
-import { fmt, L } from '../../i18n';
+import { fmtShort, L } from '../../i18n';
 import { addToDeck, clearDeck, inDeck, moveInDeck, removeFromDeck } from '../../state/actions';
 import { on, store } from '../../state/store';
 import { cardHTML } from '../../ui/card';
@@ -218,7 +218,7 @@ function render() {
   dock.querySelector('[data-act="battle"]')!.setAttribute('aria-disabled', String(count < DECK_SIZE));
   dock.querySelector<HTMLButtonElement>('[data-act="clear"]')!.disabled = count === 0;
   const power = teamPower();
-  animateNumber(dock.querySelector('[data-power]')!, shownPower, power, 500, fmt);
+  animateNumber(dock.querySelector('[data-power]')!, shownPower, power, 500, fmtShort);
   shownPower = power;
   setHint();
 }

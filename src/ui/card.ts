@@ -13,7 +13,7 @@ import { animatedSpriteUrl, spriteUrl } from '../data/sprites';
 import { getSpecies } from '../data/species';
 import { TYPE_COLOR, type PokemonType } from '../data/types';
 import { cardPower, isUncapped, MAX_LEVEL, rarity, rarityRank, RARITY_COLOR, type Rarity } from '../game/cards';
-import { fmt, L } from '../i18n';
+import { fmtShort, L } from '../i18n';
 import { esc, reducedMotion } from './dom';
 
 export interface CardView {
@@ -133,10 +133,10 @@ export function cardHTML(view: CardView, opts: CardOptions = {}): string {
 
   const levelTag = level == null ? '' : `
     <span class="pcard-level${uncapped ? ' uncapped' : ''}${foil ? ' max' : ''}${level > MAX_LEVEL ? ' beyond' : ''}">
-      <small>${esc(t.card.level)}</small>${fmt(level)}${uncapped ? `<b class="pcard-inf" title="${esc(t.card.uncapped)}">∞</b>` : ''}
+      <small>${esc(t.card.level)}</small>${fmtShort(level)}${uncapped ? `<b class="pcard-inf" title="${esc(t.card.uncapped)}">∞</b>` : ''}
     </span>`;
   const powerTag = level == null || opts.hidePower ? '' :
-    `<span class="pcard-power"><small>${esc(t.card.power)}</small>${fmt(cardPower(view.id, level, shiny))}</span>`;
+    `<span class="pcard-power"><small>${esc(t.card.power)}</small>${fmtShort(cardPower(view.id, level, shiny))}</span>`;
 
   return `
     <div class="pcard pcard-${opts.size ?? 'sm'} ${opts.className ?? ''}" data-type="${primary}"${secondary ? ` data-type2="${secondary}"` : ''}

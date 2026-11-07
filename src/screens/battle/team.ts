@@ -7,7 +7,7 @@ import { DECK_SIZE } from '../../game/economy';
 import { chapterLeague } from '../../game/journey';
 import { leagueUnlocked } from '../../game/modes/league';
 import { playerTeam } from '../../game/teams';
-import { fmt, L } from '../../i18n';
+import { fmtShort, L } from '../../i18n';
 import { store } from '../../state/store';
 import { cardHTML } from '../../ui/card';
 import { esc, icon, toast } from '../../ui/dom';
@@ -47,8 +47,8 @@ export function teamSummaryHTML(compact = false): string {
         <strong>${ready ? `${icon('check')} ${esc(t.ready)}` : `${icon('flag')} ${esc(t.incomplete(team.length))}`}</strong>
         ${ready ? `
           <span class="team-stats">
-            <span><small>${esc(t.avgLevel)}</small><b>${fmt(avgLevel)}</b></span>
-            <span><small>${esc(t.avgPower)}</small><b>${fmt(teamPower(cards))}</b></span>
+            <span><small>${esc(t.avgLevel)}</small><b>${fmtShort(avgLevel)}</b></span>
+            <span><small>${esc(t.avgPower)}</small><b>${fmtShort(teamPower(cards))}</b></span>
           </span>` : `<span class="team-hint">${esc(t.needMore(DECK_SIZE - team.length))}</span>`}
       </div>
       <div class="team-buttons">

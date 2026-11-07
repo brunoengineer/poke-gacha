@@ -264,14 +264,21 @@ time. Legendary and mythical Pokémon can't be hunted; neither can species never
 Opens with the first badge (`TOWER_UNLOCK_BADGES`). One battle per floor; there is no top floor, the point is how far
 a player gets.
 
-- Floor 1 is Lv. 15 and each floor adds **+5 levels** to the whole opposing team (floor N = Lv. 10 + 5N): floor 18
+- Floor 1 is Lv. 15 and floors 1–49 add **+5 levels** each to the whole opposing team (floor N = Lv. 10 + 5N): floor 18
   is Lv. 100, floor 22 Lv. 120 (legendary cap), floor 26 Lv. 140 (mythical cap); past that only shinies keep up.
+- **From floor 50 the climb is exponential**: floor 50 adds +10 levels, and what a floor adds **doubles every 30
+  floors** (+20 at floor 80, +40 at 110, about +100 at 150, +160 at 170, +320 at 200). Floor 50 is Lv. 265, floor 100
+  Lv. 1,217, floor 150 Lv. 4,240, floor 200 Lv. 13,838, floor 234 Lv. 30,561, floor 300 Lv. 141,044. With no top
+  floor, every team meets a wall sooner or later (levels stop at the largest safe whole number, around floor 1,400).
 - Progress is kept: a loss doesn't reset the climb, the same floor waits for a retry. Each floor pays **once**, on its
   first clear, so low floors can't be farmed: **Rare Candy ×3 + ₽20 per level** (₽300 on floor 1, ₽2,000 at Lv. 100).
+  From floor 50 the prize uses the level the floor would have at +5 per floor (₽20,200 on floor 200), so it keeps
+  growing slowly instead of exponentially: exponential coins would buy exponential Rare Candy, and one fed Pokémon
+  would outgrow the tower again.
 - Every **10th floor is a boss floor** (Tower Master, legendaries allowed): **+₽2,000** bonus.
 - Floors are fixed: floor N always brings the same trainer and team (seeded by N), so a lost floor can be studied.
-- Pacing: a floor adds 30 levels across the opposing team, while a clear gives about 4–5 (3 candies + the post-battle
-  level), so the tower pulls ahead fast and needs the other modes to keep climbing.
+- Pacing: up to floor 49 a floor adds 30 levels across the opposing team (and far more after), while a clear gives
+  about 4–5 (3 candies + the post-battle level), so the tower pulls ahead fast and needs the other modes to keep climbing.
 
 ### When the team outgrows Gyms and Leagues
 Gyms and Leagues keep their designed levels (rematch and title bonuses included) until the **team's average level**
